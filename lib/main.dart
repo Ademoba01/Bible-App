@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'features/kids/kids_home_screen.dart';
+import 'features/onboarding/welcome_screen.dart';
 import 'features/reading/screens/home_screen.dart';
 import 'state/providers.dart';
+import 'theme.dart';
 
 void main() {
   runApp(const ProviderScope(child: BibleApp()));
@@ -13,22 +16,29 @@ class BibleApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mode = ref.watch(themeModeProvider);
+    final settings = ref.watch(settingsProvider);
+    final brightness = settings.darkMode ? Brightness.dark : Brightness.light;
+    final theme = settings.kidsMode
+        ? buildKidsTheme(brightness: brightness)
+        : buildAdultTheme(brightness: brightness);
+
+    final Widget home;
+    if (!settings.onboarded) {
+      home = const WelcomeScreen();
+    } else if (settings.kidsMode) {
+      home = const KidsHomeScreen();
+    } else {
+      home = const HomeScreen();
+    }
+
     return MaterialApp(
-      title: 'BIBLE APP',
+      title: 'Bible',
       debugShowCheckedModeBanner: false,
-      themeMode: mode,
-      theme: ThemeData(
-        colorSchemeSeed: Colors.brown,
-        brightness: Brightness.light,
-        useMaterial3: true,
+      theme: theme,
+      home: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: home,
       ),
-      darkTheme: ThemeData(
-        colorSchemeSeed: Colors.brown,
-        brightness: Brightness.dark,
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(),
     );
   }
 }

@@ -77,18 +77,30 @@ final bookmarksProvider =
 class AppSettings {
   final double fontSize;
   final bool darkMode;
-  final String translation; // 'WEB' for now
+  final String translation;
+  final bool kidsMode;
+  final bool onboarded;
   const AppSettings({
     this.fontSize = 18,
     this.darkMode = false,
     this.translation = 'web',
+    this.kidsMode = false,
+    this.onboarded = false,
   });
 
-  AppSettings copyWith({double? fontSize, bool? darkMode, String? translation}) =>
+  AppSettings copyWith({
+    double? fontSize,
+    bool? darkMode,
+    String? translation,
+    bool? kidsMode,
+    bool? onboarded,
+  }) =>
       AppSettings(
         fontSize: fontSize ?? this.fontSize,
         darkMode: darkMode ?? this.darkMode,
         translation: translation ?? this.translation,
+        kidsMode: kidsMode ?? this.kidsMode,
+        onboarded: onboarded ?? this.onboarded,
       );
 }
 
@@ -98,6 +110,8 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
           fontSize: _prefs?.getDouble('fontSize') ?? 18,
           darkMode: _prefs?.getBool('darkMode') ?? false,
           translation: _prefs?.getString('translation') ?? 'web',
+          kidsMode: _prefs?.getBool('kidsMode') ?? false,
+          onboarded: _prefs?.getBool('onboarded') ?? false,
         ));
   final SharedPreferences? _prefs;
 
@@ -114,6 +128,16 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setTranslation(String v) async {
     state = state.copyWith(translation: v);
     await _prefs?.setString('translation', v);
+  }
+
+  Future<void> setKidsMode(bool v) async {
+    state = state.copyWith(kidsMode: v);
+    await _prefs?.setBool('kidsMode', v);
+  }
+
+  Future<void> completeOnboarding() async {
+    state = state.copyWith(onboarded: true);
+    await _prefs?.setBool('onboarded', true);
   }
 }
 

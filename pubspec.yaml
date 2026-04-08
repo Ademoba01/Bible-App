@@ -18,6 +18,30 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  image: ^4.1.7                   # used by tools/make_brand_assets.dart
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/brand/icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#5D4037"
+  adaptive_icon_foreground: "assets/brand/icon_foreground.png"
+  web:
+    generate: true
+    image_path: "assets/brand/icon.png"
+
+flutter_native_splash:
+  color: "#5D4037"
+  image: "assets/brand/splash.png"
+  android_12:
+    color: "#5D4037"
+    image: "assets/brand/splash.png"
+  ios: true
+  android: true
+  web: true
 
 flutter:
   uses-material-design: true
@@ -26,3 +50,4 @@ flutter:
     - assets/bibles/bsb/
     - assets/bibles/pidgin/
     - assets/bibles/yoruba/
+    - assets/brand/
