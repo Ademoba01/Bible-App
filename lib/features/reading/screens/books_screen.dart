@@ -8,16 +8,17 @@ class BooksScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ot = kAllBooks.where((b) => b.testament == 'OT').toList();
     final nt = kAllBooks.where((b) => b.testament == 'NT').toList();
+    final theme = Theme.of(context);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Books'),
-          backgroundColor: Colors.brown[800],
-          foregroundColor: Colors.white,
-          bottom: const TabBar(
-            indicatorColor: Colors.white,
-            tabs: [Tab(text: 'Old Testament'), Tab(text: 'New Testament')],
+          bottom: TabBar(
+            indicatorColor: theme.colorScheme.onPrimary,
+            labelColor: theme.colorScheme.onPrimary,
+            unselectedLabelColor: theme.colorScheme.onPrimary.withValues(alpha: 0.7),
+            tabs: const [Tab(text: 'Old Testament'), Tab(text: 'New Testament')],
           ),
         ),
         body: TabBarView(

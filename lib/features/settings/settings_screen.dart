@@ -11,11 +11,10 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(settingsProvider);
     final n = ref.read(settingsProvider.notifier);
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
-        backgroundColor: Colors.brown[800],
-        foregroundColor: Colors.white,
       ),
       body: ListView(
         children: [
@@ -51,7 +50,7 @@ class SettingsScreen extends ConsumerWidget {
                           enabled: t.available,
                           leading: Icon(
                             t.id == s.translation ? Icons.radio_button_checked : Icons.radio_button_off,
-                            color: t.available ? Colors.brown : Colors.grey,
+                            color: t.available ? theme.colorScheme.primary : Colors.grey,
                           ),
                           title: Text(t.name + (t.available ? '' : '  (coming soon)')),
                           subtitle: Text(t.description),
@@ -67,7 +66,7 @@ class SettingsScreen extends ConsumerWidget {
           const Divider(),
           const ListTile(
             title: Text('About'),
-            subtitle: Text('Bible App — The Bible that listens and speaks your language.'),
+            subtitle: Text('Our Bible — The Bible that listens and speaks your language.'),
           ),
         ],
       ),

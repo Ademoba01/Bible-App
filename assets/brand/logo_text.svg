@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" width="300" height="80">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Lora:ital@1&amp;display=swap');
+    </style>
+  </defs>
+
+  <!-- "Our" in gold -->
+  <text x="80" y="45" font-family="'Playfair Display', 'Georgia', 'Times New Roman', serif"
+        font-size="42" font-weight="700" fill="#FFC107" text-anchor="end">
+    Our
+  </text>
+
+  <!-- "Bible" in brown -->
+  <text x="86" y="45" font-family="'Playfair Display', 'Georgia', 'Times New Roman', serif"
+        font-size="42" font-weight="700" fill="#5D4037" text-anchor="start">
+    Bible
+  </text>
+
+  <!-- Tagline: "that listens and speaks" -->
+  <text x="150" y="66" font-family="'Lora', 'Georgia', 'Times New Roman', serif"
+        font-size="14" font-style="italic" fill="#8D6E63" text-anchor="middle"
+        letter-spacing="1">
+    that listens and speaks
+  </text>
+</svg>

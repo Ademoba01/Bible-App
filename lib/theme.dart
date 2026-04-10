@@ -6,8 +6,11 @@ class BrandColors {
   static const brown = Color(0xFF5D4037);      // primary seed
   static const brownMid = Color(0xFF8D6E63);
   static const cream = Color(0xFFFFF8E1);
-  static const gold = Color(0xFFFFC107);
+  static const gold = Color(0xFFD4A843);        // richer, deeper gold
+  static const goldLight = Color(0xFFFFC107);   // original bright gold for accents
   static const dark = Color(0xFF3E2723);
+  static const parchment = Color(0xFFFDF6EC);   // subtle warm reading background
+  static const warmWhite = Color(0xFFFFFBF5);   // card backgrounds
 
   // Kids palette — brighter, cheerful
   static const kidsBlue = Color(0xFF42A5F5);
@@ -43,9 +46,10 @@ ThemeData buildAdultTheme({required Brightness brightness}) {
       ),
     ),
     cardTheme: CardThemeData(
-      elevation: 1,
+      elevation: 2,
+      shadowColor: BrandColors.brown.withValues(alpha: 0.15),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      color: isDark ? const Color(0xFF2B1E19) : Colors.white,
+      color: isDark ? const Color(0xFF2B1E19) : BrandColors.warmWhite,
       margin: EdgeInsets.zero,
     ),
     filledButtonTheme: FilledButtonThemeData(
@@ -58,9 +62,16 @@ ThemeData buildAdultTheme({required Brightness brightness}) {
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: isDark ? const Color(0xFF241814) : Colors.white,
       indicatorColor: scheme.primaryContainer,
+      surfaceTintColor: Colors.transparent,
+      elevation: 3,
+      shadowColor: BrandColors.brown.withValues(alpha: 0.1),
       labelTextStyle: WidgetStatePropertyAll(
         GoogleFonts.lora(fontSize: 12, fontWeight: FontWeight.w600),
       ),
+    ),
+    dividerTheme: DividerThemeData(
+      color: BrandColors.gold.withValues(alpha: 0.15),
+      thickness: 0.8,
     ),
   );
 }

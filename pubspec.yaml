@@ -14,6 +14,11 @@ dependencies:
   google_fonts: ^6.2.1
   shared_preferences: ^2.3.0   # for bookmarks
   flutter_tts: ^4.0.2           # for Bible Listen
+  speech_to_text: ^7.0.0        # for voice search
+  share_plus: ^10.0.0
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:
@@ -46,6 +51,7 @@ flutter_native_splash:
 flutter:
   uses-material-design: true
   assets:
+    - assets/bibles/kjv/
     - assets/bibles/web/
     - assets/bibles/bsb/
     - assets/bibles/pidgin/

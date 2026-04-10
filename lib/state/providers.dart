@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,21 +24,49 @@ class ReadingLocation {
 }
 
 class ReadingLocationNotifier extends StateNotifier<ReadingLocation> {
-  ReadingLocationNotifier() : super(const ReadingLocation('John', 1));
+  ReadingLocationNotifier(this._prefs)
+      : super(ReadingLocation(
+          _prefs?.getString('reading_book') ?? 'John',
+          _prefs?.getInt('reading_chapter') ?? 1,
+        ));
 
-  void setBook(String book) => state = ReadingLocation(book, 1);
-  void setChapter(int chapter) => state = state.copyWith(chapter: chapter);
-  void next(int max) {
-    if (state.chapter < max) state = state.copyWith(chapter: state.chapter + 1);
+  final SharedPreferences? _prefs;
+
+  void setBook(String book) {
+    state = ReadingLocation(book, 1);
+    _persist();
   }
+
+  void setChapter(int chapter) {
+    state = state.copyWith(chapter: chapter);
+    _persist();
+  }
+
+  void next(int max) {
+    if (state.chapter < max) {
+      state = state.copyWith(chapter: state.chapter + 1);
+      _persist();
+    }
+  }
+
   void prev() {
-    if (state.chapter > 1) state = state.copyWith(chapter: state.chapter - 1);
+    if (state.chapter > 1) {
+      state = state.copyWith(chapter: state.chapter - 1);
+      _persist();
+    }
+  }
+
+  Future<void> _persist() async {
+    await _prefs?.setString('reading_book', state.book);
+    await _prefs?.setInt('reading_chapter', state.chapter);
   }
 }
 
 final readingLocationProvider =
-    StateNotifierProvider<ReadingLocationNotifier, ReadingLocation>(
-        (ref) => ReadingLocationNotifier());
+    StateNotifierProvider<ReadingLocationNotifier, ReadingLocation>((ref) {
+  final prefs = ref.watch(sharedPrefsProvider).asData?.value;
+  return ReadingLocationNotifier(prefs);
+});
 
 /// Loads chapters for the current book in the current translation.
 final currentBookChaptersProvider = FutureProvider<List<Chapter>>((ref) async {
@@ -72,6 +102,54 @@ final bookmarksProvider =
   return BookmarksNotifier(prefs);
 });
 
+// ---------- Highlights ----------
+
+/// Maps verse ID (e.g., "John 3:16") to a highlight color index.
+/// Colors: 0=yellow, 1=green, 2=blue, 3=pink, 4=orange
+class HighlightsNotifier extends StateNotifier<Map<String, int>> {
+  HighlightsNotifier() : super({}) {
+    _load();
+  }
+
+  static const _key = 'verse_highlights';
+  static const colors = [
+    Color(0xFFFFF176), // yellow
+    Color(0xFFA5D6A7), // green
+    Color(0xFF90CAF9), // blue
+    Color(0xFFF48FB1), // pink
+    Color(0xFFFFCC80), // orange
+  ];
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_key);
+    if (raw != null) {
+      final map = Map<String, dynamic>.from(json.decode(raw));
+      state = map.map((k, v) => MapEntry(k, v as int));
+    }
+  }
+
+  Future<void> highlight(String verseId, int colorIndex) async {
+    state = {...state, verseId: colorIndex};
+    await _persist();
+  }
+
+  Future<void> removeHighlight(String verseId) async {
+    state = Map.from(state)..remove(verseId);
+    await _persist();
+  }
+
+  Future<void> _persist() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, json.encode(state));
+  }
+}
+
+final highlightsProvider =
+    StateNotifierProvider<HighlightsNotifier, Map<String, int>>((ref) {
+  return HighlightsNotifier();
+});
+
 // ---------- Settings ----------
 
 class AppSettings {
@@ -80,12 +158,14 @@ class AppSettings {
   final String translation;
   final bool kidsMode;
   final bool onboarded;
+  final String voiceName;
   const AppSettings({
     this.fontSize = 18,
     this.darkMode = false,
     this.translation = 'web',
     this.kidsMode = false,
     this.onboarded = false,
+    this.voiceName = '',
   });
 
   AppSettings copyWith({
@@ -94,6 +174,7 @@ class AppSettings {
     String? translation,
     bool? kidsMode,
     bool? onboarded,
+    String? voiceName,
   }) =>
       AppSettings(
         fontSize: fontSize ?? this.fontSize,
@@ -101,6 +182,7 @@ class AppSettings {
         translation: translation ?? this.translation,
         kidsMode: kidsMode ?? this.kidsMode,
         onboarded: onboarded ?? this.onboarded,
+        voiceName: voiceName ?? this.voiceName,
       );
 }
 
@@ -112,6 +194,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
           translation: _prefs?.getString('translation') ?? 'web',
           kidsMode: _prefs?.getBool('kidsMode') ?? false,
           onboarded: _prefs?.getBool('onboarded') ?? false,
+          voiceName: _prefs?.getString('voiceName') ?? '',
         ));
   final SharedPreferences? _prefs;
 
@@ -135,6 +218,11 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     await _prefs?.setBool('kidsMode', v);
   }
 
+  Future<void> setVoiceName(String v) async {
+    state = state.copyWith(voiceName: v);
+    await _prefs?.setString('voiceName', v);
+  }
+
   Future<void> completeOnboarding() async {
     state = state.copyWith(onboarded: true);
     await _prefs?.setBool('onboarded', true);
@@ -153,4 +241,98 @@ final tabIndexProvider = StateProvider<int>((ref) => 0);
 /// Convenience: current ThemeMode derived from settings.
 final themeModeProvider = Provider<ThemeMode>((ref) {
   return ref.watch(settingsProvider).darkMode ? ThemeMode.dark : ThemeMode.light;
+});
+
+// ---------- Study / Reading Plans ----------
+
+/// Tracks which plan is active and which days are completed.
+class StudyProgress {
+  final String? activePlanId;
+  final Set<int> completedDays; // 1-based day numbers
+  final DateTime? startDate;
+
+  const StudyProgress({
+    this.activePlanId,
+    this.completedDays = const {},
+    this.startDate,
+  });
+
+  StudyProgress copyWith({
+    String? activePlanId,
+    Set<int>? completedDays,
+    DateTime? startDate,
+  }) =>
+      StudyProgress(
+        activePlanId: activePlanId ?? this.activePlanId,
+        completedDays: completedDays ?? this.completedDays,
+        startDate: startDate ?? this.startDate,
+      );
+
+  double get progressPercent {
+    if (completedDays.isEmpty) return 0;
+    // We don't know total here — the UI calculates it
+    return 0;
+  }
+}
+
+class StudyProgressNotifier extends StateNotifier<StudyProgress> {
+  StudyProgressNotifier(this._prefs) : super(_load(_prefs));
+
+  final SharedPreferences? _prefs;
+
+  static StudyProgress _load(SharedPreferences? prefs) {
+    if (prefs == null) return const StudyProgress();
+    final planId = prefs.getString('study_planId');
+    final days = prefs.getStringList('study_completedDays') ?? [];
+    final startMs = prefs.getInt('study_startDate');
+    return StudyProgress(
+      activePlanId: planId,
+      completedDays: days.map(int.parse).toSet(),
+      startDate: startMs != null ? DateTime.fromMillisecondsSinceEpoch(startMs) : null,
+    );
+  }
+
+  Future<void> startPlan(String planId) async {
+    state = StudyProgress(
+      activePlanId: planId,
+      completedDays: {},
+      startDate: DateTime.now(),
+    );
+    await _persist();
+  }
+
+  Future<void> toggleDay(int day) async {
+    final days = Set<int>.from(state.completedDays);
+    if (days.contains(day)) {
+      days.remove(day);
+    } else {
+      days.add(day);
+    }
+    state = state.copyWith(completedDays: days);
+    await _persist();
+  }
+
+  Future<void> clearPlan() async {
+    state = const StudyProgress();
+    await _prefs?.remove('study_planId');
+    await _prefs?.remove('study_completedDays');
+    await _prefs?.remove('study_startDate');
+  }
+
+  Future<void> _persist() async {
+    await _prefs?.setString('study_planId', state.activePlanId ?? '');
+    await _prefs?.setStringList(
+      'study_completedDays',
+      state.completedDays.map((d) => d.toString()).toList(),
+    );
+    if (state.startDate != null) {
+      await _prefs?.setInt('study_startDate', state.startDate!.millisecondsSinceEpoch);
+    }
+  }
+}
+
+final studyProgressProvider =
+    StateNotifierProvider<StudyProgressNotifier, StudyProgress>((ref) {
+  final prefs = ref.watch(sharedPrefsProvider).asData?.value;
+  return StudyProgressNotifier(prefs);
 });

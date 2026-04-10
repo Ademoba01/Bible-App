@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Bible - Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-card">
+            <div class="login-logo">
+                <span class="logo-icon">&#x2721;</span>
+                <h1>Our Bible</h1>
+                <p>Admin Dashboard</p>
+            </div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="admin@ourbible.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter password" required>
+                </div>
+                <div id="login-error" class="error-msg" style="display:none;"></div>
+                <button type="submit" class="btn btn-primary btn-full" id="login-btn">Sign In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard" style="display:none;">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo-icon">&#x2721;</span>
+                <h2>Our Bible</h2>
+                <span class="sidebar-subtitle">Admin</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview" onclick="navigate('overview', this)">
+                    <span class="nav-icon">&#x1F4CA;</span> Dashboard
+                </a>
+                <a href="#" class="nav-item" data-section="pending" onclick="navigate('pending', this)">
+                    <span class="nav-icon">&#x1F4DD;</span> Pending Reviews
+                </a>
+                <a href="#" class="nav-item" data-section="hymns" onclick="navigate('hymns', this)">
+                    <span class="nav-icon">&#x1F3B5;</span> Hymns
+                </a>
+                <a href="#" class="nav-item" data-section="materials" onclick="navigate('materials', this)">
+                    <span class="nav-icon">&#x1F4D6;</span> Study Materials
+                </a>
+                <a href="#" class="nav-item" data-section="users" onclick="navigate('users', this)">
+                    <span class="nav-icon">&#x1F465;</span> Users
+                </a>
+                <a href="#" class="nav-item" data-section="settings" onclick="navigate('settings', this)">
+                    <span class="nav-icon">&#x2699;</span> Settings
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn btn-logout" onclick="handleLogout()">Sign Out</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Top Bar -->
+            <header class="topbar">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
+                <h2 id="page-title">Dashboard</h2>
+                <div class="topbar-right">
+                    <span id="admin-name">Admin</span>
+                </div>
+            </header>
+
+            <!-- Sections -->
+            <div class="content-area">
+
+                <!-- Overview Section -->
+                <section id="section-overview" class="section active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-users">&#x1F465;</div>
+                            <div class="stat-number" id="user-count">&mdash;</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-pending">&#x1F4DD;</div>
+                            <div class="stat-number" id="pending-count">&mdash;</div>
+                            <div class="stat-label">Pending Posts</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-approved">&#x2714;</div>
+                            <div class="stat-number" id="approved-count">&mdash;</div>
+                            <div class="stat-label">Approved Posts</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-hymns">&#x1F3B5;</div>
+                            <div class="stat-number" id="hymn-count">&mdash;</div>
+                            <div class="stat-label">Total Hymns</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon-materials">&#x1F4D6;</div>
+                            <div class="stat-number" id="material-count">&mdash;</div>
+                            <div class="stat-label">Study Materials</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Pending Reviews Section -->
+                <section id="section-pending" class="section">
+                    <div class="section-header">
+                        <h3>Pending Content Reviews</h3>
+                        <button class="btn btn-secondary" onclick="loadPendingPosts()">Refresh</button>
+                    </div>
+                    <div id="pending-list" class="review-list">
+                        <div class="loading">Loading pending posts...</div>
+                    </div>
+                </section>
+
+                <!-- Hymns Section -->
+                <section id="section-hymns" class="section">
+                    <div class="section-header">
+                        <h3>Hymn Management</h3>
+                        <button class="btn btn-primary" onclick="showModal('hymn-modal')">+ Add Hymn</button>
+                    </div>
+                    <div id="hymn-list" class="table-container">
+                        <div class="loading">Loading hymns...</div>
+                    </div>
+                </section>
+
+                <!-- Study Materials Section -->
+                <section id="section-materials" class="section">
+                    <div class="section-header">
+                        <h3>Study Material Management</h3>
+                        <button class="btn btn-primary" onclick="showModal('material-modal')">+ Add Material</button>
+                    </div>
+                    <div id="material-list" class="table-container">
+                        <div class="loading">Loading study materials...</div>
+                    </div>
+                </section>
+
+                <!-- Users Section -->
+                <section id="section-users" class="section">
+                    <div class="section-header">
+                        <h3>User Management</h3>
+                        <button class="btn btn-secondary" onclick="loadUsers()">Refresh</button>
+                    </div>
+                    <div id="user-list" class="table-container">
+                        <div class="loading">Loading users...</div>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="section-settings" class="section">
+                    <div class="settings-card">
+                        <h3>Admin Settings</h3>
+                        <div class="form-group">
+                            <label>API Base URL</label>
+                            <input type="text" id="settings-api-url" value="http://localhost:3001/api" onchange="updateApiBase(this.value)">
+                        </div>
+                        <div class="form-group">
+                            <label>Session</label>
+                            <p class="text-muted">Logged in as <strong id="settings-email">—</strong></p>
+                            <button class="btn btn-secondary" onclick="handleLogout()">Sign Out</button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Post Preview Modal -->
+    <div id="preview-modal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeModal('preview-modal')"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="preview-title">Post Preview</h3>
+                <button class="modal-close" onclick="closeModal('preview-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-meta">
+                    <span class="badge" id="preview-badge">Pending</span>
+                    <span id="preview-category"></span>
+                    <span id="preview-author"></span>
+                    <span id="preview-date"></span>
+                </div>
+                <div id="preview-content" class="preview-content"></div>
+            </div>
+            <div class="modal-footer" id="preview-actions"></div>
+        </div>
+    </div>
+
+    <!-- Add Hymn Modal -->
+    <div id="hymn-modal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeModal('hymn-modal')"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Hymn</h3>
+                <button class="modal-close" onclick="closeModal('hymn-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="hymn-form" onsubmit="handleAddHymn(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hymn-number">Hymn Number</label>
+                            <input type="number" id="hymn-number" required min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="hymn-category">Category</label>
+                            <select id="hymn-category" required>
+                                <option value="">Select category</option>
+                                <option value="praise">Praise</option>
+                                <option value="worship">Worship</option>
+                                <option value="hymnal">Hymnal</option>
+                                <option value="gospel">Gospel</option>
+                                <option value="christmas">Christmas</option>
+                                <option value="easter">Easter</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="hymn-title">Title</label>
+                        <input type="text" id="hymn-title" required placeholder="Enter hymn title">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hymn-author">Author</label>
+                            <input type="text" id="hymn-author" placeholder="e.g. Charles Wesley">
+                        </div>
+                        <div class="form-group">
+                            <label for="hymn-year">Year</label>
+                            <input type="number" id="hymn-year" placeholder="e.g. 1738" min="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="hymn-lyrics">Lyrics</label>
+                        <textarea id="hymn-lyrics" rows="10" required placeholder="Enter hymn lyrics...&#10;&#10;Verse 1:&#10;...&#10;&#10;Chorus:&#10;..."></textarea>
+                    </div>
+                    <div id="hymn-form-error" class="error-msg" style="display:none;"></div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('hymn-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="hymn-submit-btn">Add Hymn</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Study Material Modal -->
+    <div id="material-modal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeModal('material-modal')"></div>
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3>Add Study Material</h3>
+                <button class="modal-close" onclick="closeModal('material-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="material-form" onsubmit="handleAddMaterial(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="material-title">Title</label>
+                            <input type="text" id="material-title" required placeholder="Enter title">
+                        </div>
+                        <div class="form-group">
+                            <label for="material-category">Category</label>
+                            <select id="material-category" required>
+                                <option value="">Select category</option>
+                                <option value="open_heavens">Open Heavens (RCCG)</option>
+                                <option value="search_the_scriptures">Search the Scriptures (Deeper Life)</option>
+                                <option value="daily_manna">Daily Manna</option>
+                                <option value="general">General</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="material-author">Author</label>
+                            <input type="text" id="material-author" placeholder="e.g. Pastor E.A. Adeboye">
+                        </div>
+                        <div class="form-group">
+                            <label for="material-source">Source</label>
+                            <input type="text" id="material-source" placeholder="e.g. RCCG">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="material-date">Date</label>
+                            <input type="date" id="material-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="material-bible-reading">Bible Reading</label>
+                            <input type="text" id="material-bible-reading" placeholder="e.g. John 3:16-21">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="material-memory-verse">Memory Verse</label>
+                        <input type="text" id="material-memory-verse" placeholder="e.g. For God so loved the world... - John 3:16">
+                    </div>
+                    <div class="form-group">
+                        <label for="material-content">Content</label>
+                        <textarea id="material-content" rows="12" required placeholder="Enter study material content..."></textarea>
+                    </div>
+                    <div id="material-form-error" class="error-msg" style="display:none;"></div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('material-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="material-submit-btn">Add Material</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

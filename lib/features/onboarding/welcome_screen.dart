@@ -38,7 +38,7 @@ class WelcomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 28),
                 Text(
-                  'The Bible',
+                  'Our Bible',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.lora(
                     fontSize: 44,
@@ -78,18 +78,57 @@ class WelcomeScreen extends ConsumerWidget {
                   },
                 ),
                 const SizedBox(height: 24),
-                Text(
-                  'WEB  •  BSB  •  Pidgin  •  Yoruba  •  more coming',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.lora(
-                    fontSize: 13,
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
+                // Translation chips
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    _TranslationChip(label: 'KJV', available: true),
+                    _TranslationChip(label: 'WEB', available: true),
+                    _TranslationChip(label: 'BSB', available: false),
+                    _TranslationChip(label: 'Pidgin', available: false),
+                    _TranslationChip(label: 'Yoruba', available: false),
+                  ],
                 ),
                 const SizedBox(height: 8),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TranslationChip extends StatelessWidget {
+  const _TranslationChip({required this.label, required this.available});
+  final String label;
+  final bool available;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: available
+            ? Colors.white.withValues(alpha: 0.25)
+            : Colors.white.withValues(alpha: 0.1),
+        border: Border.all(
+          color: available
+              ? Colors.white.withValues(alpha: 0.5)
+              : Colors.white.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Text(
+        available ? label : '$label (soon)',
+        style: GoogleFonts.lora(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: available
+              ? Colors.white
+              : Colors.white.withValues(alpha: 0.6),
         ),
       ),
     );
@@ -119,7 +158,7 @@ class _ModeButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: Row(
             children: [
               Icon(icon, color: fg, size: 24),

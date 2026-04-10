@@ -20,6 +20,12 @@ class Translation {
 
 const List<Translation> kTranslations = [
   Translation(
+    id: 'kjv',
+    name: 'KJV',
+    description: 'King James Version — public domain classic English',
+    available: true,
+  ),
+  Translation(
     id: 'web',
     name: 'WEB',
     description: 'World English Bible — public domain modern English',

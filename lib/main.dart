@@ -32,7 +32,7 @@ class BibleApp extends ConsumerWidget {
     }
 
     return MaterialApp(
-      title: 'Bible',
+      title: 'Our Bible',
       debugShowCheckedModeBanner: false,
       theme: theme,
       home: AnimatedSwitcher(

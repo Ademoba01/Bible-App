@@ -1,0 +1,661 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:latlong2/latlong.dart';
+
+import '../../data/bible_maps_data.dart';
+import '../../state/providers.dart';
+
+// ---------------------------------------------------------------------------
+// Bible Maps Screen
+// ---------------------------------------------------------------------------
+
+class BibleMapsScreen extends ConsumerStatefulWidget {
+  const BibleMapsScreen({super.key});
+
+  @override
+  ConsumerState<BibleMapsScreen> createState() => _BibleMapsScreenState();
+}
+
+class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
+  final MapController _mapController = MapController();
+
+  /// null => "All Places" mode; otherwise the selected journey.
+  BiblicalJourney? _selectedJourney;
+
+  bool _satelliteView = false;
+
+  // ── tile URLs ──────────────────────────────────────────────────────
+  static const _osmTileUrl =
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  static const _satelliteTileUrl =
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+
+  // ── warm ancient-map palette ───────────────────────────────────────
+  static const _parchment = Color(0xFFF5ECD7);
+  static const _warmBrown = Color(0xFF5D4037);
+  static const _darkBrown = Color(0xFF3E2723);
+  static const _goldAccent = Color(0xFFD4A843);
+
+  // ──────────────────────────────────────────────────────────────────
+  // Helpers
+  // ──────────────────────────────────────────────────────────────────
+
+  List<BiblicalPlace> get _visiblePlaces {
+    if (_selectedJourney != null) return _selectedJourney!.stops;
+    return kBiblicalPlaces;
+  }
+
+  void _selectJourney(BiblicalJourney? journey) {
+    setState(() => _selectedJourney = journey);
+    if (journey != null && journey.route.isNotEmpty) {
+      _mapController.fitCamera(
+        CameraFit.bounds(
+          bounds: LatLngBounds.fromPoints(journey.route),
+          padding: const EdgeInsets.all(50),
+        ),
+      );
+    } else {
+      // Reset to Jerusalem overview
+      _mapController.move(LatLng(31.7683, 35.2137), 6);
+    }
+  }
+
+  void _showPlaceInfo(BiblicalPlace place) {
+    // Find which journey(s) this place belongs to.
+    final parentJourneys = kBiblicalJourneys.where((j) {
+      return j.stops.any((s) => s.name == place.name);
+    }).toList();
+
+    // Find next stop info for each journey this place belongs to.
+    String? nextStopName;
+    BiblicalPlace? nextStopPlace;
+    for (final j in parentJourneys) {
+      final idx = j.stops.indexWhere((s) => s.name == place.name);
+      if (idx >= 0 && idx < j.stops.length - 1) {
+        nextStopPlace = j.stops[idx + 1];
+        nextStopName = nextStopPlace.name;
+        break;
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => _PlaceInfoSheet(
+        place: place,
+        journeys: parentJourneys,
+        nextStopName: nextStopName,
+        onVerseTapped: (verse) {
+          Navigator.of(ctx).pop();
+          _navigateToVerse(verse);
+        },
+        onNextStop: nextStopPlace != null
+            ? () {
+                Navigator.of(ctx).pop();
+                _mapController.move(nextStopPlace!.position, 8);
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  _showPlaceInfo(nextStopPlace!);
+                });
+              }
+            : null,
+      ),
+    );
+  }
+
+  /// Parse a verse reference like "Genesis 12:1" and navigate.
+  void _navigateToVerse(String verseRef) {
+    // Expected format: "Book Chapter:Verse" or "Book Chapter"
+    final parts = verseRef.trim().split(RegExp(r'\s+'));
+    if (parts.length < 2) return;
+
+    // The last part contains chapter(:verse). Everything before is the book.
+    final chapterVersePart = parts.last;
+    final bookParts = parts.sublist(0, parts.length - 1);
+
+    // Handle books like "1 Corinthians 1:2" — chapter part could be "1:2"
+    // Also handle "Song of Solomon 1:1" etc.
+    String book;
+    String chapterStr;
+
+    if (chapterVersePart.contains(':') ||
+        int.tryParse(chapterVersePart) != null) {
+      book = bookParts.join(' ');
+      chapterStr = chapterVersePart.split(':').first;
+    } else {
+      // Fallback — entire string is the book
+      book = verseRef;
+      chapterStr = '1';
+    }
+
+    final chapter = int.tryParse(chapterStr) ?? 1;
+
+    ref.read(readingLocationProvider.notifier).setBook(book);
+    ref.read(readingLocationProvider.notifier).setChapter(chapter);
+
+    // Switch to Read tab
+    ref.read(tabIndexProvider.notifier).state = 1;
+
+    // Pop back to the home screen so the reader is visible.
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // Build
+  // ──────────────────────────────────────────────────────────────────
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _parchment,
+      appBar: _buildAppBar(),
+      body: Column(
+        children: [
+          _buildJourneySelector(),
+          Expanded(child: _buildMap()),
+        ],
+      ),
+    );
+  }
+
+  // ── AppBar ─────────────────────────────────────────────────────────
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      title: Text(
+        'Bible Maps',
+        style: GoogleFonts.playfairDisplay(
+          fontWeight: FontWeight.w700,
+          color: _parchment,
+          fontSize: 22,
+        ),
+      ),
+      backgroundColor: _darkBrown,
+      foregroundColor: _parchment,
+      elevation: 0,
+      actions: [
+        IconButton(
+          tooltip: _satelliteView ? 'Map view' : 'Satellite view',
+          icon: Icon(
+            _satelliteView ? Icons.map_outlined : Icons.satellite_alt,
+            color: _goldAccent,
+          ),
+          onPressed: () => setState(() => _satelliteView = !_satelliteView),
+        ),
+      ],
+    );
+  }
+
+  // ── Journey selector chips ─────────────────────────────────────────
+  Widget _buildJourneySelector() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: _darkBrown,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.only(top: 4, bottom: 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          children: [
+            _buildChip(
+              label: 'All Places',
+              emoji: '\uD83D\uDDFA\uFE0F', // world map emoji
+              isSelected: _selectedJourney == null,
+              selectedColor: _goldAccent,
+              onTap: () => _selectJourney(null),
+            ),
+            const SizedBox(width: 8),
+            ...kBiblicalJourneys.map((journey) {
+              final isSelected =
+                  _selectedJourney?.id == journey.id;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: _buildChip(
+                  label: journey.name,
+                  emoji: journey.emoji,
+                  isSelected: isSelected,
+                  selectedColor: Color(journey.color),
+                  onTap: () => _selectJourney(journey),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChip({
+    required String label,
+    required String emoji,
+    required bool isSelected,
+    required Color selectedColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? selectedColor.withValues(alpha: 0.9)
+              : _warmBrown.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? selectedColor
+                : _goldAccent.withValues(alpha: 0.3),
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: selectedColor.withValues(alpha: 0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 16)),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.lora(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Map ────────────────────────────────────────────────────────────
+  Widget _buildMap() {
+    return Stack(
+      children: [
+        FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            initialCenter: LatLng(31.7683, 35.2137),
+            initialZoom: 6,
+            minZoom: 3,
+            maxZoom: 18,
+            interactionOptions: const InteractionOptions(
+              flags: InteractiveFlag.all,
+            ),
+          ),
+          children: [
+            // Tile layer
+            TileLayer(
+              urlTemplate: _satelliteView ? _satelliteTileUrl : _osmTileUrl,
+              userAgentPackageName: 'com.ademoba.bible_app',
+              maxZoom: 18,
+            ),
+
+            // Polyline layer (journey route)
+            if (_selectedJourney != null)
+              PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: _selectedJourney!.route,
+                    strokeWidth: 4,
+                    color: Color(_selectedJourney!.color),
+                    borderStrokeWidth: 1,
+                    borderColor:
+                        Color(_selectedJourney!.color).withValues(alpha: 0.3),
+                  ),
+                ],
+              ),
+
+            // Marker layer
+            MarkerLayer(
+              markers: _visiblePlaces.map((place) {
+                final isStop = _selectedJourney != null;
+                return Marker(
+                  point: place.position,
+                  width: 44,
+                  height: 44,
+                  child: GestureDetector(
+                    onTap: () => _showPlaceInfo(place),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(
+                          color: isStop
+                              ? Color(_selectedJourney!.color)
+                              : _warmBrown,
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 6,
+                            color: Colors.black.withValues(alpha: 0.3),
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          place.emoji,
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+
+        // Zoom controls overlay
+        Positioned(
+          right: 16,
+          bottom: 24,
+          child: Column(
+            children: [
+              FloatingActionButton.small(
+                heroTag: 'zoom_in',
+                backgroundColor: Colors.white,
+                foregroundColor: _darkBrown,
+                onPressed: () {
+                  final zoom = _mapController.camera.zoom;
+                  _mapController.move(
+                      _mapController.camera.center, zoom + 1);
+                },
+                child: const Icon(Icons.add),
+              ),
+              const SizedBox(height: 8),
+              FloatingActionButton.small(
+                heroTag: 'zoom_out',
+                backgroundColor: Colors.white,
+                foregroundColor: _darkBrown,
+                onPressed: () {
+                  final zoom = _mapController.camera.zoom;
+                  _mapController.move(
+                      _mapController.camera.center, zoom - 1);
+                },
+                child: const Icon(Icons.remove),
+              ),
+              const SizedBox(height: 8),
+              FloatingActionButton.small(
+                heroTag: 'reset_view',
+                backgroundColor: _warmBrown,
+                foregroundColor: Colors.white,
+                onPressed: () => _selectJourney(null),
+                child: const Icon(Icons.my_location),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Place Info Bottom Sheet
+// ---------------------------------------------------------------------------
+
+class _PlaceInfoSheet extends StatelessWidget {
+  const _PlaceInfoSheet({
+    required this.place,
+    required this.journeys,
+    required this.onVerseTapped,
+    this.onNextStop,
+    this.nextStopName,
+  });
+
+  final BiblicalPlace place;
+  final List<BiblicalJourney> journeys;
+  final ValueChanged<String> onVerseTapped;
+  final VoidCallback? onNextStop;
+  final String? nextStopName;
+
+  static const _parchment = Color(0xFFF5ECD7);
+  static const _warmBrown = Color(0xFF5D4037);
+  static const _darkBrown = Color(0xFF3E2723);
+  static const _goldAccent = Color(0xFFD4A843);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.55,
+      ),
+      decoration: const BoxDecoration(
+        color: _parchment,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag handle
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: _warmBrown.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header row
+                  Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _darkBrown,
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 6,
+                              color: Colors.black.withValues(alpha: 0.2),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            place.emoji,
+                            style: const TextStyle(fontSize: 22),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              place.name,
+                              style: GoogleFonts.playfairDisplay(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: _darkBrown,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              place.modernName,
+                              style: GoogleFonts.lora(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Description
+                  Text(
+                    place.description,
+                    style: GoogleFonts.lora(
+                      fontSize: 15,
+                      height: 1.5,
+                      color: _darkBrown.withValues(alpha: 0.85),
+                    ),
+                  ),
+
+                  // Journey badges
+                  if (journeys.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: journeys.map((j) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Color(j.color).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Color(j.color).withValues(alpha: 0.4),
+                            ),
+                          ),
+                          child: Text(
+                            '${j.emoji} ${j.name}',
+                            style: GoogleFonts.lora(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Color(j.color),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+
+                  // Related verses
+                  if (place.relatedVerses.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    Text(
+                      'Related Verses',
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: _darkBrown,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...place.relatedVerses.map((verse) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: InkWell(
+                          onTap: () => onVerseTapped(verse),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _warmBrown.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _goldAccent.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.menu_book_rounded,
+                                  size: 18,
+                                  color: _goldAccent,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    verse,
+                                    style: GoogleFonts.lora(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: _warmBrown,
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 14,
+                                  color: _warmBrown.withValues(alpha: 0.4),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+
+                  // Continue journey section
+                  if (onNextStop != null && nextStopName != null) ...[
+                    const SizedBox(height: 12),
+                    const Divider(),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.arrow_forward),
+                        label: Text('Next: $nextStopName'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _warmBrown,
+                          side: BorderSide(
+                            color: _goldAccent.withValues(alpha: 0.6),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: onNextStop,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
