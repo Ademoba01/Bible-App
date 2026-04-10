@@ -235,6 +235,9 @@ final settingsProvider =
   return SettingsNotifier(prefs);
 });
 
+// ── Subscription ─────────────────────────────────────────────
+final isProProvider = StateProvider<bool>((ref) => false);
+
 /// Bottom-nav tab index for the main shell.
 final tabIndexProvider = StateProvider<int>((ref) => 0);
 
@@ -335,4 +338,94 @@ final studyProgressProvider =
     StateNotifierProvider<StudyProgressNotifier, StudyProgress>((ref) {
   final prefs = ref.watch(sharedPrefsProvider).asData?.value;
   return StudyProgressNotifier(prefs);
+});
+
+// ---------- Streak Tracking ----------
+
+class StreakData {
+  final int currentStreak;
+  final int bestStreak;
+  final Set<String> datesActive; // Set of "YYYY-MM-DD" strings
+  final String? lastActiveDate;
+
+  const StreakData({
+    this.currentStreak = 0,
+    this.bestStreak = 0,
+    this.datesActive = const {},
+    this.lastActiveDate,
+  });
+
+  factory StreakData.fromJson(Map<String, dynamic> json) {
+    return StreakData(
+      currentStreak: json['currentStreak'] ?? 0,
+      bestStreak: json['bestStreak'] ?? 0,
+      datesActive: Set<String>.from(json['datesActive'] ?? []),
+      lastActiveDate: json['lastActiveDate'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'currentStreak': currentStreak,
+        'bestStreak': bestStreak,
+        'datesActive': datesActive.toList(),
+        'lastActiveDate': lastActiveDate,
+      };
+}
+
+class StreakNotifier extends StateNotifier<StreakData> {
+  StreakNotifier() : super(const StreakData()) {
+    _load();
+  }
+
+  static const _key = 'streak_data';
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_key);
+    if (raw != null) {
+      final map = Map<String, dynamic>.from(json.decode(raw));
+      state = StreakData.fromJson(map);
+    }
+  }
+
+  /// Call this when the user reads/studies today
+  Future<void> recordToday() async {
+    final today = _dateKey(DateTime.now());
+    if (state.datesActive.contains(today)) return; // Already recorded
+
+    final yesterday =
+        _dateKey(DateTime.now().subtract(const Duration(days: 1)));
+    final newDates = {...state.datesActive, today};
+
+    int newStreak;
+    if (state.datesActive.contains(yesterday)) {
+      newStreak = state.currentStreak + 1;
+    } else {
+      newStreak = 1;
+    }
+
+    final newBest =
+        newStreak > state.bestStreak ? newStreak : state.bestStreak;
+
+    state = StreakData(
+      currentStreak: newStreak,
+      bestStreak: newBest,
+      datesActive: newDates,
+      lastActiveDate: today,
+    );
+    await _persist();
+  }
+
+  String _dateKey(DateTime dt) =>
+      '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+
+  Future<void> _persist() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, json.encode(state.toJson()));
+  }
+}
+
+final streakProvider =
+    StateNotifierProvider<StreakNotifier, StreakData>((ref) {
+  return StreakNotifier();
 });

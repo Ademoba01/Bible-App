@@ -67,6 +67,9 @@ class ReadingScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Failed to load: $e')),
         data: (chapters) {
+          // Record streak when chapter data loads
+          ref.read(streakProvider.notifier).recordToday();
+
           if (chapters.isEmpty) {
             return const Center(child: Text('No chapters found.'));
           }

@@ -466,6 +466,76 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
             ),
             const SizedBox(height: 24),
 
+            // ── Streak card ──
+            Consumer(builder: (context, ref, _) {
+              final streak = ref.watch(streakProvider);
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  color: streak.currentStreak > 0
+                      ? BrandColors.gold.withValues(alpha: 0.12)
+                      : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  border: Border.all(
+                    color: streak.currentStreak > 0
+                        ? BrandColors.gold.withValues(alpha: 0.3)
+                        : theme.colorScheme.outline.withValues(alpha: 0.15),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      streak.currentStreak > 0 ? '\u{1F525}' : '\u{1F4D6}',
+                      style: const TextStyle(fontSize: 28),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            streak.currentStreak > 0
+                                ? '${streak.currentStreak} day streak!'
+                                : 'Start your streak today',
+                            style: GoogleFonts.lora(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          if (streak.bestStreak > 0)
+                            Text(
+                              'Best: ${streak.bestStreak} days',
+                              style: GoogleFonts.lora(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (streak.currentStreak > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: BrandColors.gold,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${streak.currentStreak}',
+                          style: GoogleFonts.lora(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: 16),
+
             // ── Verse of the Day ──
             Container(
               padding: const EdgeInsets.all(20),
