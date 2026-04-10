@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,8 +12,17 @@ import 'theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SubscriptionService.init();
-  await NotificationService.init();
+
+  // RevenueCat and local notifications are not supported on web
+  if (!kIsWeb) {
+    try {
+      await SubscriptionService.init();
+    } catch (_) {}
+    try {
+      await NotificationService.init();
+    } catch (_) {}
+  }
+
   runApp(const ProviderScope(child: BibleApp()));
 }
 
