@@ -56,7 +56,7 @@ class WelcomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  'Our Bible',
+                  'Rhema',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 48,
@@ -65,9 +65,19 @@ class WelcomeScreen extends ConsumerWidget {
                     height: 1.1,
                   ),
                 ),
-                const SizedBox(height: 8),
                 Text(
-                  'that listens and speaks\nyour language',
+                  'STUDY BIBLE',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.lora(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 4,
+                    color: BrandColors.gold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'The Bible that listens\nand speaks your language',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.lora(
                     fontSize: 17,

@@ -75,7 +75,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       body: ListView(
         children: [
-          // ── Our Bible Pro section ──────────────────────────
+          // ── Rhema Pro section ──────────────────────────
           if (isPro)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -98,7 +98,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Our Bible Pro',
+                        Text('Rhema Pro',
                             style: GoogleFonts.lora(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
@@ -172,6 +172,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
           const SizedBox(height: 4),
+          SwitchListTile(
+            secondary: Icon(Icons.child_care, color: Colors.pink),
+            title: Text('Kids Mode', style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
+            subtitle: Text('Fun, colorful interface for young readers',
+                style: GoogleFonts.lora(fontSize: 12)),
+            value: s.kidsMode,
+            onChanged: (v) => n.setKidsMode(v),
+          ),
           SwitchListTile(
             title: const Text('Dark mode'),
             value: s.darkMode,
@@ -429,7 +437,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const Divider(),
           const ListTile(
             title: Text('About'),
-            subtitle: Text('Our Bible — The Bible that listens and speaks your language.'),
+            subtitle: Text('Rhema Study Bible — The Bible that listens and speaks your language.'),
           ),
         ],
       ),

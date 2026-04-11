@@ -596,7 +596,7 @@ class _VerseList extends StatelessWidget {
                   label: const Text('Share'),
                   onPressed: () {
                     Navigator.pop(sheetContext);
-                    Share.share('$refId\n${v.text}\n\n— Our Bible App');
+                    Share.share('$refId\n${v.text}\n\n— Rhema Study Bible');
                   },
                 ),
                 TextButton.icon(

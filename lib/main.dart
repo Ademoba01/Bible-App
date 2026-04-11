@@ -47,7 +47,7 @@ class BibleApp extends ConsumerWidget {
     }
 
     return MaterialApp(
-      title: 'Our Bible',
+      title: 'Rhema Study Bible',
       debugShowCheckedModeBanner: false,
       theme: theme,
       home: AnimatedSwitcher(

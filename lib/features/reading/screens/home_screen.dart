@@ -1153,6 +1153,8 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
       _TileData(Icons.map_outlined, 'Maps', const Color(0xFF2E7D32),
           () => Navigator.push(context,
               MaterialPageRoute(builder: (_) => const BibleMapsScreen()))),
+      _TileData(Icons.child_care, 'Kids', Colors.pink,
+          () => widget.ref.read(settingsProvider.notifier).setKidsMode(true)),
     ];
 
     return Column(
@@ -1224,7 +1226,7 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
           firstChild: LayoutBuilder(
             builder: (context, constraints) {
               // On narrow screens use smaller tiles, otherwise standard size
-              final tileWidth = constraints.maxWidth < 380 ? 60.0 : 72.0;
+              final tileWidth = constraints.maxWidth < 380 ? 68.0 : 80.0;
               return Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -1378,16 +1380,16 @@ class _QuickTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: color, size: 24),
-                const SizedBox(height: 4),
+                Icon(icon, color: color, size: 28),
+                const SizedBox(height: 6),
                 Text(
                   label,
                   style: GoogleFonts.lora(
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: color,
                   ),

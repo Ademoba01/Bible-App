@@ -1,0 +1,15 @@
+#!/bin/bash
+# Wrapper around codesign that strips com.apple.provenance before signing.
+# Fixes "resource fork, Finder information, or similar detritus not allowed"
+# on macOS Sequoia.
+
+# Find the file to sign (last argument)
+FILE="${@: -1}"
+
+# Strip com.apple.provenance if present
+if [ -f "$FILE" ]; then
+    xattr -d com.apple.provenance "$FILE" 2>/dev/null
+fi
+
+# Call the real codesign
+/usr/bin/codesign "$@"

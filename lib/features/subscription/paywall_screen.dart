@@ -47,7 +47,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Welcome to Our Bible Pro!',
+            content: Text('Welcome to Rhema Pro!',
                 style: GoogleFonts.lora()),
             backgroundColor: Colors.green,
           ),
@@ -114,7 +114,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 const SizedBox(height: 20),
 
                 Text(
-                  'Our Bible Pro',
+                  'Rhema Pro',
                   style: GoogleFonts.lora(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
