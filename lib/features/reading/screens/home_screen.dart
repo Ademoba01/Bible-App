@@ -16,6 +16,7 @@ import '../../search/similar_verses_screen.dart';
 import '../../settings/settings_screen.dart';
 import '../../study/bible_maps_screen.dart';
 import '../../study/study_screen.dart';
+import '../../../utils/page_transitions.dart';
 import 'reading_screen.dart';
 
 /// Adult-mode shell: bottom nav + "Home" tab with a warm greeting card.
@@ -307,157 +308,184 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     final theme = Theme.of(context);
     final currentTranslation = translationById(settings.translation);
 
+    // Cache screen dimensions once per build
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isNarrow = screenWidth < 400;
+    final isShort = screenHeight < 700;
+    final hPad = isNarrow ? 14.0 : 20.0;
+
     return SafeArea(
       child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          MediaQuery.of(context).size.width < 400 ? 14 : 20,
-          20,
-          MediaQuery.of(context).size.width < 400 ? 14 : 20,
-          32,
-        ),
+        padding: EdgeInsets.fromLTRB(hPad, 16, hPad, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Compact hero card with integrated streak badge ──
+            // ── Greeting row: greeting left, streak + settings right ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+              child: Row(
+                children: [
+                  Text(
+                    _greeting(),
+                    style: GoogleFonts.lora(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  const Spacer(),
+                  // Streak fire badge
+                  Consumer(builder: (context, ref, _) {
+                    final streak = ref.watch(streakProvider);
+                    return GestureDetector(
+                      onTap: () => _showStreakSheet(context, streak),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: streak.currentStreak > 0
+                              ? BrandColors.gold.withValues(alpha: 0.15)
+                              : theme.colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              streak.currentStreak > 0 ? '\u{1F525}' : '\u{1F4D6}',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${streak.currentStreak}',
+                              style: GoogleFonts.lora(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: Icon(Icons.settings_outlined,
+                        size: 22,
+                        color: theme.colorScheme.onSurfaceVariant),
+                    tooltip: 'Settings',
+                    padding: const EdgeInsets.all(8),
+                    constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                    onPressed: () => Navigator.push(
+                      context,
+                      FadeSlideRoute(page: const SettingsScreen()),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // ── Continue reading CTA — separated from greeting ──
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF4E342E),
+                    Color(0xFF2B1610),
                     BrandColors.brown,
                     Color(0xFF6D4C41),
                   ],
                   stops: [0.0, 0.5, 1.0],
                 ),
+                border: Border.all(
+                  color: BrandColors.gold.withValues(alpha: 0.15),
+                  width: 1,
+                ),
                 boxShadow: [
+                  // Tight shadow
                   BoxShadow(
-                    color: BrandColors.brown.withValues(alpha: 0.25),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+                    color: BrandColors.brown.withValues(alpha: 0.12),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                  // Diffuse shadow
+                  BoxShadow(
+                    color: BrandColors.brown.withValues(alpha: 0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-              child: Column(
-                children: [
-                  // Row 1: greeting left, settings gear + streak fire badge right
-                  Row(
-                    children: [
-                      Text(
-                        _greeting(),
-                        style: GoogleFonts.lora(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.white.withValues(alpha: 0.85),
-                        ),
-                      ),
-                      const Spacer(),
-                      // Streak fire badge
-                      Consumer(builder: (context, ref, _) {
-                        final streak = ref.watch(streakProvider);
-                        return GestureDetector(
-                          onTap: () => _showStreakSheet(context, streak),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: streak.currentStreak > 0
-                                  ? BrandColors.gold.withValues(alpha: 0.25)
-                                  : Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  streak.currentStreak > 0 ? '\u{1F525}' : '\u{1F4D6}',
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  streak.currentStreak > 0
-                                      ? '${streak.currentStreak}'
-                                      : '0',
-                                  style: GoogleFonts.lora(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () => ref.read(tabIndexProvider.notifier).state = 1,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: BrandColors.gold.withValues(alpha: 0.2),
                           ),
-                        );
-                      }),
-                      const SizedBox(width: 8),
-                      // Settings gear — proper 44px touch target
-                      IconButton(
-                        icon: Icon(Icons.settings_outlined,
-                            size: 20,
-                            color: Colors.white.withValues(alpha: 0.7)),
-                        tooltip: 'Settings',
-                        padding: const EdgeInsets.all(8),
-                        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                          child: Icon(Icons.play_arrow_rounded, size: 24, color: BrandColors.gold),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  // Row 2: "Continue: Book Chapter" tappable button with arrow
-                  GestureDetector(
-                    onTap: () => ref.read(tabIndexProvider.notifier).state = 1,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: BrandColors.gold.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.play_arrow, size: 20, color: BrandColors.gold),
-                          const SizedBox(width: 8),
-                          Expanded(
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Continue Reading',
+                                style: GoogleFonts.lora(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${loc.book} ${loc.chapter}',
+                                style: GoogleFonts.lora(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Translation chip
+                        GestureDetector(
+                          onTap: _showTranslationPicker,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             child: Text(
-                              'Continue: ${loc.book} ${loc.chapter}',
+                              currentTranslation.name,
                               style: GoogleFonts.lora(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withValues(alpha: 0.85),
                               ),
                             ),
                           ),
-                          Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white.withValues(alpha: 0.6)),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Translation switcher small text button
-                  GestureDetector(
-                    onTap: _showTranslationPicker,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          currentTranslation.name,
-                          style: GoogleFonts.lora(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white.withValues(alpha: 0.85),
-                          ),
                         ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.swap_vert, size: 14, color: Colors.white.withValues(alpha: 0.7)),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -562,7 +590,6 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                               child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
                             )
                           : ListView.separated(
-                              shrinkWrap: true,
                               padding: const EdgeInsets.symmetric(vertical: 4),
                               itemCount: _searchResults.length,
                               separatorBuilder: (_, __) => Divider(height: 1, color: theme.dividerColor),
@@ -596,8 +623,8 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                                           _clearSearch();
                                           Navigator.push(
                                             context,
-                                            MaterialPageRoute(
-                                              builder: (_) => SimilarVersesScreen(
+                                            FadeSlideRoute(
+                                              page: SimilarVersesScreen(
                                                 sourceRef: r.ref,
                                                 sourceText: r.text,
                                               ),
@@ -645,7 +672,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
             _AdjustableQuickTiles(ref: ref, onBookPicker: () => _showBookPicker(context, ref)),
             const SizedBox(height: 16),
 
-            // ── Verse of the Day — compact inline card ──
+            // ── Verse of the Day — prominent card ──
             GestureDetector(
               onTap: () {
                 // Navigate to the verse in context
@@ -659,95 +686,134 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                 }
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                  border: Border.all(
-                    color: BrandColors.gold.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      BrandColors.gold.withValues(alpha: 0.12),
+                      BrandColors.gold.withValues(alpha: 0.05),
+                    ],
                   ),
+                  border: Border.all(
+                    color: BrandColors.gold.withValues(alpha: 0.25),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: BrandColors.gold.withValues(alpha: 0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Word of the day badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: BrandColors.gold.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(Icons.wb_sunny_outlined, size: 14, color: BrandColors.gold),
-                          const SizedBox(height: 2),
-                          Text(
-                            _verseOfTheDay.$3.toUpperCase(),
-                            style: GoogleFonts.lora(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800,
-                              color: BrandColors.gold,
-                              letterSpacing: 1,
-                            ),
+                    // Header row — badge + find similar
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: BrandColors.gold.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Verse text + reference
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _verseOfTheDay.$2,
-                            style: GoogleFonts.lora(
-                              fontSize: 12,
-                              height: 1.4,
-                              fontStyle: FontStyle.italic,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '— ${_verseOfTheDay.$1}',
-                            style: GoogleFonts.lora(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: BrandColors.gold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Find similar — secondary action
-                    GestureDetector(
-                      onTap: () {
-                        final verseRef = VerseRef.tryParse(
-                          _verseOfTheDay.$1.replaceAll(RegExp(r'-\d+$'), ''),
-                        );
-                        if (verseRef != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => SimilarVersesScreen(
-                                sourceRef: verseRef,
-                                sourceText: _verseOfTheDay.$2,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.wb_sunny_outlined, size: 16, color: BrandColors.gold),
+                              const SizedBox(width: 6),
+                              Text(
+                                _verseOfTheDay.$3.toUpperCase(),
+                                style: GoogleFonts.lora(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: BrandColors.gold,
+                                  letterSpacing: 1.5,
+                                ),
                               ),
-                            ),
-                          );
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: BrandColors.gold.withValues(alpha: 0.12),
+                            ],
+                          ),
                         ),
-                        child: Icon(Icons.auto_awesome, size: 16, color: BrandColors.gold),
+                        const Spacer(),
+                        Text(
+                          'Verse of the Day',
+                          style: GoogleFonts.lora(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: BrandColors.brownMid,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Verse text — full display, no truncation
+                    Text(
+                      '\u201C${_verseOfTheDay.$2}\u201D',
+                      style: GoogleFonts.lora(
+                        fontSize: 16,
+                        height: 1.6,
+                        fontStyle: FontStyle.italic,
+                        color: theme.brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.9) : theme.colorScheme.onSurface,
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Reference + find similar
+                    Row(
+                      children: [
+                        Text(
+                          '— ${_verseOfTheDay.$1}',
+                          style: GoogleFonts.lora(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: BrandColors.gold,
+                          ),
+                        ),
+                        const Spacer(),
+                        // Find similar action
+                        GestureDetector(
+                          onTap: () {
+                            final verseRef = VerseRef.tryParse(
+                              _verseOfTheDay.$1.replaceAll(RegExp(r'-\d+$'), ''),
+                            );
+                            if (verseRef != null) {
+                              Navigator.push(
+                                context,
+                                FadeSlideRoute(
+                                  page: SimilarVersesScreen(
+                                    sourceRef: verseRef,
+                                    sourceText: _verseOfTheDay.$2,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: BrandColors.gold.withValues(alpha: 0.12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.auto_awesome, size: 16, color: BrandColors.gold),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Find similar',
+                                  style: GoogleFonts.lora(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: BrandColors.gold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1147,12 +1213,12 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
           () => widget.ref.read(tabIndexProvider.notifier).state = 2),
       _TileData(Icons.headphones, 'Listen', Colors.teal,
           () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const ListenScreen()))),
+              FadeSlideRoute(page: const ListenScreen()))),
       _TileData(Icons.menu_book, 'All Books', Colors.indigo,
           widget.onBookPicker),
       _TileData(Icons.map_outlined, 'Maps', const Color(0xFF2E7D32),
           () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const BibleMapsScreen()))),
+              FadeSlideRoute(page: const BibleMapsScreen()))),
       _TileData(Icons.child_care, 'Kids', Colors.pink,
           () => widget.ref.read(settingsProvider.notifier).setKidsMode(true)),
     ];
@@ -1293,35 +1359,67 @@ class _QuickTileLarge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            color.withValues(alpha: 0.15),
+            color.withValues(alpha: 0.16),
             color.withValues(alpha: 0.06),
           ],
         ),
+        border: Border.all(
+          color: color.withValues(alpha: 0.12),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.15),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            color: color.withValues(alpha: 0.12),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(22),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 8),
+            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, color: color, size: 36),
-                const SizedBox(height: 8),
+                // Larger filled circle icon badge
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        color.withValues(alpha: 0.3),
+                        color.withValues(alpha: 0.15),
+                      ],
+                    ),
+                    border: Border.all(
+                      color: color.withValues(alpha: 0.25),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.15),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, color: color, size: 28),
+                ),
+                const SizedBox(height: 10),
                 Text(
                   label,
                   style: GoogleFonts.lora(
@@ -1356,41 +1454,65 @@ class _QuickTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            color.withValues(alpha: 0.15),
+            color.withValues(alpha: 0.14),
             color.withValues(alpha: 0.06),
           ],
         ),
+        border: Border.all(
+          color: color.withValues(alpha: 0.12),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.12),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: color.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 14),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: color, size: 28),
-                const SizedBox(height: 6),
+                // Filled circle icon badge
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        color.withValues(alpha: 0.25),
+                        color.withValues(alpha: 0.12),
+                      ],
+                    ),
+                    border: Border.all(
+                      color: color.withValues(alpha: 0.2),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Icon(icon, color: color, size: 22),
+                ),
+                const SizedBox(height: 8),
                 Text(
                   label,
                   style: GoogleFonts.lora(
                     fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     color: color,
                   ),
                   textAlign: TextAlign.center,

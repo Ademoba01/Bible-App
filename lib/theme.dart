@@ -47,9 +47,8 @@ ThemeData buildAdultTheme({required Brightness brightness}) {
       ),
     ),
     cardTheme: CardThemeData(
-      elevation: 2,
-      shadowColor: BrandColors.brown.withValues(alpha: 0.15),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       color: isDark ? const Color(0xFF2B1E19) : BrandColors.warmWhite,
       margin: EdgeInsets.zero,
     ),
@@ -61,13 +60,14 @@ ThemeData buildAdultTheme({required Brightness brightness}) {
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
+      height: 64,
       backgroundColor: isDark ? const Color(0xFF241814) : Colors.white,
       indicatorColor: scheme.primaryContainer,
       surfaceTintColor: Colors.transparent,
       elevation: 3,
       shadowColor: BrandColors.brown.withValues(alpha: 0.1),
       labelTextStyle: WidgetStatePropertyAll(
-        GoogleFonts.lora(fontSize: 12, fontWeight: FontWeight.w600),
+        GoogleFonts.lora(fontSize: 11, fontWeight: FontWeight.w600),
       ),
     ),
     dividerTheme: DividerThemeData(

@@ -92,19 +92,38 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   ),
                 ),
 
+                // App branding
+                Text(
+                  'Rhema Study Bible',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: BrandColors.brownMid,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
                 // Pro badge
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
-                      colors: [BrandColors.gold, Color(0xFFE6BE5A)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [BrandColors.goldLight, BrandColors.gold],
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: BrandColors.gold.withValues(alpha: 0.4),
-                        blurRadius: 20,
-                        spreadRadius: 2,
+                        blurRadius: 24,
+                        spreadRadius: 4,
+                      ),
+                      BoxShadow(
+                        color: BrandColors.gold.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        spreadRadius: 1,
                       ),
                     ],
                   ),
@@ -115,8 +134,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
                 Text(
                   'Rhema Pro',
-                  style: GoogleFonts.lora(
-                    fontSize: 28,
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 30,
                     fontWeight: FontWeight.w700,
                     color: theme.colorScheme.onSurface,
                   ),

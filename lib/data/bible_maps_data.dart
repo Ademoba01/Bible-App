@@ -205,6 +205,54 @@ final kBiblicalPlaces = <BiblicalPlace>[
     relatedVerses: ['John 11:1', 'Luke 10:38', 'Mark 14:3'],
     emoji: '🏠',
   ),
+  BiblicalPlace(
+    name: 'Philippi',
+    modernName: 'Filippoi, Greece',
+    position: LatLng(41.0117, 24.2867),
+    description: 'First European city to hear the Gospel. Paul and Silas were imprisoned here.',
+    relatedVerses: ['Acts 16:12', 'Philippians 1:1'],
+    emoji: '⛪',
+  ),
+  BiblicalPlace(
+    name: 'Thessalonica',
+    modernName: 'Thessaloniki, Greece',
+    position: LatLng(40.6301, 22.9444),
+    description: 'Paul founded a church here on his second missionary journey.',
+    relatedVerses: ['Acts 17:1', '1 Thessalonians 1:1'],
+    emoji: '📬',
+  ),
+  BiblicalPlace(
+    name: 'Crete',
+    modernName: 'Crete, Greece',
+    position: LatLng(35.2401, 24.8963),
+    description: 'Where Titus was left to appoint elders and set things in order.',
+    relatedVerses: ['Titus 1:5', 'Acts 27:7'],
+    emoji: '🏝️',
+  ),
+  BiblicalPlace(
+    name: 'Tarsus',
+    modernName: 'Tarsus, Turkey',
+    position: LatLng(36.9190, 34.8938),
+    description: 'Paul\'s birthplace in the Roman province of Cilicia.',
+    relatedVerses: ['Acts 21:39', 'Acts 22:3'],
+    emoji: '🏠',
+  ),
+  BiblicalPlace(
+    name: 'Caesarea',
+    modernName: 'Caesarea, Israel',
+    position: LatLng(32.4996, 34.8903),
+    description: 'Roman administrative capital of Judea where Paul was imprisoned before sailing to Rome.',
+    relatedVerses: ['Acts 10:1', 'Acts 23:23', 'Acts 25:1'],
+    emoji: '🏰',
+  ),
+  BiblicalPlace(
+    name: 'Bethsaida',
+    modernName: 'Et-Tell, Israel',
+    position: LatLng(32.9070, 35.6300),
+    description: 'Hometown of Peter, Andrew, and Philip. Jesus fed the 5,000 near here.',
+    relatedVerses: ['John 1:44', 'Luke 9:10', 'Mark 8:22'],
+    emoji: '🍞',
+  ),
 ];
 
 // ─── Biblical Journeys ──────────────────────────────────────────
@@ -335,6 +383,54 @@ final kBiblicalJourneys = <BiblicalJourney>[
       LatLng(35.2401, 24.4709), // Crete
       LatLng(35.9375, 14.3754), // Malta
       LatLng(41.9028, 12.4964), // Rome
+    ],
+  ),
+  BiblicalJourney(
+    id: 'paul_second',
+    name: "Paul's Second Missionary Journey",
+    description: 'Paul revisits churches and brings the Gospel to Europe for the first time.',
+    emoji: '⛵',
+    color: 0xFF1565C0,
+    relatedBooks: ['Acts', 'Philippians', '1 Thessalonians', '2 Thessalonians'],
+    stops: [
+      kBiblicalPlaces.firstWhere((p) => p.name == 'Antioch'),
+      kBiblicalPlaces.firstWhere((p) => p.name == 'Philippi'),
+      kBiblicalPlaces.firstWhere((p) => p.name == 'Thessalonica'),
+      kBiblicalPlaces.firstWhere((p) => p.name == 'Athens'),
+      kBiblicalPlaces.firstWhere((p) => p.name == 'Corinth'),
+      kBiblicalPlaces.firstWhere((p) => p.name == 'Ephesus'),
+    ],
+    route: [
+      LatLng(36.2025, 36.1604), // Antioch
+      LatLng(36.9190, 34.8938), // Tarsus
+      LatLng(37.3588, 33.4150), // Derbe
+      LatLng(37.5958, 32.3480), // Lystra
+      LatLng(41.0117, 24.2867), // Philippi
+      LatLng(40.6301, 22.9444), // Thessalonica
+      LatLng(37.9838, 23.7275), // Athens
+      LatLng(37.9063, 22.8788), // Corinth
+      LatLng(37.9411, 27.3417), // Ephesus
+      LatLng(36.2025, 36.1604), // Antioch
+    ],
+  ),
+  BiblicalJourney(
+    id: 'jesus_galilee',
+    name: "Jesus's Galilean Ministry",
+    description: 'Jesus teaches, heals, and calls his disciples around the Sea of Galilee.',
+    emoji: '🐟',
+    color: 0xFF2E7D32,
+    relatedBooks: ['Matthew', 'Mark', 'Luke'],
+    stops: [
+      kBiblicalPlaces.firstWhere((p) => p.name == 'Nazareth'),
+      kBiblicalPlaces.firstWhere((p) => p.name == 'Capernaum'),
+      kBiblicalPlaces.firstWhere((p) => p.name == 'Bethsaida'),
+    ],
+    route: [
+      LatLng(32.6996, 35.3035), // Nazareth
+      LatLng(32.8803, 35.5753), // Capernaum
+      LatLng(32.8231, 35.5831), // Sea of Galilee area
+      LatLng(32.9070, 35.6300), // Bethsaida
+      LatLng(32.8803, 35.5753), // back to Capernaum
     ],
   ),
 ];

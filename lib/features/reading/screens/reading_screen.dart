@@ -8,6 +8,7 @@ import '../../../data/models.dart';
 import '../../../state/providers.dart';
 import '../../../theme.dart';
 import '../../search/similar_verses_screen.dart';
+import '../../../utils/page_transitions.dart';
 import '../../study/chapter_quiz_screen.dart';
 import 'books_screen.dart';
 
@@ -129,7 +130,7 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
           onPressed: () async {
             final picked = await Navigator.push<String>(
               context,
-              MaterialPageRoute(builder: (_) => const BooksScreen()),
+              FadeSlideRoute(page: const BooksScreen()),
             );
             if (picked != null) {
               ref.read(readingLocationProvider.notifier).setBook(picked);
@@ -152,8 +153,8 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => ChapterQuizScreen(
+                FadeSlideRoute(
+                  page: ChapterQuizScreen(
                     book: loc.book,
                     chapter: loc.chapter,
                   ),
@@ -339,18 +340,22 @@ class _VerseList extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final highlights = ref.watch(highlightsProvider);
-    // Register GlobalKeys for each verse
+    // Lazy GlobalKey cache — only create keys for new verse numbers
     if (verseKeys != null) {
-      verseKeys!.clear();
       for (final v in chapter.verses) {
-        verseKeys![v.number] = GlobalKey();
+        verseKeys!.putIfAbsent(v.number, () => GlobalKey());
       }
     }
     return Container(
       color: isDark ? const Color(0xFF2B1E19) : BrandColors.parchment,
       child: ListView.builder(
       controller: scrollController,
-      padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
+      padding: EdgeInsets.fromLTRB(
+        MediaQuery.of(context).size.width < 400 ? 14 : 20,
+        20,
+        MediaQuery.of(context).size.width < 400 ? 14 : 20,
+        16,
+      ),
       itemCount: chapter.verses.length + 1, // +1 for quiz CTA at end
       itemBuilder: (context, i) {
         // Quiz CTA at the end of the chapter
@@ -365,8 +370,8 @@ class _VerseList extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => ChapterQuizScreen(
+                    FadeSlideRoute(
+                      page: ChapterQuizScreen(
                         book: book,
                         chapter: chapterNum,
                       ),
@@ -418,14 +423,30 @@ class _VerseList extends StatelessWidget {
         final isNavHighlighted = highlightVerse == v.number && highlightAnim != null;
         final verseKey = verseKeys?[v.number];
 
-        // Drop cap for the first verse
+        // Drop cap for the first verse — with watermark chapter number
         if (i == 0 && v.text.isNotEmpty) {
           final firstLetter = v.text[0];
           final restOfText = v.text.length > 1 ? v.text.substring(1) : '';
           Widget dropCapWidget = Padding(
             key: verseKey,
             padding: const EdgeInsets.only(bottom: 6),
-            child: Container(
+            child: Stack(
+              children: [
+                // Watermark chapter number
+                Positioned(
+                  right: 0,
+                  top: -8,
+                  child: Text(
+                    '$chapterNum',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 72,
+                      fontWeight: FontWeight.w700,
+                      color: (isDark ? Colors.white : BrandColors.brown)
+                          .withValues(alpha: 0.06),
+                    ),
+                  ),
+                ),
+                Container(
               decoration: highlightColorIndex != null
                   ? BoxDecoration(
                       color: HighlightsNotifier.colors[highlightColorIndex]
@@ -437,7 +458,10 @@ class _VerseList extends StatelessWidget {
                   ? const EdgeInsets.symmetric(horizontal: 6, vertical: 2)
                   : EdgeInsets.zero,
               child: InkWell(
-                onTap: () => _showVerseSheet(context, ref0, v, theme),
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _showVerseSheet(context, ref0, v, theme);
+                },
                 child: RichText(
                   text: TextSpan(
                     children: [
@@ -478,6 +502,8 @@ class _VerseList extends StatelessWidget {
                 ),
               ),
             ),
+              ], // close Stack children
+            ), // close Stack
           );
           if (isNavHighlighted) {
             return AnimatedBuilder(
@@ -510,7 +536,10 @@ class _VerseList extends StatelessWidget {
                 ? const EdgeInsets.symmetric(horizontal: 6, vertical: 2)
                 : EdgeInsets.zero,
             child: InkWell(
-              onTap: () => _showVerseSheet(context, ref0, v, theme),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                _showVerseSheet(context, ref0, v, theme);
+              },
               child: RichText(
                 text: TextSpan(
                   style: GoogleFonts.lora(
@@ -616,8 +645,8 @@ class _VerseList extends StatelessWidget {
                     if (parsedRef != null) {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => SimilarVersesScreen(
+                        FadeSlideRoute(
+                          page: SimilarVersesScreen(
                             sourceRef: parsedRef,
                             sourceText: v.text,
                           ),
@@ -629,14 +658,16 @@ class _VerseList extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            // Highlight color picker
-            Row(
+            // Highlight color picker — Wrap prevents overflow on narrow screens
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 Text('Highlight:',
                     style: TextStyle(
                         fontSize: 13,
                         color: theme.colorScheme.onSurfaceVariant)),
-                const SizedBox(width: 12),
                 ...List.generate(HighlightsNotifier.colors.length, (i) {
                   final isSelected =
                       ref.read(highlightsProvider)[refId] == i;
@@ -654,7 +685,6 @@ class _VerseList extends StatelessWidget {
                       Navigator.pop(sheetContext);
                     },
                     child: Container(
-                      margin: const EdgeInsets.only(right: 8),
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
