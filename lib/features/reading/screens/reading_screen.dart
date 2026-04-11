@@ -11,6 +11,7 @@ import '../../search/similar_verses_screen.dart';
 import '../../../utils/page_transitions.dart';
 import '../../study/chapter_quiz_screen.dart';
 import 'books_screen.dart';
+import '../../../widgets/shimmer_placeholder.dart';
 
 class ReadingScreen extends ConsumerStatefulWidget {
   const ReadingScreen({super.key});
@@ -165,7 +166,7 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
         ],
       ),
       body: chaptersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ReadingShimmer(),
         error: (e, _) => Center(child: Text('Failed to load: $e')),
         data: (chapters) {
           // Record streak when chapter data loads

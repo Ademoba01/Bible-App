@@ -10,6 +10,7 @@ import '../../theme.dart';
 import '../settings/voice_settings.dart';
 import 'kids_stories.dart';
 import 'kids_stories_nt.dart';
+import 'kids_parent_dashboard.dart';
 import 'kids_story_screen.dart';
 
 const _otBooks = <String>{
@@ -169,6 +170,20 @@ class _KidsHomeScreenState extends ConsumerState<KidsHomeScreen> {
         backgroundColor: BrandColors.kidsBlue,
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.insights),
+            tooltip: 'Parent Dashboard',
+            onPressed: () async {
+              final result = await Navigator.push<String>(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const KidsParentDashboard()),
+              );
+              if (result == 'open_settings' && mounted) {
+                _showKidsSettings(context);
+              }
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: 'Kids Settings',

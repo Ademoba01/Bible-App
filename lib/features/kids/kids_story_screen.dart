@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/models.dart';
 import '../../state/providers.dart';
@@ -203,7 +205,28 @@ class _KidsStoryScreenState extends ConsumerState<KidsStoryScreen>
         _playing = false;
         _currentVerseIndex = -1;
       });
+      // Track story completion
+      _trackStoryRead(widget.story.title);
     }
+  }
+
+  /// Record that this story was read/listened to for parent dashboard
+  Future<void> _trackStoryRead(String title) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('kids_stories_read') ?? '[]';
+    final List<String> stories = List<String>.from(json.decode(raw));
+    if (!stories.contains(title)) {
+      stories.add(title);
+      await prefs.setString('kids_stories_read', json.encode(stories));
+    }
+    // Track daily minutes (rough estimate: 2 min per story)
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final key = 'kids_daily_minutes_$today';
+    final currentMinutes = prefs.getInt(key) ?? 0;
+    await prefs.setInt(key, currentMinutes + 2);
+    // Total reading minutes
+    final total = prefs.getInt('kids_total_reading_minutes') ?? 0;
+    await prefs.setInt('kids_total_reading_minutes', total + 2);
   }
 
   Future<void> _stop() async {
@@ -327,48 +350,107 @@ class _KidsStoryScreenState extends ConsumerState<KidsStoryScreen>
                 ),
                 // Verses with staggered fade-in and current verse highlighting
                 Expanded(
-                  child: ListView.builder(
-                    controller: _verseScrollController,
-                    padding: const EdgeInsets.all(20),
-                    itemCount: verses.length,
-                    itemBuilder: (_, i) {
-                      final v = verses[i];
-                      final isCurrent = _playing && i == _currentVerseIndex;
-                      return FadeTransition(
-                        opacity: i < _verseFadeAnimations.length
-                            ? _verseFadeAnimations[i]
-                            : const AlwaysStoppedAnimation(1.0),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 14),
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: isCurrent
-                                ? cardColor.withValues(alpha: 0.15)
-                                : null,
-                            borderRadius: BorderRadius.circular(12),
-                            border: isCurrent
-                                ? Border.all(color: cardColor, width: 2)
-                                : null,
-                          ),
-                          child: RichText(
-                            text: TextSpan(
-                              style: GoogleFonts.fredoka(
-                                fontSize: 22,
-                                height: 1.55,
-                                color: Theme.of(context).colorScheme.onSurface,
+                  child: Stack(
+                    children: [
+                      ListView.builder(
+                        controller: _verseScrollController,
+                        padding: const EdgeInsets.all(20),
+                        itemCount: verses.length,
+                        itemBuilder: (_, i) {
+                          final v = verses[i];
+                          final isCurrent = _playing && i == _currentVerseIndex;
+                          return FadeTransition(
+                            opacity: i < _verseFadeAnimations.length
+                                ? _verseFadeAnimations[i]
+                                : const AlwaysStoppedAnimation(1.0),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              margin: const EdgeInsets.only(bottom: 14),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: isCurrent
+                                    ? cardColor.withValues(alpha: 0.15)
+                                    : null,
+                                borderRadius: BorderRadius.circular(14),
+                                border: isCurrent
+                                    ? Border.all(color: cardColor, width: 2.5)
+                                    : null,
+                                boxShadow: isCurrent
+                                    ? [
+                                        BoxShadow(
+                                          color: cardColor.withValues(alpha: 0.2),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ]
+                                    : null,
                               ),
-                              children: [
-                                TextSpan(
-                                  text: '${v.number}  ',
-                                  style: TextStyle(color: cardColor, fontWeight: FontWeight.bold),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Playing indicator
+                                  if (isCurrent)
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8, top: 4),
+                                      child: Icon(Icons.volume_up, size: 20, color: cardColor),
+                                    ),
+                                  Expanded(
+                                    child: RichText(
+                                      text: TextSpan(
+                                        style: GoogleFonts.fredoka(
+                                          fontSize: 22,
+                                          height: 1.55,
+                                          color: isCurrent
+                                              ? Theme.of(context).colorScheme.onSurface
+                                              : Theme.of(context).colorScheme.onSurface.withValues(alpha: _playing ? 0.5 : 1.0),
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: '${v.number}  ',
+                                            style: TextStyle(color: cardColor, fontWeight: FontWeight.bold),
+                                          ),
+                                          TextSpan(text: v.text),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      // Audio-first prompt overlay — shown when not playing and just loaded
+                      if (!_playing && _currentVerseIndex == -1)
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0),
+                                  Theme.of(context).scaffoldBackgroundColor,
+                                ],
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '\u{1F3A7} Tap the button below to hear the story!',
+                                style: GoogleFonts.fredoka(
+                                  fontSize: 14,
+                                  color: cardColor,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                TextSpan(text: v.text),
-                              ],
+                              ),
                             ),
                           ),
                         ),
-                      );
-                    },
+                    ],
                   ),
                 ),
                 // Glowing play button + Quiz button

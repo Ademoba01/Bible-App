@@ -16,6 +16,7 @@ import '../../search/similar_verses_screen.dart';
 import '../../settings/settings_screen.dart';
 import '../../study/bible_maps_screen.dart';
 import '../../study/study_screen.dart';
+import '../../../utils/kids_portal_transition.dart';
 import '../../../utils/page_transitions.dart';
 import 'reading_screen.dart';
 
@@ -1220,7 +1221,9 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
           () => Navigator.push(context,
               FadeSlideRoute(page: const BibleMapsScreen()))),
       _TileData(Icons.child_care, 'Kids', Colors.pink,
-          () => widget.ref.read(settingsProvider.notifier).setKidsMode(true)),
+          () => showKidsPortal(context, () {
+            widget.ref.read(settingsProvider.notifier).setKidsMode(true);
+          })),
     ];
 
     return Column(
