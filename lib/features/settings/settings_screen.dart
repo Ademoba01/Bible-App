@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/translations.dart';
+import '../../services/ai_service.dart';
 import '../../services/notification_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
@@ -19,11 +20,24 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _dailyVerseEnabled = false;
   bool _studyReminderEnabled = false;
+  bool _apiKeyVisible = false;
+  bool _testingConnection = false;
+  String? _connectionResult;
+  late TextEditingController _apiKeyController;
 
   @override
   void initState() {
     super.initState();
     _loadNotificationPrefs();
+    _apiKeyController = TextEditingController(
+      text: ref.read(settingsProvider).geminiApiKey,
+    );
+  }
+
+  @override
+  void dispose() {
+    _apiKeyController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadNotificationPrefs() async {
@@ -34,6 +48,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _studyReminderEnabled = prefs.getBool('notif_study_reminder') ?? false;
       });
     }
+  }
+
+  Future<void> _testConnection() async {
+    setState(() {
+      _testingConnection = true;
+      _connectionResult = null;
+    });
+    final ok = await AiService.testConnection();
+    if (!mounted) return;
+    setState(() {
+      _testingConnection = false;
+      _connectionResult = ok ? 'Connected successfully!' : 'Connection failed. Check your API key.';
+    });
   }
 
   @override
@@ -189,6 +216,161 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               );
               if (picked != null) n.setTranslation(picked);
             },
+          ),
+
+          // ── AI Features section ──────────────────────────
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 8, bottom: 4),
+            child: Text('AI Features',
+                style: GoogleFonts.lora(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: theme.colorScheme.onSurfaceVariant)),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Text(
+              'Online mode uses Google Gemini for smarter quizzes and verse discovery. '
+              'Offline mode uses built-in keyword matching \u2014 no internet needed.',
+              style: GoogleFonts.lora(
+                fontSize: 12,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.auto_awesome, color: BrandColors.gold),
+            title: Text('AI Mode',
+                style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
+            subtitle: Text(
+              s.aiMode == AiMode.online
+                  ? 'Always use online AI'
+                  : s.aiMode == AiMode.offline
+                      ? 'Always use offline mode'
+                      : 'Auto (online when available)',
+              style: GoogleFonts.lora(fontSize: 12),
+            ),
+            trailing: DropdownButton<AiMode>(
+              value: s.aiMode,
+              underline: const SizedBox(),
+              items: const [
+                DropdownMenuItem(value: AiMode.auto, child: Text('Auto')),
+                DropdownMenuItem(value: AiMode.online, child: Text('Online')),
+                DropdownMenuItem(value: AiMode.offline, child: Text('Offline')),
+              ],
+              onChanged: (v) {
+                if (v != null) n.setAiMode(v);
+              },
+            ),
+          ),
+          // Advanced AI settings — hidden behind expander
+          ExpansionTile(
+            leading: Icon(Icons.tune, size: 20, color: theme.colorScheme.onSurfaceVariant),
+            title: Text('Advanced',
+                style: GoogleFonts.lora(fontSize: 14, color: theme.colorScheme.onSurfaceVariant)),
+            subtitle: Text(
+              s.geminiApiKey.isNotEmpty ? 'API key configured' : 'Set up API key',
+              style: GoogleFonts.lora(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
+            ),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: TextField(
+                  controller: _apiKeyController,
+                  obscureText: !_apiKeyVisible,
+                  style: GoogleFonts.lora(fontSize: 14),
+                  decoration: InputDecoration(
+                    labelText: 'Gemini API Key',
+                    labelStyle: GoogleFonts.lora(),
+                    hintText: 'Paste your API key here',
+                    hintStyle: GoogleFonts.lora(fontSize: 13),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    suffixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            _apiKeyVisible ? Icons.visibility_off : Icons.visibility,
+                            size: 20,
+                          ),
+                          onPressed: () =>
+                              setState(() => _apiKeyVisible = !_apiKeyVisible),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.check, size: 20),
+                          onPressed: () {
+                            n.setGeminiApiKey(_apiKeyController.text.trim());
+                            FocusScope.of(context).unfocus();
+                            setState(() => _connectionResult = null);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  onSubmitted: (v) {
+                    n.setGeminiApiKey(v.trim());
+                    setState(() => _connectionResult = null);
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: BrandColors.brown,
+                        side: BorderSide(color: BrandColors.brown.withValues(alpha: 0.4)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      icon: _testingConnection
+                          ? SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: BrandColors.brown,
+                              ),
+                            )
+                          : const Icon(Icons.wifi_tethering, size: 18),
+                      label: Text(
+                        'Test connection',
+                        style: GoogleFonts.lora(fontSize: 13),
+                      ),
+                      onPressed: _testingConnection || s.geminiApiKey.isEmpty
+                          ? null
+                          : _testConnection,
+                    ),
+                    const SizedBox(width: 12),
+                    if (_connectionResult != null)
+                      Expanded(
+                        child: Text(
+                          _connectionResult!,
+                          style: GoogleFonts.lora(
+                            fontSize: 12,
+                            color: _connectionResult!.contains('successfully')
+                                ? Colors.green.shade700
+                                : Colors.red.shade700,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Text(
+                  'Get a free API key at ai.google.dev',
+                  style: GoogleFonts.lora(fontSize: 11, color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
           ),
 
           // ── Notifications section ──────────────────────────

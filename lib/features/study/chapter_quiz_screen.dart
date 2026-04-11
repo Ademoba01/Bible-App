@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../data/models.dart';
+import '../../services/ai_service.dart';
 import '../../state/providers.dart';
+import '../../theme.dart';
 
 /// A quiz question with its answer options.
 class _QuizQuestion {
@@ -13,12 +15,14 @@ class _QuizQuestion {
   final String correctAnswer;
   final List<String> options;
   final String verseRef;
+  final String? explanation; // AI-generated explanation (null for offline)
 
   const _QuizQuestion({
     required this.question,
     required this.correctAnswer,
     required this.options,
     required this.verseRef,
+    this.explanation,
   });
 }
 
@@ -49,6 +53,7 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
   bool _answered = false;
   bool _loading = true;
   String? _error;
+  bool _isAiQuiz = false;
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -104,7 +109,8 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
   Future<void> _loadQuestions() async {
     try {
       final repo = ref.read(bibleRepositoryProvider);
-      final translationId = ref.read(settingsProvider).translation;
+      final settings = ref.read(settingsProvider);
+      final translationId = settings.translation;
       final chapters =
           await repo.loadBook(widget.book, translationId: translationId);
       final chapterIndex =
@@ -128,8 +134,41 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
         return;
       }
 
+      // Try AI quiz if online mode is active
+      if (settings.useOnlineAi) {
+        try {
+          final verseTexts = verses.map((v) => v.text).toList();
+          final aiQuestions = await AiService.generateQuiz(
+            widget.book,
+            widget.chapter,
+            verseTexts,
+          );
+          if (aiQuestions.isNotEmpty && mounted) {
+            setState(() {
+              _isAiQuiz = true;
+              _questions = aiQuestions
+                  .map((q) => _QuizQuestion(
+                        question: q.question,
+                        correctAnswer: q.correctAnswer,
+                        options: q.options,
+                        verseRef: q.verseRef,
+                        explanation: q.explanation,
+                      ))
+                  .toList();
+              _loading = false;
+            });
+            _fadeController.forward();
+            return;
+          }
+        } catch (e) {
+          debugPrint('AI quiz generation failed, falling back to offline: $e');
+        }
+      }
+
+      // Offline fallback
       final questions = _generateQuestions(verses);
       setState(() {
+        _isAiQuiz = false;
         _questions = questions;
         _loading = false;
       });
@@ -273,8 +312,11 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
       }
     });
 
-    // Auto-advance after a delay
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    // Auto-advance after a delay (longer for AI quizzes with explanations)
+    final delay = _isAiQuiz
+        ? const Duration(milliseconds: 3500)
+        : const Duration(milliseconds: 1500);
+    Future.delayed(delay, () {
       if (!mounted) return;
       if (_currentIndex < _questions.length - 1) {
         setState(() {
@@ -299,6 +341,7 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
       _selectedAnswer = null;
       _answered = false;
       _questions = [];
+      _isAiQuiz = false;
     });
     _loadQuestions();
   }
@@ -320,6 +363,38 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
           '${widget.book} ${widget.chapter} Quiz',
           style: GoogleFonts.lora(fontWeight: FontWeight.w600),
         ),
+        actions: [
+          if (!_loading && _questions.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: _isAiQuiz
+                    ? BrandColors.gold.withValues(alpha: 0.25)
+                    : Colors.white.withValues(alpha: 0.15),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _isAiQuiz ? Icons.auto_awesome : Icons.edit_note,
+                    size: 14,
+                    color: _isAiQuiz ? BrandColors.goldLight : Colors.white70,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _isAiQuiz ? 'AI Quiz' : 'Standard',
+                    style: GoogleFonts.lora(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: _isAiQuiz ? BrandColors.goldLight : Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
       body: _loading
           ? Center(
@@ -536,7 +611,7 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
               );
             }),
 
-            if (_answered)
+            if (_answered) ...[
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
@@ -553,6 +628,39 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
                   textAlign: TextAlign.center,
                 ),
               ),
+              if (q.explanation != null && q.explanation!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: BrandColors.gold.withValues(alpha: 0.1),
+                      border: Border.all(
+                        color: BrandColors.gold.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.auto_awesome,
+                            size: 16, color: BrandColors.gold),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            q.explanation!,
+                            style: GoogleFonts.lora(
+                              fontSize: 13,
+                              height: 1.4,
+                              color: isDark ? Colors.white70 : primaryBrown,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
           ],
         ),
       ),

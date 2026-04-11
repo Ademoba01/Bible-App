@@ -14,9 +14,14 @@ class WelcomeScreen extends ConsumerWidget {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [BrandColors.brown, BrandColors.brownMid],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF3E2723),
+              BrandColors.brown,
+              Color(0xFF4E342E),
+            ],
+            stops: [0.0, 0.4, 1.0],
           ),
         ),
         child: SafeArea(
@@ -25,39 +30,97 @@ class WelcomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Spacer(),
+                const Spacer(flex: 2),
+                // Hero image — smaller, with subtle gold glow
                 Center(
-                  child: Hero(
-                    tag: 'brand-hero',
-                    child: Image.asset(
-                      'assets/brand/hero.png',
-                      width: 220,
-                      height: 220,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: BrandColors.gold.withValues(alpha: 0.15),
+                          blurRadius: 40,
+                          spreadRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: Hero(
+                      tag: 'brand-hero',
+                      child: Image.asset(
+                        'assets/brand/hero.png',
+                        width: 160,
+                        height: 160,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 32),
                 Text(
                   'Our Bible',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.lora(
-                    fontSize: 44,
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 48,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                     height: 1.1,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
                   'that listens and speaks\nyour language',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.lora(
-                    fontSize: 18,
-                    color: Colors.white.withValues(alpha: 0.85),
-                    height: 1.4,
+                    fontSize: 17,
+                    color: Colors.white.withValues(alpha: 0.92),
+                    height: 1.5,
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(height: 24),
+                // Feature highlights
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _FeatureIcon(Icons.auto_awesome, 'AI Search'),
+                    const SizedBox(width: 24),
+                    _FeatureIcon(Icons.headphones, 'Audio'),
+                    const SizedBox(width: 24),
+                    _FeatureIcon(Icons.map_outlined, 'Maps'),
+                    const SizedBox(width: 24),
+                    _FeatureIcon(Icons.quiz_outlined, 'Quizzes'),
+                  ],
+                ),
+                const Spacer(flex: 2),
+                // Daily verse teaser
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: Colors.white.withValues(alpha: 0.08),
+                    border: Border.all(
+                      color: BrandColors.gold.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.wb_sunny_outlined, size: 18, color: BrandColors.gold),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          '"God is our refuge and strength, an ever-present help in trouble."',
+                          style: GoogleFonts.lora(
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.white.withValues(alpha: 0.8),
+                            height: 1.4,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
                 _ModeButton(
                   label: 'Start reading',
                   icon: Icons.menu_book,
@@ -67,7 +130,7 @@ class WelcomeScreen extends ConsumerWidget {
                     await ref.read(settingsProvider.notifier).completeOnboarding();
                   },
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 _ModeButton(
                   label: 'Kids mode',
                   icon: Icons.child_care,
@@ -77,7 +140,7 @@ class WelcomeScreen extends ConsumerWidget {
                     await ref.read(settingsProvider.notifier).completeOnboarding();
                   },
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 // Translation chips
                 Wrap(
                   spacing: 8,
@@ -178,6 +241,39 @@ class _ModeButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _FeatureIcon extends StatelessWidget {
+  const _FeatureIcon(this.icon, this.label);
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.1),
+            border: Border.all(
+              color: BrandColors.gold.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Icon(icon, size: 24, color: BrandColors.gold),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: GoogleFonts.lora(
+            fontSize: 12,
+            color: Colors.white.withValues(alpha: 0.85),
+          ),
+        ),
+      ],
     );
   }
 }

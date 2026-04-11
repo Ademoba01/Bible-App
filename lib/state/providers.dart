@@ -6,6 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/bible_repository.dart';
 import '../data/models.dart';
+import '../services/ai_service.dart';
+
+/// Controls whether AI features use online (Gemini) or offline (local) mode.
+enum AiMode { online, offline, auto }
 
 final bibleRepositoryProvider = Provider<BibleRepository>((ref) => BibleRepository());
 
@@ -159,6 +163,8 @@ class AppSettings {
   final bool kidsMode;
   final bool onboarded;
   final String voiceName;
+  final AiMode aiMode;
+  final String geminiApiKey;
   const AppSettings({
     this.fontSize = 18,
     this.darkMode = false,
@@ -166,7 +172,22 @@ class AppSettings {
     this.kidsMode = false,
     this.onboarded = false,
     this.voiceName = '',
+    this.aiMode = AiMode.auto,
+    this.geminiApiKey = '',
   });
+
+  /// Whether AI online features should be used right now.
+  bool get useOnlineAi {
+    if (geminiApiKey.isEmpty) return false;
+    switch (aiMode) {
+      case AiMode.online:
+        return true;
+      case AiMode.offline:
+        return false;
+      case AiMode.auto:
+        return AiService.isAvailable;
+    }
+  }
 
   AppSettings copyWith({
     double? fontSize,
@@ -175,6 +196,8 @@ class AppSettings {
     bool? kidsMode,
     bool? onboarded,
     String? voiceName,
+    AiMode? aiMode,
+    String? geminiApiKey,
   }) =>
       AppSettings(
         fontSize: fontSize ?? this.fontSize,
@@ -183,6 +206,8 @@ class AppSettings {
         kidsMode: kidsMode ?? this.kidsMode,
         onboarded: onboarded ?? this.onboarded,
         voiceName: voiceName ?? this.voiceName,
+        aiMode: aiMode ?? this.aiMode,
+        geminiApiKey: geminiApiKey ?? this.geminiApiKey,
       );
 }
 
@@ -195,7 +220,18 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
           kidsMode: _prefs?.getBool('kidsMode') ?? false,
           onboarded: _prefs?.getBool('onboarded') ?? false,
           voiceName: _prefs?.getString('voiceName') ?? '',
-        ));
+          aiMode: AiMode.values.firstWhere(
+            (e) => e.name == (_prefs?.getString('aiMode') ?? ''),
+            orElse: () => AiMode.auto,
+          ),
+          geminiApiKey: _prefs?.getString('geminiApiKey') ?? '',
+        )) {
+    // Initialize AiService if we have a saved key.
+    final savedKey = _prefs?.getString('geminiApiKey') ?? '';
+    if (savedKey.isNotEmpty) {
+      AiService.init(savedKey);
+    }
+  }
   final SharedPreferences? _prefs;
 
   Future<void> setFontSize(double v) async {
@@ -226,6 +262,17 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> completeOnboarding() async {
     state = state.copyWith(onboarded: true);
     await _prefs?.setBool('onboarded', true);
+  }
+
+  Future<void> setAiMode(AiMode v) async {
+    state = state.copyWith(aiMode: v);
+    await _prefs?.setString('aiMode', v.name);
+  }
+
+  Future<void> setGeminiApiKey(String v) async {
+    state = state.copyWith(geminiApiKey: v);
+    await _prefs?.setString('geminiApiKey', v);
+    AiService.init(v);
   }
 }
 
@@ -429,3 +476,13 @@ final streakProvider =
     StateNotifierProvider<StreakNotifier, StreakData>((ref) {
   return StreakNotifier();
 });
+
+// ---------- Verse Highlight Navigation ----------
+
+/// When set, the ReadingScreen will auto-scroll to this verse number
+/// and highlight it with an animated gold background.
+final highlightVerseProvider = StateProvider<int?>((ref) => null);
+
+/// When set, the ReadingScreen shows a floating "Back to ..." chip.
+/// Values: 'similar_verses', 'map', etc.
+final returnContextProvider = StateProvider<String?>((ref) => null);

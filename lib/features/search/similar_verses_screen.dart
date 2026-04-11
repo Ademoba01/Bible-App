@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../data/models.dart';
+import '../../services/ai_service.dart';
 import '../../state/providers.dart';
+import '../../theme.dart';
 
 /// Shows verses similar to a given source verse, ranked by relevance.
 class SimilarVersesScreen extends ConsumerStatefulWidget {
@@ -21,8 +23,9 @@ class SimilarVersesScreen extends ConsumerStatefulWidget {
 }
 
 class _SimilarVersesScreenState extends ConsumerState<SimilarVersesScreen> {
-  List<({VerseRef ref, String text, double score})>? _results;
+  List<({VerseRef ref, String text, double score, String? reason})>? _results;
   bool _loading = true;
+  bool _isAiPowered = false;
 
   @override
   void initState() {
@@ -31,8 +34,39 @@ class _SimilarVersesScreenState extends ConsumerState<SimilarVersesScreen> {
   }
 
   Future<void> _loadSimilar() async {
+    final settings = ref.read(settingsProvider);
+
+    // Try AI-powered search first
+    if (settings.useOnlineAi) {
+      try {
+        final aiResults = await AiService.findSimilarVerses(
+          widget.sourceText,
+          widget.sourceRef.id,
+        );
+        if (aiResults.isNotEmpty && mounted) {
+          setState(() {
+            _isAiPowered = true;
+            _results = aiResults.map((r) {
+              final parsed = VerseRef.tryParse(r.reference);
+              return (
+                ref: parsed ?? VerseRef(r.reference, 1, 1),
+                text: r.text,
+                score: 10.0, // AI results don't have numeric scores
+                reason: r.reason,
+              );
+            }).toList();
+            _loading = false;
+          });
+          return;
+        }
+      } catch (e) {
+        debugPrint('AI similar verses failed, falling back to offline: $e');
+      }
+    }
+
+    // Offline fallback
     final repo = ref.read(bibleRepositoryProvider);
-    final tid = ref.read(settingsProvider).translation;
+    final tid = settings.translation;
     final results = await repo.findSimilar(
       widget.sourceText,
       sourceRef: widget.sourceRef,
@@ -41,9 +75,84 @@ class _SimilarVersesScreenState extends ConsumerState<SimilarVersesScreen> {
     );
     if (!mounted) return;
     setState(() {
-      _results = results;
+      _isAiPowered = false;
+      _results = results
+          .map((r) => (ref: r.ref, text: r.text, score: r.score, reason: null as String?))
+          .toList();
       _loading = false;
     });
+  }
+
+  void _showVersePreview(BuildContext context, VerseRef verseRef, String text) {
+    final theme = Theme.of(context);
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Verse reference as title
+            Text(
+              verseRef.id,
+              style: GoogleFonts.lora(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Verse text
+            Text(
+              text,
+              style: GoogleFonts.lora(
+                fontSize: 15,
+                height: 1.6,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 20),
+            // "Read full chapter" button
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.menu_book, size: 18),
+                label: Text(
+                  'Read full chapter',
+                  style: GoogleFonts.lora(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.pop(sheetContext); // dismiss bottom sheet
+                  // Set highlight + return context providers
+                  ref.read(highlightVerseProvider.notifier).state = verseRef.verse;
+                  ref.read(returnContextProvider.notifier).state = 'similar_verses';
+                  ref.read(readingLocationProvider.notifier).setBook(verseRef.book);
+                  ref.read(readingLocationProvider.notifier).setChapter(verseRef.chapter);
+                  ref.read(tabIndexProvider.notifier).state = 1;
+                  Navigator.popUntil(context, (route) => route.isFirst);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -119,16 +228,42 @@ class _SimilarVersesScreenState extends ConsumerState<SimilarVersesScreen> {
               children: [
                 Icon(Icons.auto_awesome, size: 18, color: theme.colorScheme.secondary),
                 const SizedBox(width: 8),
-                Text(
-                  _loading
-                      ? 'Finding similar verses...'
-                      : '${_results?.length ?? 0} similar verses found',
-                  style: GoogleFonts.lora(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurfaceVariant,
+                Expanded(
+                  child: Text(
+                    _loading
+                        ? 'Finding similar verses...'
+                        : '${_results?.length ?? 0} similar verses found',
+                    style: GoogleFonts.lora(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
+                if (!_loading && _isAiPowered)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: BrandColors.gold.withValues(alpha: 0.15),
+                      border: Border.all(color: BrandColors.gold.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.auto_awesome, size: 12, color: BrandColors.gold),
+                        const SizedBox(width: 4),
+                        Text(
+                          'AI-powered',
+                          style: GoogleFonts.lora(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: BrandColors.gold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
@@ -164,12 +299,9 @@ class _SimilarVersesScreenState extends ConsumerState<SimilarVersesScreen> {
                             text: r.text,
                             score: r.score,
                             rank: i + 1,
-                            onTap: () {
-                              ref.read(readingLocationProvider.notifier).setBook(r.ref.book);
-                              ref.read(readingLocationProvider.notifier).setChapter(r.ref.chapter);
-                              ref.read(tabIndexProvider.notifier).state = 1;
-                              Navigator.popUntil(context, (route) => route.isFirst);
-                            },
+                            reason: r.reason,
+                            isAiPowered: _isAiPowered,
+                            onTap: () => _showVersePreview(context, r.ref, r.text),
                           );
                         },
                       ),
@@ -187,6 +319,8 @@ class _SimilarVerseCard extends StatelessWidget {
     required this.score,
     required this.rank,
     required this.onTap,
+    this.reason,
+    this.isAiPowered = false,
   });
 
   final VerseRef verseRef;
@@ -194,12 +328,14 @@ class _SimilarVerseCard extends StatelessWidget {
   final double score;
   final int rank;
   final VoidCallback onTap;
+  final String? reason;
+  final bool isAiPowered;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     // Score bar: normalize to 0-1 (scores typically range 2-15)
-    final normalizedScore = (score / 12).clamp(0.0, 1.0);
+    final normalizedScore = isAiPowered ? 1.0 : (score / 12).clamp(0.0, 1.0);
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -246,20 +382,22 @@ class _SimilarVerseCard extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  // Relevance indicator
-                  SizedBox(
-                    width: 50,
-                    height: 4,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(2),
-                      child: LinearProgressIndicator(
-                        value: normalizedScore,
-                        color: theme.colorScheme.primary,
-                        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                  if (!isAiPowered) ...[
+                    // Relevance indicator (offline mode only)
+                    SizedBox(
+                      width: 50,
+                      height: 4,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(2),
+                        child: LinearProgressIndicator(
+                          value: normalizedScore,
+                          color: theme.colorScheme.primary,
+                          backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
+                    const SizedBox(width: 8),
+                  ],
                   Icon(Icons.arrow_forward_ios, size: 14,
                       color: theme.colorScheme.outline),
                 ],
@@ -275,6 +413,35 @@ class _SimilarVerseCard extends StatelessWidget {
                   color: theme.colorScheme.onSurface,
                 ),
               ),
+              if (reason != null && reason!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: BrandColors.gold.withValues(alpha: 0.08),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.auto_awesome,
+                          size: 14, color: BrandColors.gold),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          reason!,
+                          style: GoogleFonts.lora(
+                            fontSize: 12,
+                            height: 1.4,
+                            fontStyle: FontStyle.italic,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),

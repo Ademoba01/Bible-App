@@ -7,6 +7,7 @@ class BrandColors {
   static const brownMid = Color(0xFF8D6E63);
   static const cream = Color(0xFFFFF8E1);
   static const gold = Color(0xFFD4A843);        // richer, deeper gold
+  static const goldDark = Color(0xFFA07B28);    // WCAG AA-compliant gold for light backgrounds
   static const goldLight = Color(0xFFFFC107);   // original bright gold for accents
   static const dark = Color(0xFF3E2723);
   static const parchment = Color(0xFFFDF6EC);   // subtle warm reading background

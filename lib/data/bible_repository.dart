@@ -112,6 +112,19 @@ class BibleRepository {
     return results;
   }
 
+  /// Returns the text of all verses in a given chapter, in order.
+  /// Useful for feeding chapter content to AI quiz generation.
+  Future<List<String>> getChapterVerseTexts(
+    String book,
+    int chapter, {
+    String translationId = 'web',
+  }) async {
+    final chapters = await loadBook(book, translationId: translationId);
+    final chapterIndex = (chapter - 1).clamp(0, chapters.length - 1);
+    if (chapterIndex >= chapters.length) return [];
+    return chapters[chapterIndex].verses.map((v) => v.text).toList();
+  }
+
   // ─── Semantic similarity engine ───────────────────────────────────────
 
   /// Common English stop words to ignore during similarity scoring.

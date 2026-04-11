@@ -12,11 +12,9 @@ import '../../../theme.dart';
 import '../../../data/book_descriptions.dart';
 import '../../bookmarks/bookmarks_screen.dart';
 import '../../listen/listen_screen.dart';
-import '../../onboarding/start_here_screen.dart';
 import '../../search/similar_verses_screen.dart';
 import '../../settings/settings_screen.dart';
 import '../../study/bible_maps_screen.dart';
-import '../../community/community_screen.dart';
 import '../../study/study_screen.dart';
 import 'reading_screen.dart';
 
@@ -320,26 +318,11 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Settings gear icon row
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                icon: Icon(Icons.settings_outlined,
-                    size: 22,
-                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
-                tooltip: 'Settings',
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                ),
-              ),
-            ),
-
-            // Hero greeting card
+            // ── Compact hero card with integrated streak badge ──
             Container(
-              padding: const EdgeInsets.all(22),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -352,336 +335,132 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: BrandColors.brown.withValues(alpha: 0.35),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                  BoxShadow(
-                    color: BrandColors.gold.withValues(alpha: 0.08),
-                    blurRadius: 24,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _greeting(),
-                          style: GoogleFonts.lora(
-                            fontSize: 14,
-                            color: Colors.white.withValues(alpha: 0.85),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Welcome to Our Bible',
-                          style: GoogleFonts.lora(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            height: 1.1,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
-                        // ── Clickable "Continue: Book Chapter" ──
-                        GestureDetector(
-                          onTap: () => _showBookPicker(context, ref),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Continue: ${loc.book} ${loc.chapter}',
-                                style: GoogleFonts.lora(
-                                  fontSize: 15,
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: Colors.white54,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Icon(Icons.swap_horiz, size: 18, color: Colors.white.withValues(alpha: 0.7)),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 14),
-                        FilledButton.icon(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: BrandColors.gold,
-                            foregroundColor: BrandColors.dark,
-                          ),
-                          icon: const Icon(Icons.play_arrow),
-                          label: const Text('Keep reading'),
-                          onPressed: () => ref.read(tabIndexProvider.notifier).state = 1,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-
-                  // ── Hero image = translation switcher ──
-                  GestureDetector(
-                    onTap: _showTranslationPicker,
-                    child: Column(
-                      children: [
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Image.asset('assets/brand/hero.png', width: 80, height: 80),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.white.withValues(alpha: 0.2),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                currentTranslation.name,
-                                style: GoogleFonts.lora(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(Icons.swap_vert, size: 14, color: Colors.white.withValues(alpha: 0.8)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // ── Streak card ──
-            Consumer(builder: (context, ref, _) {
-              final streak = ref.watch(streakProvider);
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  color: streak.currentStreak > 0
-                      ? BrandColors.gold.withValues(alpha: 0.12)
-                      : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                  border: Border.all(
-                    color: streak.currentStreak > 0
-                        ? BrandColors.gold.withValues(alpha: 0.3)
-                        : theme.colorScheme.outline.withValues(alpha: 0.15),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      streak.currentStreak > 0 ? '\u{1F525}' : '\u{1F4D6}',
-                      style: const TextStyle(fontSize: 28),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            streak.currentStreak > 0
-                                ? '${streak.currentStreak} day streak!'
-                                : 'Start your streak today',
-                            style: GoogleFonts.lora(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                          ),
-                          if (streak.bestStreak > 0)
-                            Text(
-                              'Best: ${streak.bestStreak} days',
-                              style: GoogleFonts.lora(
-                                fontSize: 12,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    if (streak.currentStreak > 0)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: BrandColors.gold,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${streak.currentStreak}',
-                          style: GoogleFonts.lora(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            }),
-            const SizedBox(height: 16),
-
-            // ── Verse of the Day ──
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
-                    BrandColors.gold.withValues(alpha: 0.08),
-                  ],
-                ),
-                border: Border.all(
-                  color: BrandColors.gold.withValues(alpha: 0.25),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: BrandColors.brown.withValues(alpha: 0.06),
+                    color: BrandColors.brown.withValues(alpha: 0.25),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Row 1: greeting left, settings gear + streak fire badge right
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: BrandColors.gold.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(Icons.wb_sunny_outlined, size: 16, color: BrandColors.gold),
-                      ),
-                      const SizedBox(width: 10),
                       Text(
-                        'Verse of the Day',
+                        _greeting(),
                         style: GoogleFonts.lora(
                           fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: theme.colorScheme.primary,
-                          letterSpacing: 0.5,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white.withValues(alpha: 0.85),
                         ),
                       ),
                       const Spacer(),
-                      Container(
-                        width: 30,
-                        height: 2,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(1),
-                          gradient: LinearGradient(
-                            colors: [
-                              BrandColors.gold.withValues(alpha: 0.5),
-                              BrandColors.gold.withValues(alpha: 0.1),
-                            ],
+                      // Streak fire badge
+                      Consumer(builder: (context, ref, _) {
+                        final streak = ref.watch(streakProvider);
+                        return GestureDetector(
+                          onTap: () => _showStreakSheet(context, streak),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: streak.currentStreak > 0
+                                  ? BrandColors.gold.withValues(alpha: 0.25)
+                                  : Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  streak.currentStreak > 0 ? '\u{1F525}' : '\u{1F4D6}',
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  streak.currentStreak > 0
+                                      ? '${streak.currentStreak}'
+                                      : '0',
+                                  style: GoogleFonts.lora(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                        );
+                      }),
+                      const SizedBox(width: 8),
+                      // Settings gear — proper 44px touch target
+                      IconButton(
+                        icon: Icon(Icons.settings_outlined,
+                            size: 20,
+                            color: Colors.white.withValues(alpha: 0.7)),
+                        tooltip: 'Settings',
+                        padding: const EdgeInsets.all(8),
+                        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const SettingsScreen()),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 14),
-                  // Word of the Day
-                  Center(
-                    child: Text(
-                      _verseOfTheDay.$3.toUpperCase(),
-                      style: GoogleFonts.lora(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: BrandColors.gold,
-                        letterSpacing: 3,
+                  // Row 2: "Continue: Book Chapter" tappable button with arrow
+                  GestureDetector(
+                    onTap: () => ref.read(tabIndexProvider.notifier).state = 1,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: BrandColors.gold.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    _verseOfTheDay.$2,
-                    style: GoogleFonts.lora(
-                      fontSize: 15,
-                      height: 1.5,
-                      fontStyle: FontStyle.italic,
-                      color: theme.colorScheme.onSurface,
+                      child: Row(
+                        children: [
+                          Icon(Icons.play_arrow, size: 20, color: BrandColors.gold),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Continue: ${loc.book} ${loc.chapter}',
+                              style: GoogleFonts.lora(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white.withValues(alpha: 0.6)),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Container(
-                        width: 20,
-                        height: 1.5,
-                        color: BrandColors.gold.withValues(alpha: 0.4),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _verseOfTheDay.$1,
-                        style: GoogleFonts.lora(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: BrandColors.gold,
+                  // Translation switcher small text button
+                  GestureDetector(
+                    onTap: _showTranslationPicker,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          currentTranslation.name,
+                          style: GoogleFonts.lora(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white.withValues(alpha: 0.85),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // Explore similar verses button
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton.icon(
-                      onPressed: () {
-                        final verseRef = VerseRef.tryParse(
-                          // Handle range refs like "Lamentations 3:22-23" by using first verse
-                          _verseOfTheDay.$1.replaceAll(RegExp(r'-\d+$'), ''),
-                        );
-                        if (verseRef != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => SimilarVersesScreen(
-                                sourceRef: verseRef,
-                                sourceText: _verseOfTheDay.$2,
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      icon: const Icon(Icons.explore_outlined, size: 16),
-                      label: Text(
-                        'Explore similar verses \u2192',
-                        style: GoogleFonts.lora(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: TextButton.styleFrom(
-                        foregroundColor: theme.colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      ),
+                        const SizedBox(width: 4),
+                        Icon(Icons.swap_vert, size: 14, color: Colors.white.withValues(alpha: 0.7)),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // ── Inline search bar + results bubble ──
             Material(
@@ -705,7 +484,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                           Expanded(
                             child: Text(
                               _voiceText.isEmpty
-                                  ? 'Listening… speak a verse or topic'
+                                  ? 'Listening\u2026 speak a verse or topic'
                                   : '"$_voiceText"',
                               style: GoogleFonts.lora(
                                 fontSize: 13,
@@ -735,7 +514,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                     onChanged: _onSearchChanged,
                     onSubmitted: (_) => _runSearch(),
                     decoration: InputDecoration(
-                      hintText: 'Search or speak a verse…',
+                      hintText: 'Search or speak a verse\u2026',
                       hintStyle: GoogleFonts.lora(fontSize: 14),
                       prefixIcon: Icon(Icons.search, color: theme.colorScheme.onSurfaceVariant),
                       suffixIcon: Row(
@@ -809,9 +588,11 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      // Find similar
-                                      InkWell(
-                                        onTap: () {
+                                      // Find similar — proper 44px touch target
+                                      IconButton(
+                                        padding: const EdgeInsets.all(8),
+                                        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                                        onPressed: () {
                                           _clearSearch();
                                           Navigator.push(
                                             context,
@@ -823,10 +604,10 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                                             ),
                                           );
                                         },
-                                        child: Icon(Icons.auto_awesome, size: 16,
+                                        icon: Icon(Icons.auto_awesome, size: 18,
                                             color: theme.colorScheme.secondary),
+                                        tooltip: 'Find similar verses',
                                       ),
-                                      const SizedBox(width: 8),
                                       Icon(Icons.chevron_right, size: 16,
                                           color: theme.colorScheme.outline),
                                     ],
@@ -858,10 +639,120 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-            // Quick actions — adjustable tiles
+            // Quick actions — adjustable tiles (moved ABOVE verse of the day)
             _AdjustableQuickTiles(ref: ref, onBookPicker: () => _showBookPicker(context, ref)),
+            const SizedBox(height: 16),
+
+            // ── Verse of the Day — compact inline card ──
+            GestureDetector(
+              onTap: () {
+                // Navigate to the verse in context
+                final verseRef = VerseRef.tryParse(
+                  _verseOfTheDay.$1.replaceAll(RegExp(r'-\d+$'), ''),
+                );
+                if (verseRef != null) {
+                  ref.read(readingLocationProvider.notifier).setBook(verseRef.book);
+                  ref.read(readingLocationProvider.notifier).setChapter(verseRef.chapter);
+                  ref.read(tabIndexProvider.notifier).state = 1;
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                  border: Border.all(
+                    color: BrandColors.gold.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // Word of the day badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: BrandColors.gold.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(Icons.wb_sunny_outlined, size: 14, color: BrandColors.gold),
+                          const SizedBox(height: 2),
+                          Text(
+                            _verseOfTheDay.$3.toUpperCase(),
+                            style: GoogleFonts.lora(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              color: BrandColors.gold,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Verse text + reference
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _verseOfTheDay.$2,
+                            style: GoogleFonts.lora(
+                              fontSize: 12,
+                              height: 1.4,
+                              fontStyle: FontStyle.italic,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '— ${_verseOfTheDay.$1}',
+                            style: GoogleFonts.lora(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: BrandColors.gold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Find similar — secondary action
+                    GestureDetector(
+                      onTap: () {
+                        final verseRef = VerseRef.tryParse(
+                          _verseOfTheDay.$1.replaceAll(RegExp(r'-\d+$'), ''),
+                        );
+                        if (verseRef != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => SimilarVersesScreen(
+                                sourceRef: verseRef,
+                                sourceText: _verseOfTheDay.$2,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: BrandColors.gold.withValues(alpha: 0.12),
+                        ),
+                        child: Icon(Icons.auto_awesome, size: 16, color: BrandColors.gold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 24),
 
             Row(
@@ -917,6 +808,75 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                     ),
                   ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showStreakSheet(BuildContext context, dynamic streak) {
+    final theme = Theme.of(context);
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                width: 40, height: 4,
+                decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)),
+              ),
+              Text(
+                streak.currentStreak > 0 ? '\u{1F525}' : '\u{1F4D6}',
+                style: const TextStyle(fontSize: 48),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '${streak.currentStreak} day streak',
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                streak.currentStreak > 0
+                    ? 'Keep it going! Read today to maintain your streak.'
+                    : 'Start reading today to begin your streak!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.lora(
+                  fontSize: 14,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _StreakStat(
+                    label: 'Current',
+                    value: '${streak.currentStreak}',
+                    icon: Icons.local_fire_department,
+                    color: Colors.orange,
+                  ),
+                  const SizedBox(width: 32),
+                  _StreakStat(
+                    label: 'Longest',
+                    value: '${streak.longestStreak}',
+                    icon: Icons.emoji_events,
+                    color: BrandColors.gold,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
@@ -1190,17 +1150,9 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
               MaterialPageRoute(builder: (_) => const ListenScreen()))),
       _TileData(Icons.menu_book, 'All Books', Colors.indigo,
           widget.onBookPicker),
-      _TileData(Icons.child_care, 'Kids', Colors.pink,
-          () => widget.ref.read(settingsProvider.notifier).setKidsMode(true)),
       _TileData(Icons.map_outlined, 'Maps', const Color(0xFF2E7D32),
           () => Navigator.push(context,
               MaterialPageRoute(builder: (_) => const BibleMapsScreen()))),
-      _TileData(Icons.explore_outlined, 'Start Here', const Color(0xFFE65100),
-          () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const StartHereScreen()))),
-      _TileData(Icons.people, 'Community', const Color(0xFF4E342E),
-          () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const CommunityScreen()))),
     ];
 
     return Column(
@@ -1268,25 +1220,27 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
               ? CrossFadeState.showSecond
               : CrossFadeState.showFirst,
 
-          // Compact: single scrollable row
-          firstChild: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: tiles
-                  .map((t) => Padding(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: SizedBox(
-                          width: 72,
+          // Compact: wrapping row so all tiles are visible without scrolling
+          firstChild: LayoutBuilder(
+            builder: (context, constraints) {
+              // On narrow screens use smaller tiles, otherwise standard size
+              final tileWidth = constraints.maxWidth < 380 ? 60.0 : 72.0;
+              return Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: tiles
+                    .map((t) => SizedBox(
+                          width: tileWidth,
                           child: _QuickTile(
                             icon: t.icon,
                             label: t.label,
                             color: t.color,
                             onTap: t.onTap,
                           ),
-                        ),
-                      ))
-                  .toList(),
-            ),
+                        ))
+                    .toList(),
+              );
+            },
           ),
 
           // Expanded: 3-column grid with bigger tiles
@@ -1438,12 +1392,52 @@ class _QuickTile extends StatelessWidget {
                     color: color,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _StreakStat extends StatelessWidget {
+  const _StreakStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 28),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        Text(
+          label,
+          style: GoogleFonts.lora(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 }
