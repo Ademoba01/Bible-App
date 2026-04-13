@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rhema Study Bible API</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Playfair+Display:wght@700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brown: #3E2723;
+      --brown-mid: #6D4C41;
+      --gold: #D4A843;
+      --gold-dark: #B8860B;
+      --cream: #FAF6F0;
+      --parchment: #F5ECD7;
+      --code-bg: #2B1E19;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Lora', serif;
+      background: var(--cream);
+      color: var(--brown);
+      line-height: 1.7;
+    }
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--brown) 0%, #5D4037 100%);
+      color: var(--parchment);
+      padding: 60px 20px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      margin-bottom: 12px;
+    }
+    .hero h1 span { color: var(--gold); }
+    .hero p {
+      font-size: 1.15rem;
+      opacity: 0.85;
+      max-width: 600px;
+      margin: 0 auto 24px;
+    }
+    .hero-badges {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .badge {
+      background: var(--gold);
+      color: var(--brown);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    /* Container */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    /* Back link */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--gold-dark);
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .back-link:hover { text-decoration: underline; }
+    /* Section */
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      margin: 40px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--gold);
+      color: var(--brown);
+    }
+    h3 {
+      font-size: 1.2rem;
+      color: var(--brown-mid);
+      margin: 24px 0 8px;
+    }
+    p, li { font-size: 1rem; margin-bottom: 8px; }
+    /* Endpoint cards */
+    .endpoint {
+      background: white;
+      border: 1px solid #e0d5c7;
+      border-left: 4px solid var(--gold);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .method {
+      background: #2e7d32;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    .endpoint-url {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.95rem;
+      color: var(--brown);
+      word-break: break-all;
+    }
+    .endpoint-desc {
+      color: var(--brown-mid);
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+    /* Params table */
+    .params {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 0.9rem;
+    }
+    .params th {
+      text-align: left;
+      background: var(--parchment);
+      padding: 8px 12px;
+      font-weight: 600;
+      border-bottom: 2px solid var(--gold);
+    }
+    .params td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e8e0d4;
+      vertical-align: top;
+    }
+    .params code {
+      background: var(--parchment);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+    }
+    .required {
+      color: #c62828;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .optional {
+      color: var(--brown-mid);
+      font-size: 0.75rem;
+    }
+    /* Code blocks */
+    pre {
+      background: var(--code-bg);
+      color: #f5e6d3;
+      padding: 20px;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin: 12px 0;
+      position: relative;
+    }
+    pre .comment { color: #8d7b6a; }
+    pre .string { color: #a5d6a7; }
+    pre .key { color: #ffcc80; }
+    pre .number { color: #90caf9; }
+    /* Try it */
+    .try-it {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--gold);
+      color: var(--brown);
+      padding: 8px 18px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .try-it:hover { background: var(--gold-dark); color: white; }
+    /* Live response */
+    .live-response {
+      background: var(--parchment);
+      border: 1px dashed var(--gold);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 16px 0;
+    }
+    .live-response h4 {
+      color: var(--gold-dark);
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+    #daily-verse-live, #random-verse-live {
+      font-style: italic;
+      color: var(--brown-mid);
+    }
+    /* Footer */
+    .footer {
+      background: var(--brown);
+      color: var(--parchment);
+      text-align: center;
+      padding: 30px 20px;
+      margin-top: 60px;
+    }
+    .footer a { color: var(--gold); }
+    /* Responsive */
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 2rem; }
+      .endpoint { padding: 14px 16px; }
+      .params { font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <h1><span>Rhema</span> Study Bible API</h1>
+    <p>Free, open Bible API with 3 translations, 66 books, topic-based verse discovery, and daily verse — ready to integrate into any website or app.</p>
+    <div class="hero-badges">
+      <span class="badge">Free & Open</span>
+      <span class="badge">CORS Enabled</span>
+      <span class="badge">No API Key Required</span>
+      <span class="badge">KJV / WEB / BSB</span>
+    </div>
+  </div>
+
+  <div class="container">
+    <a href="/" class="back-link">&larr; Back to Rhema Study Bible</a>
+
+    <!-- Quick Start -->
+    <h2>Quick Start</h2>
+    <p>Base URL: <code>https://rhemabibles.com/api</code></p>
+    <p>All endpoints return JSON. No authentication needed. CORS is fully enabled for browser requests.</p>
+
+    <pre><span class="comment">// Fetch today's verse in one line</span>
+fetch(<span class="string">'https://rhemabibles.com/api/daily-verse'</span>)
+  .then(r => r.json())
+  .then(v => console.log(v.reference, v.text));</pre>
+
+    <!-- Live Daily Verse -->
+    <div class="live-response">
+      <h4>Today's Daily Verse (live):</h4>
+      <p id="daily-verse-live">Loading...</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2>API Endpoints</h2>
+
+    <!-- 1. Daily Verse -->
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method">GET</span>
+        <span class="endpoint-url">/api/daily-verse</span>
+      </div>
+      <p class="endpoint-desc">Returns a curated verse that changes once per day. Same verse for all users on the same day.</p>
+      <table class="params">
+        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+        <tr>
+          <td><code>translation</code> <span class="optional">optional</span></td>
+          <td>string</td>
+          <td>Translation ID: <code>kjv</code>, <code>web</code>, or <code>bsb</code>. Default: <code>kjv</code></td>
+        </tr>
+      </table>
+      <a href="/api/daily-verse" target="_blank" class="try-it">Try it live &rarr;</a>
+      <pre>{
+  <span class="key">"reference"</span>: <span class="string">"Hebrews 11:1"</span>,
+  <span class="key">"text"</span>: <span class="string">"Now faith is the substance of things hoped for..."</span>,
+  <span class="key">"translation"</span>: <span class="string">"KJV"</span>,
+  <span class="key">"date"</span>: <span class="string">"2026-04-13"</span>,
+  <span class="key">"embed"</span>: <span class="string">"&lt;blockquote class='rhema-verse'&gt;...&lt;/blockquote&gt;"</span>,
+  <span class="key">"source"</span>: <span class="string">"Rhema Study Bible API"</span>,
+  <span class="key">"url"</span>: <span class="string">"https://rhemabibles.com"</span>
+}</pre>
+    </div>
+
+    <!-- 2. Random Verse -->
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method">GET</span>
+        <span class="endpoint-url">/api/random-verse</span>
+      </div>
+      <p class="endpoint-desc">Returns a random popular Bible verse. Different each request — great for inspiration widgets.</p>
+      <table class="params">
+        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+        <tr>
+          <td><code>translation</code> <span class="optional">optional</span></td>
+          <td>string</td>
+          <td><code>kjv</code>, <code>web</code>, or <code>bsb</code>. Default: <code>kjv</code></td>
+        </tr>
+      </table>
+      <a href="/api/random-verse" target="_blank" class="try-it">Try it live &rarr;</a>
+      <div class="live-response">
+        <h4>Random verse (live, refreshes on page load):</h4>
+        <p id="random-verse-live">Loading...</p>
+      </div>
+    </div>
+
+    <!-- 3. Verse Lookup -->
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method">GET</span>
+        <span class="endpoint-url">/api/verse</span>
+      </div>
+      <p class="endpoint-desc">Look up a specific verse or an entire chapter by book, chapter, and optional verse number.</p>
+      <table class="params">
+        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+        <tr>
+          <td><code>book</code> <span class="required">required</span></td>
+          <td>string</td>
+          <td>Book name — e.g. <code>John</code>, <code>1 Corinthians</code>, <code>Psalms</code></td>
+        </tr>
+        <tr>
+          <td><code>chapter</code> <span class="required">required</span></td>
+          <td>integer</td>
+          <td>Chapter number</td>
+        </tr>
+        <tr>
+          <td><code>verse</code> <span class="optional">optional</span></td>
+          <td>integer</td>
+          <td>Verse number. Omit to get the full chapter.</td>
+        </tr>
+        <tr>
+          <td><code>translation</code> <span class="optional">optional</span></td>
+          <td>string</td>
+          <td><code>kjv</code>, <code>web</code>, or <code>bsb</code>. Default: <code>kjv</code></td>
+        </tr>
+      </table>
+      <p><strong>Examples:</strong></p>
+      <a href="/api/verse?book=John&chapter=3&verse=16" target="_blank" class="try-it" style="margin-right:8px;margin-bottom:8px;">John 3:16 &rarr;</a>
+      <a href="/api/verse?book=Psalms&chapter=23&translation=web" target="_blank" class="try-it" style="margin-bottom:8px;">Psalm 23 (WEB) &rarr;</a>
+      <a href="/api/verse?book=Romans&chapter=8&verse=28&translation=bsb" target="_blank" class="try-it" style="margin-bottom:8px;">Romans 8:28 (BSB) &rarr;</a>
+      <pre><span class="comment">// Single verse response</span>
+{
+  <span class="key">"reference"</span>: <span class="string">"John 3:16"</span>,
+  <span class="key">"book"</span>: <span class="string">"John"</span>,
+  <span class="key">"chapter"</span>: <span class="number">3</span>,
+  <span class="key">"verse"</span>: <span class="number">16</span>,
+  <span class="key">"text"</span>: <span class="string">"For God so loved the world..."</span>,
+  <span class="key">"translation"</span>: <span class="string">"KJV"</span>
+}
+
+<span class="comment">// Full chapter response (omit verse param)</span>
+{
+  <span class="key">"reference"</span>: <span class="string">"Psalms 23"</span>,
+  <span class="key">"verses"</span>: [
+    { <span class="key">"verse"</span>: <span class="number">1</span>, <span class="key">"text"</span>: <span class="string">"The LORD is my shepherd..."</span> },
+    { <span class="key">"verse"</span>: <span class="number">2</span>, <span class="key">"text"</span>: <span class="string">"He maketh me to lie down..."</span> },
+    ...
+  ],
+  <span class="key">"verseCount"</span>: <span class="number">6</span>
+}</pre>
+    </div>
+
+    <!-- 4. Search -->
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method">GET</span>
+        <span class="endpoint-url">/api/search</span>
+      </div>
+      <p class="endpoint-desc">Full-text search across the entire Bible. Returns matching verses with references.</p>
+      <table class="params">
+        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+        <tr>
+          <td><code>q</code> <span class="required">required</span></td>
+          <td>string</td>
+          <td>Search query — e.g. <code>love</code>, <code>forgiveness</code>, <code>in the beginning</code></td>
+        </tr>
+        <tr>
+          <td><code>translation</code> <span class="optional">optional</span></td>
+          <td>string</td>
+          <td><code>kjv</code>, <code>web</code>, or <code>bsb</code>. Default: <code>kjv</code></td>
+        </tr>
+        <tr>
+          <td><code>limit</code> <span class="optional">optional</span></td>
+          <td>integer</td>
+          <td>Max results (1-100). Default: <code>20</code></td>
+        </tr>
+      </table>
+      <a href="/api/search?q=forgiveness&limit=5" target="_blank" class="try-it" style="margin-right:8px;">Search "forgiveness" &rarr;</a>
+      <a href="/api/search?q=in+the+beginning&translation=web&limit=3" target="_blank" class="try-it">Search "in the beginning" (WEB) &rarr;</a>
+    </div>
+
+    <!-- 5. Topics -->
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method">GET</span>
+        <span class="endpoint-url">/api/topics</span>
+      </div>
+      <p class="endpoint-desc">Get curated verse references for 25+ biblical topics. Call without a topic to list all available topics.</p>
+      <table class="params">
+        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+        <tr>
+          <td><code>topic</code> <span class="optional">optional</span></td>
+          <td>string</td>
+          <td>Topic name. Omit to list all topics.</td>
+        </tr>
+      </table>
+      <p><strong>Available topics:</strong></p>
+      <p style="font-size:0.9rem; color: var(--brown-mid);" id="topics-list">Loading...</p>
+      <a href="/api/topics" target="_blank" class="try-it" style="margin-right:8px;margin-bottom:8px;">All topics &rarr;</a>
+      <a href="/api/topics?topic=love" target="_blank" class="try-it" style="margin-right:8px;margin-bottom:8px;">Love &rarr;</a>
+      <a href="/api/topics?topic=anxiety" target="_blank" class="try-it" style="margin-right:8px;margin-bottom:8px;">Anxiety &rarr;</a>
+      <a href="/api/topics?topic=courage" target="_blank" class="try-it" style="margin-bottom:8px;">Courage &rarr;</a>
+    </div>
+
+    <!-- 6. Books -->
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method">GET</span>
+        <span class="endpoint-url">/api/books</span>
+      </div>
+      <p class="endpoint-desc">Returns the complete list of 66 books, organized by Old and New Testament, with available translations.</p>
+      <a href="/api/books" target="_blank" class="try-it">View all books &rarr;</a>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2>Integration Examples</h2>
+
+    <h3>Daily Verse Widget (HTML + JavaScript)</h3>
+    <pre><span class="comment">&lt;!-- Add this anywhere on your site --&gt;</span>
+&lt;div id=<span class="string">"rhema-daily"</span>&gt;&lt;/div&gt;
+&lt;script&gt;
+  fetch(<span class="string">'https://rhemabibles.com/api/daily-verse'</span>)
+    .then(r =&gt; r.json())
+    .then(v =&gt; {
+      document.getElementById(<span class="string">'rhema-daily'</span>).innerHTML = v.embed;
+    });
+&lt;/script&gt;</pre>
+
+    <h3>React Component</h3>
+    <pre><span class="comment">// DailyVerse.jsx</span>
+import { useState, useEffect } from <span class="string">'react'</span>;
+
+export default function DailyVerse() {
+  const [verse, setVerse] = useState(null);
+
+  useEffect(() =&gt; {
+    fetch(<span class="string">'https://rhemabibles.com/api/daily-verse'</span>)
+      .then(r =&gt; r.json())
+      .then(setVerse);
+  }, []);
+
+  if (!verse) return &lt;p&gt;Loading...&lt;/p&gt;;
+
+  return (
+    &lt;blockquote&gt;
+      &lt;p&gt;"{verse.text}"&lt;/p&gt;
+      &lt;cite&gt;
+        &mdash; {verse.reference} ({verse.translation})
+        | &lt;a href={verse.url}&gt;Rhema Study Bible&lt;/a&gt;
+      &lt;/cite&gt;
+    &lt;/blockquote&gt;
+  );
+}</pre>
+
+    <h3>Python</h3>
+    <pre>import requests
+
+<span class="comment"># Get a specific verse</span>
+r = requests.get(<span class="string">'https://rhemabibles.com/api/verse'</span>, params={
+    <span class="string">'book'</span>: <span class="string">'John'</span>,
+    <span class="string">'chapter'</span>: <span class="number">3</span>,
+    <span class="string">'verse'</span>: <span class="number">16</span>,
+    <span class="string">'translation'</span>: <span class="string">'web'</span>
+})
+print(r.json()[<span class="string">'text'</span>])
+
+<span class="comment"># Search for a topic</span>
+r = requests.get(<span class="string">'https://rhemabibles.com/api/search'</span>, params={
+    <span class="string">'q'</span>: <span class="string">'love'</span>,
+    <span class="string">'limit'</span>: <span class="number">5</span>
+})
+for v in r.json()[<span class="string">'results'</span>]:
+    print(f"{v[<span class="string">'reference'</span>]}: {v[<span class="string">'text'</span>][:80]}...")</pre>
+
+    <h3>cURL</h3>
+    <pre><span class="comment"># Daily verse</span>
+curl https://rhemabibles.com/api/daily-verse
+
+<span class="comment"># Specific verse in WEB translation</span>
+curl "https://rhemabibles.com/api/verse?book=Romans&chapter=8&verse=28&translation=web"
+
+<span class="comment"># Search</span>
+curl "https://rhemabibles.com/api/search?q=faith&limit=10"
+
+<span class="comment"># Topics</span>
+curl "https://rhemabibles.com/api/topics?topic=peace"</pre>
+
+    <!-- ============================================================ -->
+    <h2>Rate Limits & Terms</h2>
+    <ul>
+      <li><strong>No API key required</strong> — completely open access</li>
+      <li><strong>Rate limit:</strong> 100 requests/minute per IP (generous for most use cases)</li>
+      <li><strong>Caching:</strong> Daily verse and books endpoints are cached for 1-24 hours for performance</li>
+      <li><strong>Attribution:</strong> Please credit "Rhema Study Bible" with a link to <code>rhemabibles.com</code></li>
+      <li><strong>Translations:</strong> KJV (public domain), WEB (public domain), BSB (Berean Standard Bible)</li>
+      <li><strong>Commercial use:</strong> Allowed with attribution</li>
+    </ul>
+
+  </div>
+
+  <div class="footer">
+    <p style="font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 8px;">
+      Rhema Study Bible
+    </p>
+    <p style="opacity: 0.7; font-size: 0.9rem;">
+      Free Bible app with 14+ translations, AI-powered search, maps, quizzes & more.
+    </p>
+    <p style="margin-top: 12px;">
+      <a href="/" style="margin-right: 16px;">Open App</a>
+      <a href="/api/daily-verse" style="margin-right: 16px;">API</a>
+    </p>
+  </div>
+
+  <script>
+    // Load live daily verse
+    fetch('/api/daily-verse')
+      .then(r => r.json())
+      .then(v => {
+        document.getElementById('daily-verse-live').innerHTML =
+          `"${v.text}"<br><strong style="color:var(--brown)">— ${v.reference} (${v.translation})</strong>`;
+      })
+      .catch(() => {
+        document.getElementById('daily-verse-live').textContent = 'Could not load verse.';
+      });
+
+    // Load live random verse
+    fetch('/api/random-verse')
+      .then(r => r.json())
+      .then(v => {
+        document.getElementById('random-verse-live').innerHTML =
+          `"${v.text}"<br><strong style="color:var(--brown)">— ${v.reference} (${v.translation})</strong>`;
+      })
+      .catch(() => {
+        document.getElementById('random-verse-live').textContent = 'Could not load verse.';
+      });
+
+    // Load topics list
+    fetch('/api/topics')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('topics-list').textContent = data.topics.join(', ');
+      })
+      .catch(() => {});
+  </script>
+
+</body>
+</html>

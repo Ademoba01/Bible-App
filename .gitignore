@@ -52,3 +52,4 @@ android/key.properties
 
 # Machine-specific config
 android/local.properties
+.vercel

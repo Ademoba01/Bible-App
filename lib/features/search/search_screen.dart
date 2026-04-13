@@ -112,6 +112,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           onTap: () {
                             ref.read(readingLocationProvider.notifier).setBook(r.ref.book);
                             ref.read(readingLocationProvider.notifier).setChapter(r.ref.chapter);
+                            ref.read(highlightVerseProvider.notifier).state = r.ref.verse;
                             ref.read(tabIndexProvider.notifier).state = 1;
                             Navigator.pop(context);
                           },

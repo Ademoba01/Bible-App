@@ -282,9 +282,6 @@ final settingsProvider =
   return SettingsNotifier(prefs);
 });
 
-// ── Subscription ─────────────────────────────────────────────
-final isProProvider = StateProvider<bool>((ref) => false);
-
 /// Bottom-nav tab index for the main shell.
 final tabIndexProvider = StateProvider<int>((ref) => 0);
 

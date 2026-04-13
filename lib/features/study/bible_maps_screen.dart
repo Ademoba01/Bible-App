@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -18,13 +20,25 @@ class BibleMapsScreen extends ConsumerStatefulWidget {
   ConsumerState<BibleMapsScreen> createState() => _BibleMapsScreenState();
 }
 
-class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
+class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
+    with TickerProviderStateMixin {
   final MapController _mapController = MapController();
 
   /// null => "All Places" mode; otherwise the selected journey.
   BiblicalJourney? _selectedJourney;
 
+  /// null => show all eras; otherwise filter to selected era.
+  BiblicalEra? _selectedEra;
+
   bool _satelliteView = false;
+
+  // ── Journey playback ──────────────────────────────────────────
+  AnimationController? _playbackController;
+  bool _isPlaying = false;
+  double _playbackProgress = 0.0;
+
+  // ── Pulsing marker animation ──────────────────────────────────
+  late final AnimationController _pulseController;
 
   // ── tile URLs ──────────────────────────────────────────────────────
   static const _osmTileUrl =
@@ -38,17 +52,42 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
   static const _darkBrown = Color(0xFF3E2723);
   static const _goldAccent = Color(0xFFD4A843);
 
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _playbackController?.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
   // ──────────────────────────────────────────────────────────────────
   // Helpers
   // ──────────────────────────────────────────────────────────────────
 
   List<BiblicalPlace> get _visiblePlaces {
     if (_selectedJourney != null) return _selectedJourney!.stops;
+    if (_selectedEra != null) {
+      return kBiblicalPlaces
+          .where((p) => p.eras.contains(_selectedEra))
+          .toList();
+    }
     return kBiblicalPlaces;
   }
 
   void _selectJourney(BiblicalJourney? journey) {
-    setState(() => _selectedJourney = journey);
+    _stopPlayback();
+    setState(() {
+      _selectedJourney = journey;
+      _selectedEra = null;
+    });
     if (journey != null && journey.route.isNotEmpty) {
       _mapController.fitCamera(
         CameraFit.bounds(
@@ -57,18 +96,134 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
         ),
       );
     } else {
-      // Reset to Jerusalem overview
       _mapController.move(LatLng(31.7683, 35.2137), 6);
     }
   }
 
+  void _selectEra(BiblicalEra? era) {
+    _stopPlayback();
+    setState(() {
+      _selectedEra = era;
+      _selectedJourney = null;
+    });
+    if (era != null) {
+      final places = kBiblicalPlaces
+          .where((p) => p.eras.contains(era))
+          .toList();
+      if (places.isNotEmpty) {
+        _mapController.fitCamera(
+          CameraFit.bounds(
+            bounds: LatLngBounds.fromPoints(
+                places.map((p) => p.position).toList()),
+            padding: const EdgeInsets.all(50),
+          ),
+        );
+      }
+    } else {
+      _mapController.move(LatLng(31.7683, 35.2137), 6);
+    }
+  }
+
+  // ── Journey playback ──────────────────────────────────────────
+
+  void _togglePlayback() {
+    if (_selectedJourney == null) return;
+    if (_isPlaying) {
+      _pausePlayback();
+    } else {
+      _startPlayback();
+    }
+  }
+
+  void _startPlayback() {
+    if (_selectedJourney == null) return;
+    final route = _selectedJourney!.route;
+    if (route.length < 2) return;
+
+    _playbackController?.dispose();
+    _playbackController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: route.length * 2),
+    );
+
+    _playbackController!.addListener(() {
+      setState(() => _playbackProgress = _playbackController!.value);
+    });
+
+    _playbackController!.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() => _isPlaying = false);
+      }
+    });
+
+    // Start from current progress or beginning
+    if (_playbackProgress >= 1.0) _playbackProgress = 0.0;
+    _playbackController!.forward(from: _playbackProgress);
+    setState(() => _isPlaying = true);
+  }
+
+  void _pausePlayback() {
+    _playbackController?.stop();
+    setState(() => _isPlaying = false);
+  }
+
+  void _stopPlayback() {
+    _playbackController?.stop();
+    _playbackController?.dispose();
+    _playbackController = null;
+    setState(() {
+      _isPlaying = false;
+      _playbackProgress = 0.0;
+    });
+  }
+
+  /// Get the current position of the animated dot along the route.
+  LatLng? get _playbackPosition {
+    if (_selectedJourney == null || _playbackProgress == 0.0) return null;
+    final route = _selectedJourney!.route;
+    if (route.length < 2) return null;
+
+    final totalSegments = route.length - 1;
+    final progressInSegments = _playbackProgress * totalSegments;
+    final segmentIndex = progressInSegments.floor().clamp(0, totalSegments - 1);
+    final segmentProgress = progressInSegments - segmentIndex;
+
+    final start = route[segmentIndex];
+    final end = route[min(segmentIndex + 1, route.length - 1)];
+
+    return LatLng(
+      start.latitude + (end.latitude - start.latitude) * segmentProgress,
+      start.longitude + (end.longitude - start.longitude) * segmentProgress,
+    );
+  }
+
+  /// Get the portion of the route that has been "traveled" so far.
+  List<LatLng> get _traveledRoute {
+    if (_selectedJourney == null || _playbackProgress == 0.0) return [];
+    final route = _selectedJourney!.route;
+    if (route.length < 2) return [];
+
+    final totalSegments = route.length - 1;
+    final progressInSegments = _playbackProgress * totalSegments;
+    final segmentIndex = progressInSegments.floor().clamp(0, totalSegments - 1);
+    final segmentProgress = progressInSegments - segmentIndex;
+
+    final traveled = route.sublist(0, segmentIndex + 1).toList();
+    final start = route[segmentIndex];
+    final end = route[min(segmentIndex + 1, route.length - 1)];
+    traveled.add(LatLng(
+      start.latitude + (end.latitude - start.latitude) * segmentProgress,
+      start.longitude + (end.longitude - start.longitude) * segmentProgress,
+    ));
+
+    return traveled;
+  }
+
   void _showPlaceInfo(BiblicalPlace place) {
-    // Find which journey(s) this place belongs to.
     final parentJourneys = kBiblicalJourneys.where((j) {
       return j.stops.any((s) => s.name == place.name);
     }).toList();
 
-    // Find next stop info for each journey this place belongs to.
     String? nextStopName;
     BiblicalPlace? nextStopPlace;
     for (final j in parentJourneys) {
@@ -80,43 +235,62 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
       }
     }
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => _PlaceInfoSheet(
-        place: place,
-        journeys: parentJourneys,
-        nextStopName: nextStopName,
-        onVerseTapped: (verse) {
-          Navigator.of(ctx).pop();
-          _navigateToVerse(verse);
-        },
-        onNextStop: nextStopPlace != null
-            ? () {
+      barrierColor: Colors.black54,
+      builder: (ctx) => Center(
+        child: Container(
+          width: 380,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.55,
+          ),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5ECD7),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFD4A843).withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            child: _PlaceInfoSheet(
+              place: place,
+              journeys: parentJourneys,
+              nextStopName: nextStopName,
+              onVerseTapped: (verse) {
                 Navigator.of(ctx).pop();
-                _mapController.move(nextStopPlace!.position, 8);
-                Future.delayed(const Duration(milliseconds: 500), () {
-                  _showPlaceInfo(nextStopPlace!);
-                });
-              }
-            : null,
+                _navigateToVerse(verse);
+              },
+              onNextStop: nextStopPlace != null
+                  ? () {
+                      Navigator.of(ctx).pop();
+                      _mapController.move(nextStopPlace!.position, 8);
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        _showPlaceInfo(nextStopPlace!);
+                      });
+                    }
+                  : null,
+            ),
+          ),
+        ),
       ),
     );
   }
 
   /// Parse a verse reference like "Genesis 12:1" and navigate.
   void _navigateToVerse(String verseRef) {
-    // Expected format: "Book Chapter:Verse" or "Book Chapter"
     final parts = verseRef.trim().split(RegExp(r'\s+'));
     if (parts.length < 2) return;
 
-    // The last part contains chapter(:verse). Everything before is the book.
     final chapterVersePart = parts.last;
     final bookParts = parts.sublist(0, parts.length - 1);
 
-    // Handle books like "1 Corinthians 1:2" — chapter part could be "1:2"
-    // Also handle "Song of Solomon 1:1" etc.
     String book;
     String chapterStr;
 
@@ -125,7 +299,6 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
       book = bookParts.join(' ');
       chapterStr = chapterVersePart.split(':').first;
     } else {
-      // Fallback — entire string is the book
       book = verseRef;
       chapterStr = '1';
     }
@@ -134,11 +307,7 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
 
     ref.read(readingLocationProvider.notifier).setBook(book);
     ref.read(readingLocationProvider.notifier).setChapter(chapter);
-
-    // Switch to Read tab
     ref.read(tabIndexProvider.notifier).state = 1;
-
-    // Pop back to the home screen so the reader is visible.
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
@@ -153,6 +322,7 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
       appBar: _buildAppBar(),
       body: Column(
         children: [
+          _buildEraSelector(),
           _buildJourneySelector(),
           Expanded(child: _buildMap()),
         ],
@@ -187,6 +357,73 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
     );
   }
 
+  // ── Era filter chips ──────────────────────────────────────────────
+  Widget _buildEraSelector() {
+    return Container(
+      width: double.infinity,
+      color: _darkBrown,
+      padding: const EdgeInsets.only(top: 4, bottom: 4),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          children: [
+            _buildEraChip(null, 'All Eras', '📖'),
+            const SizedBox(width: 6),
+            ...BiblicalEra.values.map((era) => Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child:
+                      _buildEraChip(era, era.label, era.emoji),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEraChip(BiblicalEra? era, String label, String emoji) {
+    final isSelected =
+        (_selectedEra == era && _selectedJourney == null) ||
+            (era == null && _selectedEra == null && _selectedJourney == null);
+    final chipColor =
+        era != null ? Color(era.color) : _goldAccent;
+
+    return GestureDetector(
+      onTap: () => _selectEra(era),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? chipColor.withValues(alpha: 0.85)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? chipColor
+                : _goldAccent.withValues(alpha: 0.2),
+            width: isSelected ? 1.5 : 0.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 12)),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: GoogleFonts.lora(
+                color: isSelected ? Colors.white : Colors.white60,
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ── Journey selector chips ─────────────────────────────────────────
   Widget _buildJourneySelector() {
     return Container(
@@ -209,15 +446,14 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
           children: [
             _buildChip(
               label: 'All Places',
-              emoji: '\uD83D\uDDFA\uFE0F', // world map emoji
+              emoji: '\uD83D\uDDFA\uFE0F',
               isSelected: _selectedJourney == null,
               selectedColor: _goldAccent,
               onTap: () => _selectJourney(null),
             ),
             const SizedBox(width: 8),
             ...kBiblicalJourneys.map((journey) {
-              final isSelected =
-                  _selectedJourney?.id == journey.id;
+              final isSelected = _selectedJourney?.id == journey.id;
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: _buildChip(
@@ -290,6 +526,9 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
 
   // ── Map ────────────────────────────────────────────────────────────
   Widget _buildMap() {
+    final playbackPos = _playbackPosition;
+    final traveled = _traveledRoute;
+
     return Stack(
       children: [
         FlutterMap(
@@ -311,17 +550,33 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
               maxZoom: 18,
             ),
 
-            // Polyline layer (journey route)
+            // Full route (dimmed when playing back)
             if (_selectedJourney != null)
               PolylineLayer(
                 polylines: [
                   Polyline(
                     points: _selectedJourney!.route,
-                    strokeWidth: 4,
-                    color: Color(_selectedJourney!.color),
+                    strokeWidth: _isPlaying || _playbackProgress > 0 ? 2 : 4,
+                    color: _isPlaying || _playbackProgress > 0
+                        ? Color(_selectedJourney!.color).withValues(alpha: 0.25)
+                        : Color(_selectedJourney!.color),
                     borderStrokeWidth: 1,
                     borderColor:
-                        Color(_selectedJourney!.color).withValues(alpha: 0.3),
+                        Color(_selectedJourney!.color).withValues(alpha: 0.15),
+                  ),
+                ],
+              ),
+
+            // Traveled portion of route (bright)
+            if (_selectedJourney != null && traveled.length >= 2)
+              PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: traveled,
+                    strokeWidth: 5,
+                    color: Color(_selectedJourney!.color),
+                    borderStrokeWidth: 1,
+                    borderColor: Colors.white.withValues(alpha: 0.5),
                   ),
                 ],
               ),
@@ -343,7 +598,9 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
                         border: Border.all(
                           color: isStop
                               ? Color(_selectedJourney!.color)
-                              : _warmBrown,
+                              : _selectedEra != null
+                                  ? Color(_selectedEra!.color)
+                                  : _warmBrown,
                           width: 2,
                         ),
                         boxShadow: [
@@ -365,13 +622,83 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
                 );
               }).toList(),
             ),
+
+            // Animated pulsing dot at playback position
+            if (playbackPos != null)
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: playbackPos,
+                    width: 28,
+                    height: 28,
+                    child: AnimatedBuilder(
+                      animation: _pulseController,
+                      builder: (_, __) {
+                        final scale = 1.0 + _pulseController.value * 0.3;
+                        return Transform.scale(
+                          scale: scale,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(_selectedJourney!.color),
+                              border: Border.all(color: Colors.white, width: 3),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(_selectedJourney!.color)
+                                      .withValues(alpha: 0.6),
+                                  blurRadius: 12,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.navigation,
+                                  color: Colors.white, size: 12),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
 
-        // Zoom controls overlay
+        // Journey playback controls
+        if (_selectedJourney != null)
+          Positioned(
+            left: 16,
+            right: 80,
+            bottom: 24,
+            child: _buildPlaybackControls(),
+          ),
+
+        // Place count badge
+        Positioned(
+          left: 16,
+          top: 12,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: _darkBrown.withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              '${_visiblePlaces.length} places',
+              style: GoogleFonts.lora(
+                color: _goldAccent,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+
+        // Zoom controls overlay — positioned above playback bar when visible
         Positioned(
           right: 16,
-          bottom: 24,
+          bottom: _selectedJourney != null ? 100 : 24,
           child: Column(
             children: [
               FloatingActionButton.small(
@@ -380,8 +707,9 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
                 foregroundColor: _darkBrown,
                 onPressed: () {
                   final zoom = _mapController.camera.zoom;
+                  final newZoom = (zoom + 1).clamp(3.0, 18.0);
                   _mapController.move(
-                      _mapController.camera.center, zoom + 1);
+                      _mapController.camera.center, newZoom);
                 },
                 child: const Icon(Icons.add),
               ),
@@ -392,8 +720,9 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
                 foregroundColor: _darkBrown,
                 onPressed: () {
                   final zoom = _mapController.camera.zoom;
+                  final newZoom = (zoom - 1).clamp(3.0, 18.0);
                   _mapController.move(
-                      _mapController.camera.center, zoom - 1);
+                      _mapController.camera.center, newZoom);
                 },
                 child: const Icon(Icons.remove),
               ),
@@ -402,13 +731,105 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen> {
                 heroTag: 'reset_view',
                 backgroundColor: _warmBrown,
                 foregroundColor: Colors.white,
-                onPressed: () => _selectJourney(null),
+                onPressed: () {
+                  _selectJourney(null);
+                  _selectEra(null);
+                },
                 child: const Icon(Icons.my_location),
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  // ── Playback controls bar ─────────────────────────────────────────
+  Widget _buildPlaybackControls() {
+    final journey = _selectedJourney!;
+    final stopsReached = _playbackProgress > 0
+        ? (_playbackProgress * (journey.stops.length - 1)).floor() + 1
+        : 0;
+    final currentStopName = stopsReached > 0 && stopsReached <= journey.stops.length
+        ? journey.stops[min(stopsReached - 1, journey.stops.length - 1)].name
+        : '';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _darkBrown.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: _togglePlayback,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(journey.color),
+                  ),
+                  child: Icon(
+                    _isPlaying ? Icons.pause : Icons.play_arrow,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _isPlaying || _playbackProgress > 0
+                          ? currentStopName
+                          : 'Play journey',
+                      style: GoogleFonts.lora(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: _playbackProgress,
+                        minHeight: 4,
+                        backgroundColor: Colors.white.withValues(alpha: 0.2),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(journey.color)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (_playbackProgress > 0) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: _stopPlayback,
+                  child: Icon(Icons.stop,
+                      color: Colors.white.withValues(alpha: 0.7), size: 22),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -441,29 +862,18 @@ class _PlaceInfoSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.55,
+        maxHeight: MediaQuery.of(context).size.height * 0.45,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: _parchment,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag handle
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: _warmBrown.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
           Flexible(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -519,6 +929,38 @@ class _PlaceInfoSheet extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 16),
+
+                  // Era badges
+                  if (place.eras.isNotEmpty) ...[
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: place.eras.map((era) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Color(era.color).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: Color(era.color).withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Text(
+                            '${era.emoji} ${era.label}',
+                            style: GoogleFonts.lora(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(era.color),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
 
                   // Description
                   Text(

@@ -1,23 +1,38 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'features/kids/kids_home_screen.dart';
 import 'features/onboarding/welcome_screen.dart';
 import 'features/reading/screens/home_screen.dart';
 import 'services/notification_service.dart';
-import 'services/subscription_service.dart';
 import 'state/providers.dart';
 import 'theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // RevenueCat and local notifications are not supported on web
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp(
+      options: kIsWeb
+          ? const FirebaseOptions(
+              apiKey: 'AIzaSyCnKmWA-OOhlbHDwpXXdZrIsrJvMWljMDU',
+              appId: '1:351142574491:web:d680e02d89756051d6493e',
+              messagingSenderId: '351142574491',
+              projectId: 'rhema-study-bible',
+              authDomain: 'rhema-study-bible.firebaseapp.com',
+              storageBucket: 'rhema-study-bible.firebasestorage.app',
+            )
+          : null,
+    );
+  } catch (e) {
+    debugPrint('Firebase init error: $e');
+  }
+
+  // Local notifications are not supported on web
   if (!kIsWeb) {
-    try {
-      await SubscriptionService.init();
-    } catch (_) {}
     try {
       await NotificationService.init();
     } catch (_) {}

@@ -1,18 +1,23 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+import '../../../data/bible_repository.dart';
 import '../../../data/books.dart';
 import '../../../data/models.dart';
 import '../../../data/translations.dart';
+import '../../../services/auth_service.dart';
 import '../../../state/providers.dart';
 import '../../../theme.dart';
 import '../../../data/book_descriptions.dart';
+import '../../auth/auth_screen.dart';
 import '../../bookmarks/bookmarks_screen.dart';
 import '../../listen/listen_screen.dart';
 import '../../search/similar_verses_screen.dart';
+import '../../settings/help_screen.dart';
 import '../../settings/settings_screen.dart';
 import '../../study/bible_maps_screen.dart';
 import '../../study/study_screen.dart';
@@ -43,7 +48,13 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final index = ref.watch(tabIndexProvider);
     return Scaffold(
-      body: _buildTab(index),
+      body: Stack(
+        children: [
+          _buildTab(index),
+          // Inline chat overlay
+          const _InlineChatOverlay(),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: index,
         onDestinationSelected: (i) => ref.read(tabIndexProvider.notifier).state = i,
@@ -56,6 +67,351 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Inline expandable chat overlay — bubble expands into a chat panel within the screen.
+class _InlineChatOverlay extends StatefulWidget {
+  const _InlineChatOverlay();
+
+  @override
+  State<_InlineChatOverlay> createState() => _InlineChatOverlayState();
+}
+
+class _InlineChatOverlayState extends State<_InlineChatOverlay>
+    with SingleTickerProviderStateMixin {
+  bool _isOpen = false;
+  final _controller = TextEditingController();
+  final _scrollController = ScrollController();
+  final _messages = <_ChatMsg>[
+    const _ChatMsg(
+      'Hi! I\'m the Rhema assistant. 👋\n\n'
+          'Ask me anything about translations, voice settings, '
+          'study features, kids mode, and more!',
+      false,
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _toggle() => setState(() => _isOpen = !_isOpen);
+
+  void _send([String? text]) {
+    final msg = (text ?? _controller.text).trim();
+    if (msg.isEmpty) return;
+    setState(() {
+      _messages.add(_ChatMsg(msg, true));
+      _messages.add(_ChatMsg(_findChatResponse(msg), false));
+    });
+    _controller.clear();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  static const _responses = <String, String>{
+    'hello': 'Hello! 👋 How can I help you with Rhema Study Bible?',
+    'hi': 'Hi there! 👋 What would you like to know?',
+    'hey': 'Hey! 👋 Ask me anything about the app!',
+    'help': 'I can help with:\n\n📖 Translations & offline reading\n🎧 Listening & voice\n📚 Study features & maps\n👶 Kids Mode\n⚙️ Settings',
+    'offline': 'KJV and WEB work offline — bundled in the app. Others stream from the internet (cloud icon ☁️).',
+    'translation': 'Tap the Bible image on Home or go to Settings → Translation. 14+ translations in 10 languages! KJV & WEB work offline.',
+    'language': 'We support English, Hindi, Arabic, Bengali, Amharic, Tibetan, and more. Settings → Translation to browse by language.',
+    'voice': 'Go to Listen → voice icon 🗣️. Premium voices sound most natural. Download more from your device\'s Accessibility settings.',
+    'narrator': 'For the best narrator: Listen → Voice icon → look for "Premium" (gold badge). Preview before selecting.',
+    'speed': 'Adjust reading speed on the Listen screen: 0.5× to 2×.',
+    'map': 'Study → Bible Maps: 56+ locations, era filters, animated journeys, satellite view. Tap markers for history & verses.',
+    'quiz': 'Study → Quiz: AI-powered quizzes on any chapter. Works offline (keyword) or online (Gemini AI).',
+    'bookmark': 'Long-press any verse to bookmark or highlight it (5 colors). Find them in the Saved tab.',
+    'highlight': 'Long-press a verse → choose from 5 highlight colors: yellow, green, blue, pink, orange.',
+    'notes': 'Tap a verse → notes icon to add study notes. Saved locally on your device.',
+    'streak': 'Your reading streak tracks consecutive days. Read any chapter daily to keep it going!',
+    'kids': 'Settings → Kids Mode: 20 animated Bible stories with narration, emoji illustrations, and moral lessons for ages 6+.',
+    'dark': 'Toggle dark mode in Settings → Dark mode.',
+    'font': 'Adjust font size in Settings (14–28). You can also pinch-to-zoom while reading.',
+    'free': 'Yes! 100% free with no ads, no subscriptions.',
+    'ai': 'AI uses Google Gemini. Get a free key at ai.google.dev → paste in Settings → Advanced.',
+    'plan': 'Study → Reading Plans: 7-day, 30-day, or custom plans.',
+    'data': 'All data stored locally on your device. Nothing sent to servers.',
+  };
+
+  static String _findChatResponse(String query) {
+    final lower = query.toLowerCase().trim();
+
+    // First check for topic/verse-related queries
+    final topicVerses = BibleRepository.getTopicVerses(lower);
+    if (topicVerses != null) {
+      final versesStr = topicVerses.take(6).map((v) => '📖 $v').join('\n');
+      // Try to identify the topic word
+      String topic = lower;
+      for (final word in lower.split(RegExp(r'\s+'))) {
+        if (BibleRepository.getTopicVerses(word) != null) {
+          topic = word;
+          break;
+        }
+      }
+      return 'Here are key verses on "$topic":\n\n$versesStr\n\nTry searching "$topic" in the search bar to read the full verses!';
+    }
+
+    // Then check app-related responses
+    for (final entry in _responses.entries) {
+      if (lower == entry.key || lower.contains(entry.key)) return entry.value;
+    }
+    final words = lower.split(RegExp(r'\s+'));
+    String? best;
+    int bestScore = 0;
+    for (final entry in _responses.entries) {
+      int score = 0;
+      for (final w in words) {
+        if (entry.key.contains(w) || entry.value.toLowerCase().contains(w)) score++;
+      }
+      if (score > bestScore) { bestScore = score; best = entry.value; }
+    }
+    if (best != null && bestScore >= 1) return best;
+    return 'I can help with Bible topics (try "honesty", "patience", "forgiveness") or app features (translations, voice, maps, quizzes, kids mode, settings)!';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bottomPad = MediaQuery.of(context).padding.bottom;
+
+    return Positioned(
+      right: 16,
+      bottom: 8 + bottomPad,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // ── Expanded chat panel ──
+          if (_isOpen)
+            Container(
+              width: 320,
+              height: MediaQuery.of(context).size.height * 0.55,
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: BrandColors.gold.withValues(alpha: 0.3),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Column(
+                  children: [
+                    // Header
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [BrandColors.goldLight, BrandColors.gold],
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.chat_bubble_outline, color: Color(0xFF3E2723), size: 20),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Rhema Assistant',
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF3E2723),
+                            ),
+                          ),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const HelpScreen()),
+                            ),
+                            child: Icon(Icons.open_in_full, size: 18, color: const Color(0xFF3E2723).withValues(alpha: 0.6)),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: _toggle,
+                            child: const Icon(Icons.close, size: 20, color: Color(0xFF3E2723)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Suggestion chips
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      child: Row(
+                        children: [
+                          _chip('Offline?', theme),
+                          _chip('Change voice', theme),
+                          _chip('Languages', theme),
+                          _chip('Maps', theme),
+                          _chip('Kids mode', theme),
+                          _chip('Quizzes', theme),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    // Messages
+                    Expanded(
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(12),
+                        itemCount: _messages.length,
+                        itemBuilder: (_, i) {
+                          final msg = _messages[i];
+                          return Align(
+                            alignment: msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                            child: Container(
+                              constraints: const BoxConstraints(
+                                maxWidth: 250,
+                              ),
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: msg.isUser
+                                    ? theme.colorScheme.primary
+                                    : theme.colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: const Radius.circular(14),
+                                  topRight: const Radius.circular(14),
+                                  bottomLeft: Radius.circular(msg.isUser ? 14 : 4),
+                                  bottomRight: Radius.circular(msg.isUser ? 4 : 14),
+                                ),
+                              ),
+                              child: Text(
+                                msg.text,
+                                style: GoogleFonts.lora(
+                                  fontSize: 13,
+                                  height: 1.5,
+                                  color: msg.isUser
+                                      ? theme.colorScheme.onPrimary
+                                      : theme.colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    // Input bar
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(12, 6, 6, 10),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        border: Border(
+                          top: BorderSide(
+                            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _controller,
+                              textInputAction: TextInputAction.send,
+                              onSubmitted: (_) => _send(),
+                              style: GoogleFonts.lora(fontSize: 13),
+                              decoration: InputDecoration(
+                                hintText: 'Ask a question...',
+                                hintStyle: GoogleFonts.lora(fontSize: 13),
+                                filled: true,
+                                fillColor: theme.colorScheme.surfaceContainerHighest,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 8),
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          IconButton(
+                            onPressed: _send,
+                            icon: const Icon(Icons.send, size: 20),
+                            style: IconButton.styleFrom(
+                              backgroundColor: BrandColors.gold,
+                              foregroundColor: const Color(0xFF3E2723),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          // ── Chat bubble button ──
+          GestureDetector(
+            onTap: _toggle,
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [BrandColors.goldLight, BrandColors.gold],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: BrandColors.gold.withValues(alpha: 0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(
+                _isOpen ? Icons.keyboard_arrow_down : Icons.chat_bubble_outline,
+                color: const Color(0xFF3E2723),
+                size: 24,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip(String text, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: ActionChip(
+        label: Text(text, style: GoogleFonts.lora(fontSize: 11, color: theme.colorScheme.primary)),
+        backgroundColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
+        side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.2)),
+        visualDensity: VisualDensity.compact,
+        onPressed: () => _send(text),
+      ),
+    );
+  }
+}
+
+class _ChatMsg {
+  final String text;
+  final bool isUser;
+  const _ChatMsg(this.text, this.isUser);
 }
 
 class _DashboardTab extends ConsumerStatefulWidget {
@@ -71,6 +427,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
   bool _searchActive = false;
   bool _searchLoading = false;
   List<({VerseRef ref, String text})> _searchResults = const [];
+  List<String> _topicSuggestions = const []; // topic-based verse refs
 
   // Voice search
   final stt.SpeechToText _speech = stt.SpeechToText();
@@ -219,25 +576,23 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     final q = _searchCtrl.text.trim();
     if (q.isEmpty) return;
     final repo = ref.read(bibleRepositoryProvider);
+    final currentTranslation = ref.read(settingsProvider).translation;
 
-    // Search across ALL available translations
-    final allResults = <({VerseRef ref, String text})>[];
-    final availableTranslations = kTranslations.where((t) => t.available).toList();
+    // Check for topic-based suggestions
+    final topics = BibleRepository.getTopicVerses(q) ?? const [];
 
-    for (final t in availableTranslations) {
-      final results = await repo.search(q, translationId: t.id, limit: 50);
-      for (final r in results) {
-        // Avoid duplicate refs from different translations
-        if (!allResults.any((existing) => existing.ref.id == r.ref.id)) {
-          allResults.add(r);
-        }
-      }
-      if (allResults.length >= 100) break;
-    }
+    // Smart search with synonym expansion — searches current translation
+    // and cross-references KJV/WEB for terms that differ between versions
+    final results = await repo.search(
+      q,
+      translationId: currentTranslation,
+      limit: 100,
+    );
 
     if (!mounted) return;
     setState(() {
-      _searchResults = allResults.take(100).toList();
+      _searchResults = results;
+      _topicSuggestions = topics;
       _searchLoading = false;
     });
   }
@@ -248,6 +603,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     setState(() {
       _searchActive = false;
       _searchResults = const [];
+      _topicSuggestions = const [];
       _searchLoading = false;
       _isListening = false;
       _voiceText = '';
@@ -255,47 +611,268 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     FocusScope.of(context).unfocus();
   }
 
-  /// Shows translation picker bottom sheet (triggered by tapping hero image).
+  /// Shows a centered verse preview popup with copy, share, read full chapter.
+  void _showVersePreview(VerseRef verseRef, String text, ThemeData theme) {
+    final translation = ref.read(settingsProvider).translation;
+    final versionName = translationById(translation).name;
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (ctx) => Center(
+        child: Container(
+          width: 380,
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: BrandColors.gold.withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Verse reference + version
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${verseRef.id} ($versionName)',
+                          style: GoogleFonts.lora(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 20),
+                        onPressed: () => Navigator.pop(ctx),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Verse text
+                  Text(
+                    text,
+                    style: GoogleFonts.lora(
+                      fontSize: 15,
+                      height: 1.6,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Action buttons
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
+                    children: [
+                      TextButton.icon(
+                        icon: Icon(Icons.copy, size: 18, color: theme.colorScheme.primary),
+                        label: Text('Copy', style: GoogleFonts.lora(fontSize: 13)),
+                        onPressed: () {
+                          final copyText = '${verseRef.id} ($versionName)\n$text\n\n— Rhema Study Bible\nhttps://rhemabibles.com';
+                          Clipboard.setData(ClipboardData(text: copyText));
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Verse copied to clipboard'), duration: Duration(seconds: 2)),
+                          );
+                        },
+                      ),
+                      TextButton.icon(
+                        icon: Icon(Icons.share, size: 18, color: theme.colorScheme.primary),
+                        label: Text('Share', style: GoogleFonts.lora(fontSize: 13)),
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          // Share functionality would go here
+                        },
+                      ),
+                      TextButton.icon(
+                        icon: Icon(Icons.auto_awesome, size: 18, color: theme.colorScheme.secondary),
+                        label: Text('Similar', style: GoogleFonts.lora(fontSize: 13)),
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _clearSearch();
+                          Navigator.push(
+                            context,
+                            FadeSlideRoute(
+                              page: SimilarVersesScreen(
+                                sourceRef: verseRef,
+                                sourceText: text,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Read full chapter button
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.menu_book, size: 18),
+                      label: Text(
+                        'Read full chapter',
+                        style: GoogleFonts.lora(fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        ref.read(readingLocationProvider.notifier).setBook(verseRef.book);
+                        ref.read(readingLocationProvider.notifier).setChapter(verseRef.chapter);
+                        ref.read(highlightVerseProvider.notifier).state = verseRef.verse;
+                        ref.read(tabIndexProvider.notifier).state = 1;
+                        _clearSearch();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Shows translation picker (triggered by tapping hero image).
   void _showTranslationPicker() {
     final s = ref.read(settingsProvider);
     final theme = Theme.of(context);
-    showModalBottomSheet(
+    final grouped = translationsByLanguage();
+    final langOrder = grouped.keys.toList();
+    // Put English first
+    langOrder.remove('English');
+    langOrder.insert(0, 'English');
+
+    showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 10, bottom: 8),
-              width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)),
+      barrierColor: Colors.black54,
+      builder: (ctx) => Center(
+        child: Container(
+          width: 400,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.65,
+          ),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: BrandColors.gold.withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Text('Switch Translation',
+                    style: GoogleFonts.lora(fontSize: 20, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    children: [
+                      for (final lang in langOrder) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                          child: Row(
+                            children: [
+                              Icon(Icons.language, size: 16, color: theme.colorScheme.primary),
+                              const SizedBox(width: 6),
+                              Text(lang,
+                                  style: GoogleFonts.lora(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: theme.colorScheme.primary,
+                                  )),
+                            ],
+                          ),
+                        ),
+                        ...grouped[lang]!.map((t) => ListTile(
+                              enabled: t.available,
+                              leading: Icon(
+                                t.id == s.translation
+                                    ? Icons.radio_button_checked
+                                    : Icons.radio_button_off,
+                                color: t.available
+                                    ? theme.colorScheme.primary
+                                    : Colors.grey,
+                              ),
+                              title: Row(
+                                children: [
+                                  Text(
+                                    t.name,
+                                    style: GoogleFonts.lora(fontWeight: FontWeight.w600),
+                                  ),
+                                  if (t.isLocal) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primaryContainer,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text('offline',
+                                          style: GoogleFonts.lora(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w600,
+                                              color: theme.colorScheme.primary)),
+                                    ),
+                                  ],
+                                  if (!t.isLocal && t.available) ...[
+                                    const SizedBox(width: 6),
+                                    Icon(Icons.cloud_outlined,
+                                        size: 14,
+                                        color: theme.colorScheme.outline),
+                                  ],
+                                ],
+                              ),
+                              subtitle: Text(t.description,
+                                  style: GoogleFonts.lora(fontSize: 12)),
+                              onTap: t.available
+                                  ? () {
+                                      ref
+                                          .read(settingsProvider.notifier)
+                                          .setTranslation(t.id);
+                                      Navigator.pop(ctx);
+                                    }
+                                  : null,
+                            )),
+                      ],
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            Text('Switch Translation',
-                style: GoogleFonts.lora(fontSize: 20, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
-            ...kTranslations.map((t) => ListTile(
-                  enabled: t.available,
-                  leading: Icon(
-                    t.id == s.translation ? Icons.radio_button_checked : Icons.radio_button_off,
-                    color: t.available ? theme.colorScheme.primary : Colors.grey,
-                  ),
-                  title: Text(
-                    t.name + (t.available ? '' : '  (coming soon)'),
-                    style: GoogleFonts.lora(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(t.description, style: GoogleFonts.lora(fontSize: 12)),
-                  onTap: t.available
-                      ? () {
-                          ref.read(settingsProvider.notifier).setTranslation(t.id);
-                          Navigator.pop(context);
-                        }
-                      : null,
-                )),
-            const SizedBox(height: 16),
-          ],
+          ),
         ),
       ),
     );
@@ -333,6 +910,16 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Rhema Study Bible',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: BrandColors.gold,
+                      letterSpacing: 0.5,
                     ),
                   ),
                   const Spacer(),
@@ -577,6 +1164,64 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                     ),
                   ),
 
+                  // ── Topic suggestions ──
+                  if (_searchActive && !_searchLoading && _topicSuggestions.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                      decoration: BoxDecoration(
+                        color: BrandColors.gold.withOpacity(0.08),
+                        borderRadius: _searchResults.isEmpty
+                            ? const BorderRadius.vertical(bottom: Radius.circular(16))
+                            : BorderRadius.zero,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.lightbulb_outline, size: 16, color: BrandColors.gold),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Key verses on this topic:',
+                                style: GoogleFonts.lora(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: BrandColors.gold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: _topicSuggestions.take(8).map((ref) {
+                              return ActionChip(
+                                label: Text(ref, style: GoogleFonts.lora(fontSize: 11, fontWeight: FontWeight.w600)),
+                                avatar: const Icon(Icons.menu_book, size: 14),
+                                backgroundColor: BrandColors.gold.withOpacity(0.12),
+                                side: BorderSide(color: BrandColors.gold.withOpacity(0.3)),
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () {
+                                  // Parse "Book chapter:verse" and navigate
+                                  final parsed = VerseRef.tryParse(ref);
+                                  if (parsed != null) {
+                                    this.ref.read(readingLocationProvider.notifier).setBook(parsed.book);
+                                    this.ref.read(readingLocationProvider.notifier).setChapter(parsed.chapter);
+                                    this.ref.read(highlightVerseProvider.notifier).state = parsed.verse;
+                                    this.ref.read(tabIndexProvider.notifier).state = 1;
+                                    _clearSearch();
+                                  }
+                                },
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 6),
+                        ],
+                      ),
+                    ),
+
                   // ── Search results bubble ──
                   if (_searchActive && (_searchLoading || _searchResults.isNotEmpty))
                     Container(
@@ -613,39 +1258,9 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                                     overflow: TextOverflow.ellipsis,
                                     style: GoogleFonts.lora(fontSize: 12, height: 1.4),
                                   ),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      // Find similar — proper 44px touch target
-                                      IconButton(
-                                        padding: const EdgeInsets.all(8),
-                                        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-                                        onPressed: () {
-                                          _clearSearch();
-                                          Navigator.push(
-                                            context,
-                                            FadeSlideRoute(
-                                              page: SimilarVersesScreen(
-                                                sourceRef: r.ref,
-                                                sourceText: r.text,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        icon: Icon(Icons.auto_awesome, size: 18,
-                                            color: theme.colorScheme.secondary),
-                                        tooltip: 'Find similar verses',
-                                      ),
-                                      Icon(Icons.chevron_right, size: 16,
-                                          color: theme.colorScheme.outline),
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    ref.read(readingLocationProvider.notifier).setBook(r.ref.book);
-                                    ref.read(readingLocationProvider.notifier).setChapter(r.ref.chapter);
-                                    ref.read(tabIndexProvider.notifier).state = 1;
-                                    _clearSearch();
-                                  },
+                                  trailing: Icon(Icons.chevron_right, size: 16,
+                                      color: theme.colorScheme.outline),
+                                  onTap: () => _showVersePreview(r.ref, r.text, theme),
                                 );
                               },
                             ),
@@ -685,6 +1300,8 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                   ref.read(readingLocationProvider.notifier).setChapter(verseRef.chapter);
                   ref.read(tabIndexProvider.notifier).state = 1;
                 }
+                // Gentle sign-up nudge for unauthenticated users
+                _maybeShowSignUpNudge(context, ref);
               },
               child: Container(
                 padding: const EdgeInsets.all(20),
@@ -716,23 +1333,26 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
-                            color: BrandColors.gold.withValues(alpha: 0.18),
+                            color: BrandColors.gold.withValues(alpha: 0.22),
                             borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: BrandColors.gold.withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.wb_sunny_outlined, size: 16, color: BrandColors.gold),
-                              const SizedBox(width: 6),
+                              Icon(Icons.wb_sunny_outlined, size: 20, color: BrandColors.gold),
+                              const SizedBox(width: 8),
                               Text(
                                 _verseOfTheDay.$3.toUpperCase(),
                                 style: GoogleFonts.lora(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w900,
                                   color: BrandColors.gold,
-                                  letterSpacing: 1.5,
+                                  letterSpacing: 2.0,
                                 ),
                               ),
                             ],
@@ -880,72 +1500,193 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     );
   }
 
-  void _showStreakSheet(BuildContext context, dynamic streak) {
-    final theme = Theme.of(context);
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                width: 40, height: 4,
-                decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)),
-              ),
-              Text(
-                streak.currentStreak > 0 ? '\u{1F525}' : '\u{1F4D6}',
-                style: const TextStyle(fontSize: 48),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                '${streak.currentStreak} day streak',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                streak.currentStreak > 0
-                    ? 'Keep it going! Read today to maintain your streak.'
-                    : 'Start reading today to begin your streak!',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.lora(
-                  fontSize: 14,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _StreakStat(
-                    label: 'Current',
-                    value: '${streak.currentStreak}',
-                    icon: Icons.local_fire_department,
-                    color: Colors.orange,
-                  ),
-                  const SizedBox(width: 32),
-                  _StreakStat(
-                    label: 'Longest',
-                    value: '${streak.longestStreak}',
-                    icon: Icons.emoji_events,
-                    color: BrandColors.gold,
+  int _nudgeCount = 0;
+
+  /// Show a gentle sign-up prompt after the user interacts with daily study.
+  /// Only shows once every 3 taps, and only if not signed in.
+  void _maybeShowSignUpNudge(BuildContext context, WidgetRef ref) {
+    final auth = ref.read(authProvider);
+    if (auth.isAuthenticated) return;
+    _nudgeCount++;
+    if (_nudgeCount % 3 != 1) return; // Show on 1st, 4th, 7th... interaction
+
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierColor: Colors.black54,
+        builder: (ctx) {
+          final theme = Theme.of(ctx);
+          return Center(
+            child: Container(
+              width: 340,
+              margin: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(28, 28, 28, 20),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: BrandColors.gold.withValues(alpha: 0.3)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-            ],
+              child: Material(
+                color: Colors.transparent,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.bookmark_border, size: 48, color: BrandColors.gold),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Save Your Progress',
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Create a free account to save your reading progress, '
+                      'bookmarks, and notes across devices.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.lora(
+                        fontSize: 14,
+                        color: BrandColors.brownMid,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const AuthScreen()),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: BrandColors.gold,
+                          foregroundColor: const Color(0xFF3E2723),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text('Create Free Account',
+                            style: GoogleFonts.lora(
+                                fontSize: 16, fontWeight: FontWeight.w700)),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text('Not now',
+                          style: GoogleFonts.lora(
+                              fontSize: 14, color: BrandColors.brownMid)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  void _showStreakSheet(BuildContext context, dynamic streak) {
+    final theme = Theme.of(context);
+    showDialog(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (ctx) {
+        return Center(
+          child: Container(
+            width: 340,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: BrandColors.gold.withOpacity(0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(24),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      streak.currentStreak > 0 ? '\u{1F525}' : '\u{1F4D6}',
+                      style: const TextStyle(fontSize: 48),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '${streak.currentStreak} day streak',
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      streak.currentStreak > 0
+                          ? 'Keep it going! Read today to maintain your streak.'
+                          : 'Start reading today to begin your streak!',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.lora(
+                        fontSize: 14,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _StreakStat(
+                          label: 'Current',
+                          value: '${streak.currentStreak}',
+                          icon: Icons.local_fire_department,
+                          color: Colors.orange,
+                        ),
+                        const SizedBox(width: 32),
+                        _StreakStat(
+                          label: 'Longest',
+                          value: '${streak.bestStreak}',
+                          icon: Icons.emoji_events,
+                          color: BrandColors.gold,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text('Close',
+                          style: GoogleFonts.lora(
+                              fontSize: 14, color: BrandColors.brownMid)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -958,14 +1699,38 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
 
   /// Full-screen book picker with search, testament tabs, and chapter grid.
   void _showBookPicker(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
+    final theme = Theme.of(context);
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      barrierColor: Colors.black54,
+      builder: (_) => Center(
+        child: Container(
+          width: 420,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.75,
+          ),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: BrandColors.gold.withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: _BookPickerSheet(ref: ref),
+            ),
+          ),
+        ),
       ),
-      builder: (_) => _BookPickerSheet(ref: ref),
     );
   }
 }

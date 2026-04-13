@@ -20,9 +20,11 @@ class ListenScreen extends ConsumerStatefulWidget {
 class _ListenScreenState extends ConsumerState<ListenScreen> {
   final FlutterTts _tts = FlutterTts();
   bool _playing = false;
-  double _speechRate = 0.5; // 0.0–1.0 range; 0.5 = natural human pace
+  bool _paused = false;
+  double _speechRate = 0.75; // 0.0–1.0 range; 0.75 = 1.5× speed (default)
   List<Verse> _verses = [];
   int _currentVerseIndex = 0;
+  int _resumeFromVerse = 0; // track where to resume after pause or speed change
   final ScrollController _scrollController = ScrollController();
 
   // Preset speed labels (non-const because double keys)
@@ -60,19 +62,35 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
     // Replace colons in speech (not verse refs like 3:16) with comma for short pause
     text = text.replaceAll(RegExp(r':(?!\d)'), ',');
 
-    // Ensure sentences end clearly
+    // Ensure sentences end clearly with a space for natural pacing
     text = text.replaceAll(RegExp(r'\.(?=\S)'), '. ');
+
+    // Add natural pauses after commas that are too close
+    text = text.replaceAll(RegExp(r',(?=\S)'), ', ');
+
+    // Replace em-dashes and long dashes with comma (natural pause)
+    text = text.replaceAll(RegExp(r'[—–]'), ', ');
+
+    // Expand common abbreviations for clearer speech
+    text = text.replaceAll('LORD', 'Lord');
+    text = text.replaceAll('GOD', 'God');
 
     // Clean up multiple spaces
     text = text.replaceAll(RegExp(r'\s+'), ' ');
 
     // Remove quotation marks that confuse TTS
-    text = text.replaceAll(RegExp(r'["""]'), '');
+    text = text.replaceAll(RegExp(r'["""''`]'), '');
+
+    // Remove parentheses but keep content
+    text = text.replaceAll(RegExp(r'[()]'), '');
+
+    // Remove brackets (often editorial additions)
+    text = text.replaceAll(RegExp(r'\[.*?\]'), '');
 
     return text.trim();
   }
 
-  Future<void> _play() async {
+  Future<void> _play({int startFromVerse = 0}) async {
     final loc = ref.read(readingLocationProvider);
     final chapters = await ref.read(currentBookChaptersProvider.future);
     if (chapters.isEmpty) return;
@@ -88,15 +106,17 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
 
     setState(() {
       _playing = true;
+      _paused = false;
       _verses = verses;
-      _currentVerseIndex = 0;
+      _currentVerseIndex = startFromVerse;
     });
 
     // Read verse by verse with natural pauses
-    for (int i = 0; i < verses.length; i++) {
+    for (int i = startFromVerse; i < verses.length; i++) {
       if (!_playing) break;
 
       setState(() => _currentVerseIndex = i);
+      _resumeFromVerse = i;
 
       // Auto-scroll to current verse
       if (_scrollController.hasClients) {
@@ -119,26 +139,50 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
 
       if (!_playing) break;
 
-      // Natural pause between verses
-      await Future.delayed(const Duration(milliseconds: 200));
+      // Natural pause between verses — longer after sentences ending with period
+      final endsWithPeriod = verseText.endsWith('.');
+      await Future.delayed(
+          Duration(milliseconds: endsWithPeriod ? 400 : 200));
     }
 
     if (mounted) {
-      setState(() => _playing = false);
+      setState(() {
+        _playing = false;
+        _paused = false;
+      });
     }
+  }
+
+  Future<void> _pause() async {
+    await _tts.stop();
+    setState(() {
+      _playing = false;
+      _paused = true;
+      // _resumeFromVerse already tracks current position
+    });
+  }
+
+  Future<void> _resume() async {
+    _play(startFromVerse: _resumeFromVerse);
   }
 
   Future<void> _stop() async {
     await _tts.stop();
-    setState(() => _playing = false);
+    setState(() {
+      _playing = false;
+      _paused = false;
+      _resumeFromVerse = 0;
+    });
   }
 
   void _setSpeed(double rate) async {
     setState(() => _speechRate = rate);
     if (_playing) {
-      // Stop and restart with new speed
-      await _stop();
-      _play();
+      // Remember current position, stop, and resume from same verse
+      final resumeAt = _currentVerseIndex;
+      await _tts.stop();
+      setState(() => _playing = false);
+      _play(startFromVerse: resumeAt);
     }
   }
 
@@ -172,14 +216,34 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
 
   void _showBookPicker() async {
     final loc = ref.read(readingLocationProvider);
-    final picked = await showModalBottomSheet<String>(
+    final picked = await showDialog<String>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      barrierColor: Colors.black54,
+      builder: (_) => Center(
+        child: Container(
+          width: 380,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.65,
+          ),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFD4A843).withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            child: _ListenBookPicker(currentBook: loc.book),
+          ),
+        ),
       ),
-      builder: (_) => _ListenBookPicker(currentBook: loc.book),
     );
     if (picked != null && mounted) {
       if (_playing) await _stop();
@@ -192,29 +256,64 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
     final chapters = await ref.read(currentBookChaptersProvider.future);
     if (!mounted) return;
     final theme = Theme.of(context);
-    final picked = await showModalBottomSheet<int>(
+    final picked = await showDialog<int>(
       context: context,
-      builder: (_) => GridView.count(
-        crossAxisCount: MediaQuery.of(context).size.width < 400 ? 4 : MediaQuery.of(context).size.width < 600 ? 5 : 7,
-        padding: const EdgeInsets.all(12),
-        children: [
-          for (var c = 1; c <= chapters.length; c++)
-            InkWell(
-              onTap: () => Navigator.pop(context, c),
-              child: Card(
-                color: c == loc.chapter
-                    ? theme.colorScheme.primaryContainer
-                    : theme.colorScheme.surfaceContainerHighest,
-                elevation: c == loc.chapter ? 2 : 0,
-                child: Center(
-                  child: Text('$c',
-                      style: TextStyle(
-                        fontWeight: c == loc.chapter ? FontWeight.bold : FontWeight.normal,
-                      )),
-                ),
+      barrierColor: Colors.black54,
+      builder: (_) => Center(
+        child: Container(
+          width: 340,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFD4A843).withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 8),
+                  Text('Choose Chapter',
+                      style: GoogleFonts.lora(fontSize: 20, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 16),
+                  GridView.count(
+                    crossAxisCount: MediaQuery.of(context).size.width < 400 ? 4 : MediaQuery.of(context).size.width < 600 ? 5 : 7,
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    children: [
+                      for (var c = 1; c <= chapters.length; c++)
+                        InkWell(
+                          onTap: () => Navigator.pop(context, c),
+                          child: Card(
+                            color: c == loc.chapter
+                                ? theme.colorScheme.primaryContainer
+                                : theme.colorScheme.surfaceContainerHighest,
+                            elevation: c == loc.chapter ? 2 : 0,
+                            child: Center(
+                              child: Text('$c',
+                                  style: TextStyle(
+                                    fontWeight: c == loc.chapter ? FontWeight.bold : FontWeight.normal,
+                                  )),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
             ),
-        ],
+          ),
+        ),
       ),
     );
     if (picked != null && mounted) {
@@ -386,10 +485,17 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                     ),
-                    icon: Icon(_playing ? Icons.stop : Icons.play_arrow, size: 28),
-                    label: Text(_playing ? 'Stop' : 'Play',
-                        style: const TextStyle(fontSize: 16)),
-                    onPressed: _playing ? _stop : _play,
+                    icon: Icon(
+                      _playing ? Icons.pause : Icons.play_arrow,
+                      size: 28,
+                    ),
+                    label: Text(
+                      _playing ? 'Pause' : (_paused ? 'Resume' : 'Play'),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    onPressed: _playing
+                        ? _pause
+                        : (_paused ? _resume : _play),
                   ),
                   const SizedBox(width: 16),
                   IconButton(
@@ -403,15 +509,36 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
                 ],
               ),
 
-              if (_playing)
+              if (_playing || _paused)
                 Padding(
                   padding: const EdgeInsets.only(top: 16),
-                  child: Text(
-                    'Playing at $_currentSpeedLabel speed',
-                    style: GoogleFonts.lora(
-                      fontSize: 12,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _playing
+                            ? 'Playing at $_currentSpeedLabel speed — Verse ${_currentVerseIndex + 1}'
+                            : 'Paused at Verse ${_resumeFromVerse + 1}',
+                        style: GoogleFonts.lora(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      if (_paused) ...[
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: _stop,
+                          child: Text(
+                            'Stop',
+                            style: GoogleFonts.lora(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: theme.colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
 
@@ -423,7 +550,7 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     itemCount: _verses.length,
                     itemBuilder: (context, i) {
-                      final isCurrent = _playing && i == _currentVerseIndex;
+                      final isCurrent = (_playing || _paused) && i == _currentVerseIndex;
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(12),
@@ -469,62 +596,72 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   }
 
   void _showSpeedPicker(BuildContext context, ThemeData theme) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 10, bottom: 8),
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[400],
-                borderRadius: BorderRadius.circular(2),
+      barrierColor: Colors.black54,
+      builder: (_) => Center(
+        child: Container(
+          width: 340,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFD4A843).withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 20),
+                Text('Playback Speed',
+                    style: GoogleFonts.lora(fontSize: 20, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 16),
+                ..._speeds.entries.map((e) {
+                  final isSelected = (_speechRate - e.key).abs() < 0.05;
+                  return ListTile(
+                    leading: Icon(
+                      isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                      color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outline,
+                    ),
+                    title: Text(
+                      e.value,
+                      style: GoogleFonts.lora(
+                        fontSize: 18,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        color: isSelected ? theme.colorScheme.primary : null,
+                      ),
+                    ),
+                    subtitle: Text(
+                      e.key == 0.50 ? 'Normal speed (recommended)' :
+                      e.key < 0.50 ? 'Slower — easier to follow' :
+                      'Faster — for experienced listeners',
+                      style: GoogleFonts.lora(fontSize: 12),
+                    ),
+                    onTap: () {
+                      _setSpeed(e.key);
+                      Navigator.pop(context);
+                    },
+                  );
+                }),
+                const SizedBox(height: 16),
+              ],
             ),
-            Text('Playback Speed',
-                style: GoogleFonts.lora(fontSize: 20, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 16),
-            ..._speeds.entries.map((e) {
-              final isSelected = (_speechRate - e.key).abs() < 0.05;
-              return ListTile(
-                leading: Icon(
-                  isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                  color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outline,
-                ),
-                title: Text(
-                  e.value,
-                  style: GoogleFonts.lora(
-                    fontSize: 18,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected ? theme.colorScheme.primary : null,
-                  ),
-                ),
-                subtitle: Text(
-                  e.key == 0.50 ? 'Normal speed (recommended)' :
-                  e.key < 0.50 ? 'Slower — easier to follow' :
-                  'Faster — for experienced listeners',
-                  style: GoogleFonts.lora(fontSize: 12),
-                ),
-                onTap: () {
-                  _setSpeed(e.key);
-                  Navigator.pop(context);
-                },
-              );
-            }),
-            const SizedBox(height: 16),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-/// Bottom-sheet book picker for Listen screen.
+/// Dialog book picker for Listen screen.
 class _ListenBookPicker extends StatefulWidget {
   const _ListenBookPicker({required this.currentBook});
   final String currentBook;
@@ -556,59 +693,48 @@ class _ListenBookPickerState extends State<_ListenBookPicker> {
         ? kAllBooks
         : kAllBooks.where((b) => b.name.toLowerCase().contains(_filter)).toList();
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.7,
-      minChildSize: 0.4,
-      maxChildSize: 0.9,
-      expand: false,
-      builder: (context, scrollCtrl) => Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 10, bottom: 8),
-            width: 40, height: 4,
-            decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)),
-          ),
-          Text('Choose a Book', style: GoogleFonts.lora(fontSize: 20, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextField(
-              controller: _searchCtrl,
-              decoration: InputDecoration(
-                hintText: 'Type to filter...',
-                prefixIcon: const Icon(Icons.search, size: 20),
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
+    return Column(
+      children: [
+        const SizedBox(height: 20),
+        Text('Choose a Book', style: GoogleFonts.lora(fontSize: 20, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 10),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: TextField(
+            controller: _searchCtrl,
+            decoration: InputDecoration(
+              hintText: 'Type to filter...',
+              prefixIcon: const Icon(Icons.search, size: 20),
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: ListView.separated(
-              controller: scrollCtrl,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              itemCount: books.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (_, i) {
-                final b = books[i];
-                final isCurrent = b.name == widget.currentBook;
-                return ListTile(
-                  title: Text(b.name,
-                      style: GoogleFonts.lora(
-                        fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
-                        color: isCurrent ? theme.colorScheme.primary : null,
-                      )),
-                  trailing: isCurrent
-                      ? Icon(Icons.check, color: theme.colorScheme.primary)
-                      : const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.pop(context, b.name),
-                );
-              },
-            ),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            itemCount: books.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (_, i) {
+              final b = books[i];
+              final isCurrent = b.name == widget.currentBook;
+              return ListTile(
+                title: Text(b.name,
+                    style: GoogleFonts.lora(
+                      fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+                      color: isCurrent ? theme.colorScheme.primary : null,
+                    )),
+                trailing: isCurrent
+                    ? Icon(Icons.check, color: theme.colorScheme.primary)
+                    : const Icon(Icons.chevron_right),
+                onTap: () => Navigator.pop(context, b.name),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

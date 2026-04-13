@@ -1,0 +1,12 @@
+{
+  "buildCommand": "",
+  "outputDirectory": "build/web",
+  "functions": {
+    "api/**/*.js": {
+      "includeFiles": "assets/bibles/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" }
+  ]
+}

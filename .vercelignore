@@ -1,0 +1,22 @@
+# Ignore everything except what's needed
+.dart_tool
+.idea
+.gradle
+android
+ios
+linux
+macos
+windows
+test
+lib
+.git
+*.dart
+*.lock
+.packages
+.metadata
+build/app
+build/linux
+build/macos
+build/windows
+node_modules
+.firebase

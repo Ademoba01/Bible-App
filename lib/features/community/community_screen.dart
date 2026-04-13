@@ -751,13 +751,28 @@ class _ShareTabState extends State<_ShareTab> with AutomaticKeepAliveClientMixin
     final contentCtrl = TextEditingController();
     String category = 'Devotionals';
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => StatefulBuilder(
+      barrierColor: Colors.black54,
+      builder: (ctx) => Center(
+        child: Container(
+          width: 400,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFD4A843).withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            child: StatefulBuilder(
         builder: (ctx, setSheetState) => Padding(
           padding: EdgeInsets.fromLTRB(
             20,
@@ -769,17 +784,6 @@ class _ShareTabState extends State<_ShareTab> with AutomaticKeepAliveClientMixin
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
               Text(
                 'Share with the Community',
                 style: GoogleFonts.lora(fontSize: 20, fontWeight: FontWeight.w700),
@@ -849,6 +853,9 @@ class _ShareTabState extends State<_ShareTab> with AutomaticKeepAliveClientMixin
                 },
               ),
             ],
+          ),
+        ),
+      ),
           ),
         ),
       ),

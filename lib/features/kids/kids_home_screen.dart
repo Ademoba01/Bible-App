@@ -10,6 +10,8 @@ import '../../theme.dart';
 import '../settings/voice_settings.dart';
 import 'kids_stories.dart';
 import 'kids_stories_nt.dart';
+import 'kids_story_data.dart';
+import 'kids_animated_story_screen.dart';
 import 'kids_parent_dashboard.dart';
 import 'kids_story_screen.dart';
 
@@ -39,14 +41,31 @@ class _KidsHomeScreenState extends ConsumerState<KidsHomeScreen> {
   late final List<KidsStory> allStories = [...kKidsStories, ...kKidsStoriesNT];
 
   void _showKidsSettings(BuildContext context) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      barrierColor: Colors.black54,
+      builder: (_) => Center(
+        child: Container(
+          width: 380,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFD4A843).withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            child: const _KidsSettingsSheet(),
+          ),
+        ),
       ),
-      builder: (_) => const _KidsSettingsSheet(),
     );
   }
 
@@ -250,6 +269,71 @@ class _KidsHomeScreenState extends ConsumerState<KidsHomeScreen> {
                         ),
                         const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 18),
                       ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // ── Animated Stories Banner ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [BrandColors.kidsPurple, BrandColors.kidsPink],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: BrandColors.kidsPurple.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const _AnimatedStoriesListScreen()),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 14),
+                      child: Row(
+                        children: [
+                          const Text('📖', style: TextStyle(fontSize: 32)),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Animated Bible Stories',
+                                    style: GoogleFonts.fredoka(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    )),
+                                const SizedBox(height: 2),
+                                Text(
+                                    '${kIllustratedStories.length} stories with pictures & audio!',
+                                    style: GoogleFonts.fredoka(
+                                      fontSize: 12,
+                                      color:
+                                          Colors.white.withValues(alpha: 0.85),
+                                    )),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios,
+                              color: Colors.white70, size: 18),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -474,22 +558,11 @@ class _KidsSettingsSheetState extends State<_KidsSettingsSheet> {
       );
     }
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: BrandColors.brownMid.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
             Text(
               'Kids Settings',
               style: GoogleFonts.fredoka(
@@ -575,7 +648,6 @@ class _KidsSettingsSheetState extends State<_KidsSettingsSheet> {
             const SizedBox(height: 8),
           ],
         ),
-      ),
     );
   }
 
@@ -646,6 +718,104 @@ class _KidsSettingsSheetState extends State<_KidsSettingsSheet> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Animated Stories List Screen ──
+
+class _AnimatedStoriesListScreen extends StatelessWidget {
+  const _AnimatedStoriesListScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Animated Stories',
+            style: GoogleFonts.fredoka(fontWeight: FontWeight.w600)),
+        backgroundColor: BrandColors.kidsPurple,
+        foregroundColor: Colors.white,
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: kIllustratedStories.length,
+        itemBuilder: (context, i) {
+          final story = kIllustratedStories[i];
+          final color = Color(story.color);
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [color, color.withValues(alpha: 0.7)],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          KidsAnimatedStoryScreen(story: story),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Text(story.emoji,
+                            style: const TextStyle(fontSize: 40)),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(story.title,
+                                  style: GoogleFonts.fredoka(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  )),
+                              const SizedBox(height: 4),
+                              Text(story.bibleReference,
+                                  style: GoogleFonts.fredoka(
+                                    fontSize: 13,
+                                    color: Colors.white
+                                        .withValues(alpha: 0.8),
+                                  )),
+                              const SizedBox(height: 4),
+                              Text(
+                                  '${story.pages.length} pages',
+                                  style: GoogleFonts.fredoka(
+                                    fontSize: 12,
+                                    color: Colors.white
+                                        .withValues(alpha: 0.6),
+                                  )),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.play_circle_fill,
+                            color: Colors.white70, size: 32),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

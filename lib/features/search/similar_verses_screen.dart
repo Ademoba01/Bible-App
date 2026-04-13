@@ -85,14 +85,29 @@ class _SimilarVersesScreenState extends ConsumerState<SimilarVersesScreen> {
 
   void _showVersePreview(BuildContext context, VerseRef verseRef, String text) {
     final theme = Theme.of(context);
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      showDragHandle: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetContext) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+      barrierColor: Colors.black54,
+      builder: (sheetContext) => Center(
+        child: Container(
+          width: 380,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFD4A843).withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,6 +165,9 @@ class _SimilarVersesScreenState extends ConsumerState<SimilarVersesScreen> {
               ),
             ),
           ],
+        ),
+      ),
+          ),
         ),
       ),
     );

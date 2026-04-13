@@ -107,7 +107,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
               children: [
                 Spacer(flex: isShort ? 1 : 2),
 
-                // ── Hero image with animated gold glow ──
+                // ── Hero logo with animated gold glow ──
                 FadeTransition(
                   opacity: _heroFade,
                   child: Center(
@@ -133,10 +133,60 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                       ),
                       child: Hero(
                         tag: 'brand-hero',
-                        child: Image.asset(
-                          'assets/brand/hero.png',
+                        child: Container(
                           width: heroSize,
                           height: heroSize,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFF5D4037),
+                                Color(0xFF3E2723),
+                              ],
+                            ),
+                            border: Border.all(
+                              color: BrandColors.gold.withValues(alpha: 0.6),
+                              width: 3,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Cross
+                              Icon(
+                                Icons.add,
+                                size: heroSize * 0.18,
+                                color: BrandColors.gold,
+                              ),
+                              SizedBox(height: heroSize * 0.02),
+                              // Open Bible icon
+                              Icon(
+                                Icons.auto_stories,
+                                size: heroSize * 0.35,
+                                color: const Color(0xFFF5ECD7),
+                              ),
+                              SizedBox(height: heroSize * 0.04),
+                              // "R" monogram
+                              Text(
+                                'R',
+                                style: GoogleFonts.playfairDisplay(
+                                  fontSize: heroSize * 0.15,
+                                  fontWeight: FontWeight.w700,
+                                  color: BrandColors.gold,
+                                  height: 1,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -276,9 +326,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                           children: const [
                             _TranslationChip(label: 'KJV', available: true),
                             _TranslationChip(label: 'WEB', available: true),
-                            _TranslationChip(label: 'BSB', available: false),
-                            _TranslationChip(label: 'Pidgin', available: false),
-                            _TranslationChip(label: 'Yoruba', available: false),
+                            _TranslationChip(label: 'BSB', available: true),
+                            _TranslationChip(label: 'Hindi', available: true),
+                            _TranslationChip(label: '10+ more', available: true),
                           ],
                         ),
                         const SizedBox(height: 8),

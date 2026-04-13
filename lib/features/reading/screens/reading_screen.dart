@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../data/models.dart';
+import '../../../data/translations.dart';
 import '../../../state/providers.dart';
 import '../../../theme.dart';
+import '../../listen/listen_screen.dart';
 import '../../search/similar_verses_screen.dart';
 import '../../../utils/page_transitions.dart';
 import '../../study/chapter_quiz_screen.dart';
@@ -30,6 +32,8 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
   bool _backChipVisible = true;
   // GlobalKeys for pixel-accurate verse scrolling
   final Map<int, GlobalKey> _verseKeys = {};
+  // Pinch-to-zoom font size tracking
+  double _baseFontSize = 18;
 
   @override
   void initState() {
@@ -187,6 +191,10 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                 onPick: (c) => ref.read(readingLocationProvider.notifier).setChapter(c),
                 onPrev: () => ref.read(readingLocationProvider.notifier).prev(),
                 onNext: () => ref.read(readingLocationProvider.notifier).next(maxChapter),
+                onListen: () => Navigator.push(
+                  context,
+                  FadeSlideRoute(page: const ListenScreen()),
+                ),
               ),
               // Decorative divider with gold accent
               Container(
@@ -206,7 +214,7 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                 ),
               ),
               Expanded(
-                // ── Swipe left/right to change chapters ──
+                // ── Swipe left/right to change chapters + pinch-to-zoom ──
                 child: GestureDetector(
                   onHorizontalDragEnd: (details) {
                     if (details.primaryVelocity == null) return;
@@ -216,6 +224,18 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                     } else if (details.primaryVelocity! > 300 && current > 1) {
                       // Swipe right → previous chapter
                       ref.read(readingLocationProvider.notifier).prev();
+                    }
+                  },
+                  onScaleStart: (_) {
+                    _baseFontSize = ref.read(settingsProvider).fontSize;
+                  },
+                  onScaleUpdate: (details) {
+                    if (details.pointerCount < 2) return;
+                    final newSize = (_baseFontSize * details.scale)
+                        .clamp(14.0, 28.0)
+                        .roundToDouble();
+                    if (newSize != ref.read(settingsProvider).fontSize) {
+                      ref.read(settingsProvider.notifier).setFontSize(newSize);
                     }
                   },
                   child: Stack(
@@ -311,7 +331,7 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
   }
 }
 
-class _VerseList extends StatelessWidget {
+class _VerseList extends StatefulWidget {
   const _VerseList({
     required this.chapter,
     required this.book,
@@ -337,7 +357,105 @@ class _VerseList extends StatelessWidget {
   final Map<int, GlobalKey>? verseKeys;
 
   @override
+  State<_VerseList> createState() => _VerseListState();
+}
+
+class _VerseListState extends State<_VerseList> {
+  // Multi-verse selection state
+  final Set<int> _selectedVerses = {}; // verse numbers currently selected
+  bool _selectionMode = false;
+
+  void _toggleVerse(int verseNumber) {
+    setState(() {
+      if (_selectedVerses.contains(verseNumber)) {
+        _selectedVerses.remove(verseNumber);
+        if (_selectedVerses.isEmpty) _selectionMode = false;
+      } else {
+        _selectedVerses.add(verseNumber);
+      }
+    });
+  }
+
+  void _startSelection(int verseNumber) {
+    setState(() {
+      _selectionMode = true;
+      _selectedVerses.clear();
+      _selectedVerses.add(verseNumber);
+    });
+  }
+
+  void _clearSelection() {
+    setState(() {
+      _selectionMode = false;
+      _selectedVerses.clear();
+    });
+  }
+
+  /// Build the "2 Corinthians 4:2-6 (WEB)" style reference for selected verses
+  String _buildRangeRef() {
+    if (_selectedVerses.isEmpty) return '';
+    final sorted = _selectedVerses.toList()..sort();
+    final translation = widget.ref.read(settingsProvider).translation;
+    final versionName = translationById(translation).name;
+
+    // Build verse range groups (e.g., 2-4, 7, 9-11)
+    final ranges = <String>[];
+    int start = sorted.first;
+    int end = start;
+    for (int i = 1; i < sorted.length; i++) {
+      if (sorted[i] == end + 1) {
+        end = sorted[i];
+      } else {
+        ranges.add(start == end ? '$start' : '$start-$end');
+        start = sorted[i];
+        end = start;
+      }
+    }
+    ranges.add(start == end ? '$start' : '$start-$end');
+
+    return '${widget.book} ${widget.chapterNum}:${ranges.join(",")} ($versionName)';
+  }
+
+  /// Combine selected verse texts
+  String _buildSelectedText() {
+    final sorted = _selectedVerses.toList()..sort();
+    return sorted.map((vn) {
+      final verse = widget.chapter.verses.firstWhere((v) => v.number == vn);
+      return verse.text;
+    }).join(' ');
+  }
+
+  void _copySelected() {
+    final rangeRef = _buildRangeRef();
+    final text = _buildSelectedText();
+    final copyText = '$rangeRef\n$text\n\n— Rhema Study Bible\nhttps://rhemabibles.com';
+    Clipboard.setData(ClipboardData(text: copyText));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${_selectedVerses.length} verse${_selectedVerses.length > 1 ? "s" : ""} copied'), duration: const Duration(seconds: 2)),
+    );
+    _clearSelection();
+  }
+
+  void _shareSelected() {
+    final rangeRef = _buildRangeRef();
+    final text = _buildSelectedText();
+    Share.share('$rangeRef\n$text\n\n— Rhema Study Bible\nhttps://rhemabibles.com');
+    _clearSelection();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Alias widget properties for less verbose access
+    final chapter = widget.chapter;
+    final book = widget.book;
+    final chapterNum = widget.chapterNum;
+    final fontSize = widget.fontSize;
+    final bookmarks = widget.bookmarks;
+    final ref = widget.ref;
+    final scrollController = widget.scrollController;
+    final highlightVerse = widget.highlightVerse;
+    final highlightAnim = widget.highlightAnim;
+    final verseKeys = widget.verseKeys;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final highlights = ref.watch(highlightsProvider);
@@ -347,7 +465,9 @@ class _VerseList extends StatelessWidget {
         verseKeys!.putIfAbsent(v.number, () => GlobalKey());
       }
     }
-    return Container(
+    return Stack(
+      children: [
+        Container(
       color: isDark ? const Color(0xFF2B1E19) : BrandColors.parchment,
       child: ListView.builder(
       controller: scrollController,
@@ -423,6 +543,7 @@ class _VerseList extends StatelessWidget {
         final highlightColorIndex = highlights[ref0];
         final isNavHighlighted = highlightVerse == v.number && highlightAnim != null;
         final verseKey = verseKeys?[v.number];
+        final isSelected = _selectedVerses.contains(v.number);
 
         // Drop cap for the first verse — with watermark chapter number
         if (i == 0 && v.text.isNotEmpty) {
@@ -448,20 +569,34 @@ class _VerseList extends StatelessWidget {
                   ),
                 ),
                 Container(
-              decoration: highlightColorIndex != null
+              decoration: isSelected
                   ? BoxDecoration(
-                      color: HighlightsNotifier.colors[highlightColorIndex]
-                          .withValues(alpha: 0.3),
+                      color: BrandColors.gold.withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: BrandColors.gold.withValues(alpha: 0.5), width: 1.5),
                     )
-                  : null,
-              padding: highlightColorIndex != null
+                  : highlightColorIndex != null
+                      ? BoxDecoration(
+                          color: HighlightsNotifier.colors[highlightColorIndex]
+                              .withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(6),
+                        )
+                      : null,
+              padding: (isSelected || highlightColorIndex != null)
                   ? const EdgeInsets.symmetric(horizontal: 6, vertical: 2)
                   : EdgeInsets.zero,
               child: InkWell(
                 onTap: () {
-                  HapticFeedback.lightImpact();
-                  _showVerseSheet(context, ref0, v, theme);
+                  if (_selectionMode) {
+                    _toggleVerse(v.number);
+                  } else {
+                    HapticFeedback.lightImpact();
+                    _showVerseSheet(context, ref0, v, theme);
+                  }
+                },
+                onLongPress: () {
+                  HapticFeedback.mediumImpact();
+                  _startSelection(v.number);
                 },
                 child: RichText(
                   text: TextSpan(
@@ -526,20 +661,34 @@ class _VerseList extends StatelessWidget {
           key: verseKey,
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Container(
-            decoration: highlightColorIndex != null
+            decoration: isSelected
                 ? BoxDecoration(
-                    color: HighlightsNotifier.colors[highlightColorIndex]
-                        .withValues(alpha: 0.3),
+                    color: BrandColors.gold.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: BrandColors.gold.withValues(alpha: 0.5), width: 1.5),
                   )
-                : null,
-            padding: highlightColorIndex != null
+                : highlightColorIndex != null
+                    ? BoxDecoration(
+                        color: HighlightsNotifier.colors[highlightColorIndex]
+                            .withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(6),
+                      )
+                    : null,
+            padding: (isSelected || highlightColorIndex != null)
                 ? const EdgeInsets.symmetric(horizontal: 6, vertical: 2)
                 : EdgeInsets.zero,
             child: InkWell(
               onTap: () {
-                HapticFeedback.lightImpact();
-                _showVerseSheet(context, ref0, v, theme);
+                if (_selectionMode) {
+                  _toggleVerse(v.number);
+                } else {
+                  HapticFeedback.lightImpact();
+                  _showVerseSheet(context, ref0, v, theme);
+                }
+              },
+              onLongPress: () {
+                HapticFeedback.mediumImpact();
+                _startSelection(v.number);
               },
               child: RichText(
                 text: TextSpan(
@@ -587,16 +736,97 @@ class _VerseList extends StatelessWidget {
         return verseWidget;
       },
     ),
+    ),
+        // ── Floating selection action bar ──
+        if (_selectionMode && _selectedVerses.isNotEmpty)
+          Positioned(
+            bottom: 16,
+            left: 16,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: BrandColors.brown.withValues(alpha: 0.95),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  // Selection count
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: BrandColors.gold.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${_selectedVerses.length} verse${_selectedVerses.length > 1 ? "s" : ""}',
+                      style: GoogleFonts.lora(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  // Copy
+                  IconButton(
+                    icon: const Icon(Icons.copy, size: 20, color: Colors.white),
+                    tooltip: 'Copy',
+                    onPressed: _copySelected,
+                  ),
+                  // Share
+                  IconButton(
+                    icon: const Icon(Icons.share, size: 20, color: Colors.white),
+                    tooltip: 'Share',
+                    onPressed: _shareSelected,
+                  ),
+                  // Close
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20, color: Colors.white70),
+                    tooltip: 'Cancel',
+                    onPressed: _clearSelection,
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 
   void _showVerseSheet(BuildContext context, String refId, Verse v, ThemeData theme) {
-    final isMarked = ref.read(bookmarksProvider).contains(refId);
+    final isMarked = widget.ref.read(bookmarksProvider).contains(refId);
     final parsedRef = VerseRef.tryParse(refId);
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => Padding(
+      barrierColor: Colors.black54,
+      builder: (sheetContext) => Center(
+        child: Container(
+          width: 380,
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: BrandColors.gold.withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -614,7 +844,10 @@ class _VerseList extends StatelessWidget {
                   icon: Icon(Icons.copy, color: theme.colorScheme.primary),
                   label: const Text('Copy'),
                   onPressed: () {
-                    Clipboard.setData(ClipboardData(text: '$refId\n${v.text}'));
+                    final translation = widget.ref.read(settingsProvider).translation;
+                    final versionName = translationById(translation).name;
+                    final copyText = '$refId ($versionName)\n${v.text}\n\n— Rhema Study Bible\nhttps://rhemabibles.com';
+                    Clipboard.setData(ClipboardData(text: copyText));
                     Navigator.pop(sheetContext);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Verse copied to clipboard'), duration: Duration(seconds: 2)),
@@ -625,8 +858,10 @@ class _VerseList extends StatelessWidget {
                   icon: Icon(Icons.share, color: theme.colorScheme.primary),
                   label: const Text('Share'),
                   onPressed: () {
+                    final translation = widget.ref.read(settingsProvider).translation;
+                    final versionName = translationById(translation).name;
                     Navigator.pop(sheetContext);
-                    Share.share('$refId\n${v.text}\n\n— Rhema Study Bible');
+                    Share.share('$refId ($versionName)\n${v.text}\n\n— Rhema Study Bible\nhttps://rhemabibles.com');
                   },
                 ),
                 TextButton.icon(
@@ -634,7 +869,7 @@ class _VerseList extends StatelessWidget {
                       color: theme.colorScheme.primary),
                   label: Text(isMarked ? 'Bookmarked' : 'Bookmark'),
                   onPressed: () {
-                    ref.read(bookmarksProvider.notifier).toggle(refId);
+                    widget.ref.read(bookmarksProvider.notifier).toggle(refId);
                     Navigator.pop(sheetContext);
                   },
                 ),
@@ -671,15 +906,15 @@ class _VerseList extends StatelessWidget {
                         color: theme.colorScheme.onSurfaceVariant)),
                 ...List.generate(HighlightsNotifier.colors.length, (i) {
                   final isSelected =
-                      ref.read(highlightsProvider)[refId] == i;
+                      widget.ref.read(highlightsProvider)[refId] == i;
                   return GestureDetector(
                     onTap: () {
                       if (isSelected) {
-                        ref
+                        widget.ref
                             .read(highlightsProvider.notifier)
                             .removeHighlight(refId);
                       } else {
-                        ref
+                        widget.ref
                             .read(highlightsProvider.notifier)
                             .highlight(refId, i);
                       }
@@ -710,6 +945,9 @@ class _VerseList extends StatelessWidget {
           ],
         ),
       ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -722,6 +960,7 @@ class _ChapterBar extends StatelessWidget {
     required this.onPick,
     required this.onPrev,
     required this.onNext,
+    required this.onListen,
   });
 
   final String book;
@@ -730,6 +969,7 @@ class _ChapterBar extends StatelessWidget {
   final ValueChanged<int> onPick;
   final VoidCallback onPrev;
   final VoidCallback onNext;
+  final VoidCallback onListen;
 
   @override
   Widget build(BuildContext context) {
@@ -747,9 +987,32 @@ class _ChapterBar extends StatelessWidget {
             child: Center(
               child: TextButton(
                 onPressed: () async {
-                  final picked = await showModalBottomSheet<int>(
+                  final picked = await showDialog<int>(
                     context: context,
-                    builder: (_) => GridView.count(
+                    barrierColor: Colors.black54,
+                    builder: (_) => Center(
+                      child: Container(
+                        width: 380,
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * 0.5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: BrandColors.gold.withOpacity(0.3)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(24),
+                          child: GridView.count(
+                            shrinkWrap: true,
                       crossAxisCount: MediaQuery.of(context).size.width < 400 ? 4 : MediaQuery.of(context).size.width < 600 ? 5 : 7,
                       padding: const EdgeInsets.all(12),
                       children: [
@@ -774,6 +1037,9 @@ class _ChapterBar extends StatelessWidget {
                           ),
                       ],
                     ),
+                        ),
+                      ),
+                    ),
                   );
                   if (picked != null) onPick(picked);
                 },
@@ -793,6 +1059,32 @@ class _ChapterBar extends StatelessWidget {
             icon: const Icon(Icons.chevron_right),
             tooltip: 'Next chapter',
             onPressed: chapter < max ? onNext : null,
+          ),
+          const SizedBox(width: 4),
+          GestureDetector(
+            onTap: onListen,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [BrandColors.goldLight, BrandColors.gold],
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.headphones, size: 16, color: Color(0xFF3E2723)),
+                  SizedBox(width: 4),
+                  Text('Listen',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF3E2723),
+                      )),
+                ],
+              ),
+            ),
           ),
         ],
       ),

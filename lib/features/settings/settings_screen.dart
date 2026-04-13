@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/translations.dart';
 import '../../services/ai_service.dart';
+import '../../services/auth_service.dart';
 import '../../services/notification_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
-import '../subscription/paywall_screen.dart';
-
+import '../auth/auth_screen.dart';
+import '../auth/profile_screen.dart';
+import 'help_screen.dart';
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -67,7 +71,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final s = ref.watch(settingsProvider);
     final n = ref.read(settingsProvider.notifier);
-    final isPro = ref.watch(isProProvider);
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
@@ -75,102 +78,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       body: ListView(
         children: [
-          // ── Rhema Pro section ──────────────────────────
-          if (isPro)
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: LinearGradient(
-                  colors: [
-                    BrandColors.gold.withValues(alpha: 0.15),
-                    BrandColors.gold.withValues(alpha: 0.05),
-                  ],
-                ),
-                border: Border.all(color: BrandColors.gold.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.workspace_premium, color: BrandColors.gold, size: 28),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Rhema Pro',
-                            style: GoogleFonts.lora(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: BrandColors.gold)),
-                        Text('All premium features unlocked',
-                            style: GoogleFonts.lora(
-                                fontSize: 12,
-                                color: theme.colorScheme.onSurfaceVariant)),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.check_circle, color: BrandColors.gold, size: 24),
-                ],
-              ),
-            )
-          else
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: const LinearGradient(
-                  colors: [BrandColors.gold, Color(0xFFE6BE5A)],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: BrandColors.gold.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const PaywallScreen()),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.workspace_premium,
-                            color: Colors.white, size: 28),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Upgrade to Pro',
-                                  style: GoogleFonts.lora(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white)),
-                              Text('Unlock all premium features',
-                                  style: GoogleFonts.lora(
-                                      fontSize: 12,
-                                      color: Colors.white70)),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right,
-                            color: Colors.white, size: 24),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
           const SizedBox(height: 4),
           SwitchListTile(
             secondary: Icon(Icons.child_care, color: Colors.pink),
@@ -201,24 +108,94 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: Text(translationById(s.translation).name),
             trailing: const Icon(Icons.chevron_right),
             onTap: () async {
-              final picked = await showModalBottomSheet<String>(
+              final grouped = translationsByLanguage();
+              final langOrder = grouped.keys.toList();
+              langOrder.remove('English');
+              langOrder.insert(0, 'English');
+              final picked = await showDialog<String>(
                 context: context,
-                builder: (_) => SafeArea(
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      for (final t in kTranslations)
-                        ListTile(
-                          enabled: t.available,
-                          leading: Icon(
-                            t.id == s.translation ? Icons.radio_button_checked : Icons.radio_button_off,
-                            color: t.available ? theme.colorScheme.primary : Colors.grey,
-                          ),
-                          title: Text(t.name + (t.available ? '' : '  (coming soon)')),
-                          subtitle: Text(t.description),
-                          onTap: t.available ? () => Navigator.pop(context, t.id) : null,
+                barrierColor: Colors.black54,
+                builder: (ctx) => Center(
+                  child: Container(
+                    width: 400,
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.65,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: const Color(0xFFD4A843).withOpacity(0.3)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
                         ),
-                    ],
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(24),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 20),
+                          Text('Switch Translation',
+                              style: GoogleFonts.lora(fontSize: 20, fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: ListView(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              children: [
+                                for (final lang in langOrder) ...[
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                                    child: Text(lang,
+                                        style: GoogleFonts.lora(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: theme.colorScheme.primary,
+                                        )),
+                                  ),
+                                  ...grouped[lang]!.map((t) => ListTile(
+                                        enabled: t.available,
+                                        leading: Icon(
+                                          t.id == s.translation
+                                              ? Icons.radio_button_checked
+                                              : Icons.radio_button_off,
+                                          color: t.available
+                                              ? theme.colorScheme.primary
+                                              : Colors.grey,
+                                        ),
+                                        title: Row(
+                                          children: [
+                                            Text(t.name +
+                                                (t.available ? '' : '  (coming soon)')),
+                                            if (t.isLocal) ...[
+                                              const SizedBox(width: 6),
+                                              Icon(Icons.offline_pin,
+                                                  size: 14,
+                                                  color: theme.colorScheme.outline),
+                                            ],
+                                            if (!t.isLocal && t.available) ...[
+                                              const SizedBox(width: 6),
+                                              Icon(Icons.cloud_outlined,
+                                                  size: 14,
+                                                  color: theme.colorScheme.outline),
+                                            ],
+                                          ],
+                                        ),
+                                        subtitle: Text(t.description),
+                                        onTap: t.available
+                                            ? () => Navigator.pop(ctx, t.id)
+                                            : null,
+                                      )),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               );
@@ -435,6 +412,121 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
 
           const Divider(),
+
+          // ── Account ──
+          Consumer(builder: (context, ref, _) {
+            final auth = ref.watch(authProvider);
+            if (auth.isAuthenticated) {
+              return ListTile(
+                leading: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: BrandColors.gold,
+                  child: Text(
+                    (auth.profile?.displayName ?? auth.user?.displayName ?? '?')[0].toUpperCase(),
+                    style: GoogleFonts.playfairDisplay(
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF3E2723),
+                    ),
+                  ),
+                ),
+                title: Text(auth.profile?.displayName ?? auth.user?.displayName ?? 'User',
+                    style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
+                subtitle: Text(auth.user?.email ?? '',
+                    style: GoogleFonts.lora(fontSize: 12)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                ),
+              );
+            }
+            return ListTile(
+              leading: Icon(Icons.person_outline, color: theme.colorScheme.primary),
+              title: Text('Sign In / Sign Up',
+                  style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
+              subtitle: Text('Save your progress and sync across devices',
+                  style: GoogleFonts.lora(fontSize: 12)),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AuthScreen()),
+              ),
+            );
+          }),
+
+          const Divider(),
+
+          // ── Developer / API section ──────────────────────────
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 8, bottom: 4),
+            child: Text('Developer',
+                style: GoogleFonts.lora(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: theme.colorScheme.onSurfaceVariant)),
+          ),
+          ListTile(
+            leading: Icon(Icons.api, color: BrandColors.gold),
+            title: Text('API Documentation',
+                style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
+            subtitle: Text(
+              'Integrate daily verse, search & more into your website or app',
+              style: GoogleFonts.lora(fontSize: 12),
+            ),
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => launchUrl(
+              Uri.parse('https://rhemabibles.com/api-docs.html'),
+              mode: LaunchMode.externalApplication,
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.code, color: theme.colorScheme.primary),
+            title: Text('API Base URL',
+                style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
+            subtitle: SelectableText(
+              'https://rhemabibles.com/api',
+              style: GoogleFonts.sourceCodePro(fontSize: 13),
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.copy, size: 18),
+              tooltip: 'Copy API URL',
+              onPressed: () {
+                Clipboard.setData(
+                    const ClipboardData(text: 'https://rhemabibles.com/api'));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('API URL copied'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Text(
+              'Free, no API key required. Endpoints: /api/daily-verse, '
+              '/api/random-verse, /api/verse, /api/search, /api/topics, /api/books',
+              style: GoogleFonts.lora(
+                fontSize: 11,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+
+          const Divider(),
+          ListTile(
+            leading: Icon(Icons.help_outline, color: theme.colorScheme.primary),
+            title: Text('Help & FAQ',
+                style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
+            subtitle: Text('Learn how to use the app, ask questions',
+                style: GoogleFonts.lora(fontSize: 12)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const HelpScreen()),
+            ),
+          ),
           const ListTile(
             title: Text('About'),
             subtitle: Text('Rhema Study Bible — The Bible that listens and speaks your language.'),
