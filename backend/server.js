@@ -148,7 +148,7 @@ const PORT = parseInt(process.env.PORT) || 3001;
 initDatabase();
 
 app.listen(PORT, () => {
-  console.log(`\n  Our Bible API Server`);
+  console.log(`\n  Rhema Study Bible API Server`);
   console.log(`  ====================`);
   console.log(`  Port:    ${PORT}`);
   console.log(`  CORS:    ${process.env.CORS_ORIGIN || 'http://localhost:8765'}`);

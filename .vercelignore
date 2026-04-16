@@ -18,5 +18,12 @@ build/app
 build/linux
 build/macos
 build/windows
+build/speech_to_text
+build/flutter_*
+build/cloud_*
+build/firebase_*
+build/shared_*
+build/google_*
+build/path_provider*
 node_modules
 .firebase

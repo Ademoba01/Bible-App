@@ -1,5 +1,5 @@
 /* ============================================
-   Our Bible Admin Dashboard - Styles
+   Rhema Study Bible Admin Dashboard - Styles
    ============================================ */
 
 :root {
@@ -66,11 +66,13 @@ body {
     margin-bottom: 36px;
 }
 
-.login-logo .logo-icon {
-    font-size: 48px;
-    color: var(--accent);
+.login-logo .logo-img {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
     display: block;
-    margin-bottom: 8px;
+    margin: 0 auto 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .login-logo h1 {
@@ -288,11 +290,13 @@ body {
     text-align: center;
 }
 
-.sidebar-header .logo-icon {
-    font-size: 32px;
-    color: var(--accent);
+.sidebar-header .sidebar-logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     display: block;
-    margin-bottom: 4px;
+    margin: 0 auto 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .sidebar-header h2 {

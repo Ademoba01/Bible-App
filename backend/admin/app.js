@@ -1,5 +1,5 @@
 /* ============================================
-   Our Bible Admin Dashboard - Application Logic
+   Rhema Study Bible Admin Dashboard - Application Logic
    ============================================ */
 
 // --- Configuration ---

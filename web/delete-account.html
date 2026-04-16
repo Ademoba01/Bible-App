@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Delete Account — Rhema Study Bible</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Georgia', serif;
+      background: #FFF8F0;
+      color: #3E2723;
+      line-height: 1.8;
+    }
+    .header {
+      background: linear-gradient(135deg, #5D4037, #3E2723);
+      color: #fff;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .header h1 { font-size: 2rem; margin-bottom: 8px; }
+    .header p { opacity: 0.85; font-size: 1rem; }
+    .content {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    h2 {
+      font-size: 1.2rem;
+      color: #5D4037;
+      margin: 28px 0 12px;
+    }
+    p, li { margin-bottom: 12px; font-size: 1rem; }
+    ul { padding-left: 24px; margin-bottom: 16px; }
+    .card {
+      background: #fff;
+      border: 1px solid #D4A843;
+      border-radius: 16px;
+      padding: 32px 24px;
+      margin-top: 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      margin-top: 16px;
+      font-size: 0.95rem;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-family: 'Georgia', serif;
+      font-size: 1rem;
+      background: #FFFDF8;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #D4A843;
+      box-shadow: 0 0 0 3px rgba(212,168,67,0.15);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    .btn {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 14px 36px;
+      background: #B71C1C;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Georgia', serif;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+    .btn:hover { background: #8B0000; }
+    .btn:disabled { background: #aaa; cursor: not-allowed; }
+    .success {
+      display: none;
+      background: #E8F5E9;
+      border: 1px solid #4CAF50;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 24px;
+      text-align: center;
+      color: #2E7D32;
+    }
+    .info-box {
+      background: #FFF3E0;
+      border: 1px solid #FFB74D;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-top: 20px;
+      font-size: 0.9rem;
+    }
+    .alt {
+      margin-top: 32px;
+      padding: 20px;
+      background: #F5F0EB;
+      border-radius: 12px;
+      font-size: 0.95rem;
+    }
+    .alt strong { color: #5D4037; }
+    a { color: #5D4037; }
+    .footer {
+      text-align: center;
+      color: #8D6E63;
+      font-size: 0.85rem;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #D4A843;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Delete Your Account</h1>
+    <p>Rhema Study Bible</p>
+  </div>
+
+  <div class="content">
+    <p>We're sorry to see you go. You can request complete deletion of your Rhema Study Bible account and all associated data.</p>
+
+    <h2>What gets deleted</h2>
+    <ul>
+      <li>Your account (email and display name)</li>
+      <li>Community posts and contributions</li>
+      <li>Bookmarks and reading history stored in the cloud</li>
+      <li>All profile data</li>
+    </ul>
+
+    <h2>What is NOT affected</h2>
+    <ul>
+      <li>Data stored only on your device (local preferences, font size, etc.) — clear this by uninstalling the app</li>
+    </ul>
+
+    <div class="info-box">
+      <strong>Note:</strong> Account deletion is permanent and cannot be undone. You will need to create a new account if you wish to use cloud features again.
+    </div>
+
+    <div class="alt">
+      <strong>Delete from the app:</strong> You can also delete your account directly in the app by going to <strong>Settings → Profile → Delete Account</strong>.
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top: 0;">Request Account Deletion</h2>
+      <form id="deleteForm" onsubmit="submitRequest(event)">
+        <label for="email">Email address used for your account</label>
+        <input type="email" id="email" name="email" required placeholder="your@email.com">
+
+        <label for="reason">Reason for leaving (optional)</label>
+        <textarea id="reason" name="reason" placeholder="Let us know how we can improve..."></textarea>
+
+        <label style="margin-top: 20px; font-weight: normal; font-size: 0.9rem;">
+          <input type="checkbox" id="confirm" required style="width: auto; margin-right: 8px;">
+          I understand this action is permanent and all my data will be deleted.
+        </label>
+
+        <button type="submit" class="btn" id="submitBtn">Delete My Account</button>
+      </form>
+
+      <div class="success" id="successMsg">
+        <p style="font-size: 1.2rem; font-weight: bold; margin-bottom: 8px;">Request Received</p>
+        <p>Your account deletion request has been submitted. We will process it within <strong>48 hours</strong> and send a confirmation to your email.</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Questions? Contact <a href="mailto:support@rhemabibles.com">support@rhemabibles.com</a></p>
+      <p style="margin-top: 8px;"><a href="https://rhemabibles.com">Back to Rhema Study Bible</a> · <a href="/privacy.html">Privacy Policy</a></p>
+    </div>
+  </div>
+
+  <script>
+    function submitRequest(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const reason = document.getElementById('reason').value;
+      const btn = document.getElementById('submitBtn');
+
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+
+      // Send deletion request via mailto (simple approach)
+      // For production, replace with an API call to your backend
+      const subject = encodeURIComponent('Account Deletion Request — Rhema Study Bible');
+      const body = encodeURIComponent(
+        'Account Deletion Request\n\n' +
+        'Email: ' + email + '\n' +
+        'Reason: ' + (reason || 'Not provided') + '\n' +
+        'Date: ' + new Date().toISOString() + '\n\n' +
+        'Please delete all data associated with this account.'
+      );
+
+      // Open mailto as backup
+      window.open('mailto:support@rhemabibles.com?subject=' + subject + '&body=' + body, '_blank');
+
+      // Show success
+      setTimeout(function() {
+        document.getElementById('deleteForm').style.display = 'none';
+        document.getElementById('successMsg').style.display = 'block';
+      }, 500);
+    }
+  </script>
+</body>
+</html>
