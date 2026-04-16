@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'api_bible_service.dart';
 import 'bible_api_service.dart';
 import 'books.dart';
 import 'models.dart';
 import 'translations.dart';
 
-/// Loads and parses Bible data from local assets or the HelloAO API.
+/// Loads and parses Bible data from local assets, HelloAO API, or API.Bible.
 ///
 /// Local asset layout: `assets/bibles/<translationId>/<bookFile>.json`
 /// Each file is a flat array of objects:
@@ -14,12 +15,15 @@ import 'translations.dart';
 ///     "value": "..." }
 /// Multiple text fragments sharing the same verseNumber are concatenated.
 ///
-/// Online translations are fetched from https://bible.helloao.org/api/
+/// Online translations are fetched from:
+///   - HelloAO: https://bible.helloao.org/api/
+///   - API.Bible: https://rest.api.bible/v1/ (Yoruba, Hausa, Igbo)
 class BibleRepository {
   // cache key: "$translationId|$bookName"
   final Map<String, List<Chapter>> _cache = {};
 
   final BibleApiService _apiService = BibleApiService();
+  final ApiBibleService _apiBibleService = ApiBibleService();
 
   List<BookInfo> get books => kAllBooks;
 
@@ -30,9 +34,11 @@ class BibleRepository {
     if (translationId == null) {
       _cache.clear();
       _apiService.clearCache();
+      _apiBibleService.clearCache();
     } else {
       _cache.removeWhere((key, _) => key.startsWith('$translationId|'));
       _apiService.clearCache(translationId);
+      _apiBibleService.clearCache(translationId);
     }
   }
 
@@ -68,9 +74,14 @@ class BibleRepository {
       return _loadLocalBook(bookName, translationId: translationId);
     }
 
-    // Load from API for online translations
+    // Route to the correct API service
     try {
-      final chapters = await _apiService.loadBook(bookName, translationId);
+      final List<Chapter> chapters;
+      if (ApiBibleService.handles(translationId)) {
+        chapters = await _apiBibleService.loadBook(bookName, translationId);
+      } else {
+        chapters = await _apiService.loadBook(bookName, translationId);
+      }
       if (chapters.isNotEmpty) {
         _cache[key] = chapters;
         return chapters;

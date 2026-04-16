@@ -3,6 +3,7 @@
 /// Translations can be loaded from:
 ///   - Local assets (assets/bibles/<id>/) — works offline
 ///   - HelloAO Bible API (https://bible.helloao.org) — requires internet
+///   - API.Bible (https://rest.api.bible) — for Yoruba, Hausa, Igbo, etc.
 class Translation {
   final String id;          // folder name or API translation ID
   final String name;        // short label (e.g. "WEB")
@@ -11,6 +12,7 @@ class Translation {
   final bool isLocal;       // true → loaded from assets; false → from API
   final String language;    // language code for display grouping
   final String languageName; // display name for the language
+  final String source;      // 'local', 'helloao', or 'apibible'
 
   const Translation({
     required this.id,
@@ -20,6 +22,7 @@ class Translation {
     this.isLocal = false,
     this.language = 'en',
     this.languageName = 'English',
+    this.source = 'helloao',
   });
 }
 
@@ -31,6 +34,7 @@ const List<Translation> kTranslations = [
     description: 'King James Version — classic English (1611)',
     available: true,
     isLocal: true,
+    source: 'local',
   ),
   Translation(
     id: 'web',
@@ -38,6 +42,7 @@ const List<Translation> kTranslations = [
     description: 'World English Bible — modern public domain',
     available: true,
     isLocal: true,
+    source: 'local',
   ),
 
   // ─── Online English translations ───────────────────────────────
@@ -130,6 +135,39 @@ const List<Translation> kTranslations = [
     available: true,
     language: 'as',
     languageName: 'Assamese',
+  ),
+
+  // ─── Yoruba ────────────────────────────────────────────────────
+  Translation(
+    id: 'OYCB',
+    name: 'OYCB',
+    description: 'Bíbélì Mímọ́ ní Èdè Yorùbá Òde-Òní — Yoruba Contemporary Bible',
+    available: true,
+    language: 'yo',
+    languageName: 'Yorùbá',
+    source: 'apibible',
+  ),
+
+  // ─── Hausa ────────────────────────────────────────────────────
+  Translation(
+    id: 'OHCB',
+    name: 'OHCB',
+    description: 'Littafi Mai Tsarki — Hausa Contemporary Bible',
+    available: true,
+    language: 'ha',
+    languageName: 'Hausa',
+    source: 'apibible',
+  ),
+
+  // ─── Igbo ─────────────────────────────────────────────────────
+  Translation(
+    id: 'OICB',
+    name: 'OICB',
+    description: 'Baịbụl Nsọ — Igbo Contemporary Bible',
+    available: true,
+    language: 'ig',
+    languageName: 'Igbo',
+    source: 'apibible',
   ),
 
   // ─── Ancient languages ────────────────────────────────────────
