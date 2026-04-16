@@ -1,4 +1,4 @@
-package com.ademoba.bible_app
+package com.rhemabibles.app
 
 import io.flutter.embedding.android.FlutterActivity
 

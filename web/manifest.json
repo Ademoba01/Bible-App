@@ -8,7 +8,10 @@
     "description": "An intelligent Bible companion app that listens to your questions and speaks God's word back to you. Explore Scripture with AI-powered search, audio narration, multiple translations, and personalized study plans.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
-    "categories": ["education", "lifestyle"],
+    "categories": [
+        "education",
+        "lifestyle"
+    ],
     "lang": "en",
     "icons": [
         {
