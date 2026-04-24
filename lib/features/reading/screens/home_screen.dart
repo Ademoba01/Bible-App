@@ -59,10 +59,10 @@ class HomeScreen extends ConsumerWidget {
         selectedIndex: index,
         onDestinationSelected: (i) => ref.read(tabIndexProvider.notifier).state = i,
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'Read'),
-          NavigationDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: 'Study'),
-          NavigationDestination(icon: Icon(Icons.bookmark_outline), selectedIcon: Icon(Icons.bookmark), label: 'Saved'),
+          NavigationDestination(icon: Icon(Icons.cottage_outlined), selectedIcon: Icon(Icons.cottage), label: 'Home'),
+          NavigationDestination(icon: Icon(Icons.auto_stories_outlined), selectedIcon: Icon(Icons.auto_stories), label: 'Read'),
+          NavigationDestination(icon: Icon(Icons.psychology_outlined), selectedIcon: Icon(Icons.psychology), label: 'Study'),
+          NavigationDestination(icon: Icon(Icons.bookmarks_outlined), selectedIcon: Icon(Icons.bookmarks), label: 'Saved'),
         ],
       ),
     );
@@ -1975,17 +1975,17 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
   @override
   Widget build(BuildContext context) {
     final tiles = [
-      _TileData(Icons.school, 'Study', const Color(0xFF5D4037),
+      _TileData(Icons.psychology, 'Study', const Color(0xFF5D4037),
           () => widget.ref.read(tabIndexProvider.notifier).state = 2),
-      _TileData(Icons.headphones, 'Listen', Colors.teal,
+      _TileData(Icons.headphones_rounded, 'Listen', Colors.teal,
           () => Navigator.push(context,
               FadeSlideRoute(page: const ListenScreen()))),
-      _TileData(Icons.menu_book, 'All Books', Colors.indigo,
+      _TileData(Icons.library_books_rounded, 'All Books', Colors.indigo,
           widget.onBookPicker),
-      _TileData(Icons.map_outlined, 'Maps', const Color(0xFF2E7D32),
+      _TileData(Icons.map_rounded, 'Maps', const Color(0xFF2E7D32),
           () => Navigator.push(context,
               FadeSlideRoute(page: const BibleMapsScreen()))),
-      _TileData(Icons.child_care, 'Kids', Colors.pink,
+      _TileData(Icons.child_care_rounded, 'Kids', Colors.pink,
           () => showKidsPortal(context, () {
             widget.ref.read(settingsProvider.notifier).setKidsMode(true);
           })),

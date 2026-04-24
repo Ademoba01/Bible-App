@@ -248,6 +248,64 @@ If the question is unclear or not about the Bible, politely redirect.
     }
   }
 
+  // ─── Smart Search ───────────────────────────────────────────
+
+  /// Given a natural-language query (paraphrase, topic, or fragment),
+  /// asks Gemini to return the best-matching canonical verse references.
+  ///
+  /// Returns a list of (reference, text, reason) where `reference` is in the
+  /// format "Book Chapter:Verse" (e.g. "Hebrews 12:29") — callers can then
+  /// resolve these against local translations.
+  static Future<({String overview, List<({String reference, String text, String reason})> hits})>
+      searchWithAI(String query) async {
+    if (!isAvailable) {
+      return (overview: '', hits: <({String reference, String text, String reason})>[]);
+    }
+
+    final prompt = '''
+A user searched the Bible for: "$query"
+
+Task: Identify the 5-10 Bible verses that best match this query — whether it's
+a paraphrase, a theme, a topic, or a fragment. Consider multiple translations
+(KJV, NIV, ESV, NLT, WEB) when matching paraphrases.
+
+Return a JSON object with two fields:
+1. "overview": a 2-3 sentence plain-English interpretation of what the query means
+   biblically (like a Google AI Overview). Mention the primary verses by reference.
+2. "hits": an array of matching verses. Each entry must have:
+   - "reference": exact canonical reference, format "Book Chapter:Verse" (e.g. "Hebrews 12:29", "Deuteronomy 4:24")
+   - "text": the full verse text in a standard English translation
+   - "reason": a brief (under 20 words) explanation of how this verse matches the query
+
+Rank hits by relevance. Place exact matches first, then paraphrases, then related themes.
+
+Return ONLY valid JSON, no markdown fences, no commentary before or after.
+''';
+
+    try {
+      final response = await _model!.generateContent([Content.text(prompt)]);
+      final raw = _extractJson(response.text ?? '');
+      final decoded = json.decode(raw);
+      if (decoded is! Map<String, dynamic>) {
+        return (overview: '', hits: <({String reference, String text, String reason})>[]);
+      }
+      final overview = decoded['overview']?.toString() ?? '';
+      final hitsList = decoded['hits'] as List<dynamic>? ?? const [];
+      final hits = hitsList.map((item) {
+        final map = item as Map<String, dynamic>;
+        return (
+          reference: map['reference']?.toString() ?? '',
+          text: map['text']?.toString() ?? '',
+          reason: map['reason']?.toString() ?? '',
+        );
+      }).where((h) => h.reference.isNotEmpty).toList();
+      return (overview: overview, hits: hits);
+    } catch (e) {
+      debugPrint('AI searchWithAI error: $e');
+      return (overview: '', hits: <({String reference, String text, String reason})>[]);
+    }
+  }
+
   // ─── Helpers ────────────────────────────────────────────────
 
   /// Extracts JSON from a response that may contain markdown fences.

@@ -257,8 +257,44 @@ class BibleRepository {
     return terms.toSet().toList(); // deduplicate
   }
 
+  /// Common English stopwords skipped during token matching.
+  static const Set<String> _stopwords = {
+    'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+    'am', 'have', 'has', 'had', 'do', 'does', 'did', 'of', 'to', 'in',
+    'on', 'at', 'for', 'with', 'by', 'from', 'as', 'it', 'its', 'this',
+    'that', 'these', 'those', 'and', 'or', 'but', 'if', 'so', 'not',
+  };
+
+  /// Simple stemmer — strips common suffixes so "consuming" matches "consume".
+  static String _stem(String word) {
+    if (word.length < 5) return word;
+    for (final suffix in const ['ing', 'ed', 'es', 'ly', 's']) {
+      if (word.endsWith(suffix) && word.length - suffix.length >= 3) {
+        return word.substring(0, word.length - suffix.length);
+      }
+    }
+    return word;
+  }
+
+  /// Tokenize: lowercase, split on non-letters, drop stopwords, stem.
+  List<String> _tokenize(String text) {
+    return text
+        .toLowerCase()
+        .split(RegExp(r"[^a-z']+"))
+        .where((w) => w.length >= 2 && !_stopwords.contains(w))
+        .map(_stem)
+        .toList();
+  }
+
   /// Global search across all books for a given translation.
-  /// Uses synonym expansion to find semantically related results.
+  ///
+  /// Matches in priority order:
+  ///   1. Exact phrase (substring)
+  ///   2. All query tokens present (word-boundary AND-match)
+  ///   3. Most query tokens present (at least 60%)
+  ///   4. Legacy synonym match
+  ///
+  /// Results are ranked by # of matching tokens / verse length.
   Future<List<({VerseRef ref, String text})>> search(
     String query, {
     String translationId = 'web',
@@ -267,65 +303,177 @@ class BibleRepository {
     final q = query.trim().toLowerCase();
     if (q.isEmpty) return const [];
 
+    final queryTokens = _tokenize(q);
     final searchTerms = _expandQuery(q);
-    final exactResults = <({VerseRef ref, String text})>[];
-    final synonymResults = <({VerseRef ref, String text})>[];
 
-    // Search in the requested translation
-    await _searchTranslation(translationId, q, searchTerms, exactResults, synonymResults, limit);
-
-    // If searching WEB and few results, also search KJV (has older terms like "fornication")
-    if (translationId == 'web' && exactResults.length + synonymResults.length < 10) {
-      await _searchTranslation('kjv', q, searchTerms, exactResults, synonymResults, limit);
-    }
-
-    // If searching KJV and few results, also search WEB
-    if (translationId == 'kjv' && exactResults.length + synonymResults.length < 10) {
-      await _searchTranslation('web', q, searchTerms, exactResults, synonymResults, limit);
-    }
-
-    // Combine: exact matches first, then synonym matches (no duplicates)
-    final combined = <({VerseRef ref, String text})>[];
+    final ranked = <({VerseRef ref, String text, int rank, double score})>[];
     final seenIds = <String>{};
-    for (final r in exactResults) {
-      if (seenIds.add(r.ref.id)) combined.add(r);
+
+    // Search primary translation first, then fall back to KJV + WEB for broader coverage
+    final translationsToSearch = <String>{translationId};
+    if (translationId != 'web') translationsToSearch.add('web');
+    if (translationId != 'kjv') translationsToSearch.add('kjv');
+
+    for (final tid in translationsToSearch) {
+      if (ranked.length >= limit) break;
+      await _searchTranslationRanked(
+        tid, q, queryTokens, searchTerms, ranked, seenIds, limit,
+      );
     }
-    for (final r in synonymResults) {
-      if (seenIds.add(r.ref.id)) combined.add(r);
-    }
-    return combined.take(limit).toList();
+
+    // Sort: lower rank (better) first, higher score (better) second
+    ranked.sort((a, b) {
+      if (a.rank != b.rank) return a.rank.compareTo(b.rank);
+      return b.score.compareTo(a.score);
+    });
+
+    return ranked
+        .take(limit)
+        .map((r) => (ref: r.ref, text: r.text))
+        .toList();
   }
 
-  Future<void> _searchTranslation(
+  Future<void> _searchTranslationRanked(
     String translationId,
     String exactQuery,
-    List<String> allTerms,
-    List<({VerseRef ref, String text})> exactResults,
-    List<({VerseRef ref, String text})> synonymResults,
+    List<String> queryTokens,
+    List<String> synonymTerms,
+    List<({VerseRef ref, String text, int rank, double score})> out,
+    Set<String> seenIds,
     int limit,
   ) async {
     for (final b in kAllBooks) {
-      if (exactResults.length + synonymResults.length >= limit) break;
-      final chapters = await loadBook(b.name, translationId: translationId);
+      if (out.length >= limit) break;
+      List<Chapter> chapters;
+      try {
+        chapters = await loadBook(b.name, translationId: translationId);
+      } catch (_) {
+        continue;
+      }
       for (final c in chapters) {
         for (final v in c.verses) {
+          final ref = VerseRef(b.name, c.number, v.number);
+          if (seenIds.contains(ref.id)) continue;
           final lower = v.text.toLowerCase();
-          // Exact match
+
+          // Rank 0: exact phrase
           if (lower.contains(exactQuery)) {
-            exactResults.add((ref: VerseRef(b.name, c.number, v.number), text: v.text));
-          } else {
-            // Synonym match — check all expanded terms
-            for (final term in allTerms) {
-              if (term != exactQuery && lower.contains(term)) {
-                synonymResults.add((ref: VerseRef(b.name, c.number, v.number), text: v.text));
-                break;
-              }
+            seenIds.add(ref.id);
+            out.add((ref: ref, text: v.text, rank: 0, score: 1.0));
+            if (out.length >= limit) return;
+            continue;
+          }
+
+          // Tokenize the verse once
+          final verseTokens = _tokenize(v.text).toSet();
+
+          // Rank 1: all query tokens present (word-boundary AND match)
+          if (queryTokens.isNotEmpty &&
+              queryTokens.every(verseTokens.contains)) {
+            seenIds.add(ref.id);
+            final score = queryTokens.length / (verseTokens.length + 1);
+            out.add((ref: ref, text: v.text, rank: 1, score: score));
+            if (out.length >= limit) return;
+            continue;
+          }
+
+          // Rank 2: majority (>=60%) of query tokens present
+          if (queryTokens.length >= 2) {
+            final matched =
+                queryTokens.where(verseTokens.contains).length;
+            if (matched / queryTokens.length >= 0.6) {
+              seenIds.add(ref.id);
+              final score = matched / (verseTokens.length + 1);
+              out.add((ref: ref, text: v.text, rank: 2, score: score));
+              if (out.length >= limit) return;
+              continue;
             }
           }
-          if (exactResults.length + synonymResults.length >= limit) return;
+
+          // Rank 3: legacy synonym substring fallback
+          for (final term in synonymTerms) {
+            if (term != exactQuery && lower.contains(term)) {
+              seenIds.add(ref.id);
+              out.add((ref: ref, text: v.text, rank: 3, score: 0.1));
+              if (out.length >= limit) return;
+              break;
+            }
+          }
         }
       }
     }
+  }
+
+  /// Parse a canonical reference string like "Hebrews 12:29" or "1 John 1:9"
+  /// and return the verse text (from the requested translation, with fallback).
+  ///
+  /// Returns null if the reference can't be resolved.
+  Future<({VerseRef ref, String text})?> lookupReference(
+    String reference, {
+    String translationId = 'web',
+  }) async {
+    final match = RegExp(r'^\s*((?:[1-3]\s+)?[A-Za-z. ]+?)\s+(\d+):(\d+)')
+        .firstMatch(reference.trim());
+    if (match == null) return null;
+    final bookRaw = match.group(1)!.trim();
+    final chapter = int.tryParse(match.group(2)!) ?? 0;
+    final verse = int.tryParse(match.group(3)!) ?? 0;
+    if (chapter == 0 || verse == 0) return null;
+
+    // Resolve book name — case-insensitive, allow partial (e.g. "Rom" → "Romans")
+    final bookName = _resolveBookName(bookRaw);
+    if (bookName == null) return null;
+
+    // Try requested translation first, then fall back to WEB then KJV
+    for (final tid in {translationId, 'web', 'kjv'}) {
+      try {
+        final chapters = await loadBook(bookName, translationId: tid);
+        if (chapter > chapters.length) continue;
+        final c = chapters[chapter - 1];
+        final v = c.verses.where((x) => x.number == verse).firstOrNull;
+        if (v != null) {
+          return (ref: VerseRef(bookName, chapter, verse), text: v.text);
+        }
+      } catch (_) {
+        continue;
+      }
+    }
+    return null;
+  }
+
+  String? _resolveBookName(String raw) {
+    final normalized = raw.toLowerCase().replaceAll('.', '').trim();
+    // Exact match
+    for (final b in kAllBooks) {
+      if (b.name.toLowerCase() == normalized) return b.name;
+    }
+    // Starts-with match (handles "Rom" → "Romans", "Ps" → "Psalms")
+    for (final b in kAllBooks) {
+      if (b.name.toLowerCase().startsWith(normalized)) return b.name;
+    }
+    // Abbreviation common cases
+    const abbr = <String, String>{
+      'gen': 'Genesis', 'ex': 'Exodus', 'exo': 'Exodus',
+      'lev': 'Leviticus', 'num': 'Numbers', 'deut': 'Deuteronomy',
+      'josh': 'Joshua', 'judg': 'Judges', '1 sam': '1 Samuel',
+      '2 sam': '2 Samuel', '1 kgs': '1 Kings', '2 kgs': '2 Kings',
+      '1 chr': '1 Chronicles', '2 chr': '2 Chronicles',
+      'neh': 'Nehemiah', 'est': 'Esther', 'ps': 'Psalms', 'psa': 'Psalms',
+      'prov': 'Proverbs', 'eccl': 'Ecclesiastes', 'song': 'Song of Solomon',
+      'isa': 'Isaiah', 'jer': 'Jeremiah', 'lam': 'Lamentations',
+      'ezek': 'Ezekiel', 'dan': 'Daniel', 'hos': 'Hosea', 'obad': 'Obadiah',
+      'mic': 'Micah', 'nah': 'Nahum', 'hab': 'Habakkuk', 'zeph': 'Zephaniah',
+      'hag': 'Haggai', 'zech': 'Zechariah', 'mal': 'Malachi',
+      'matt': 'Matthew', 'mk': 'Mark', 'lk': 'Luke', 'jn': 'John',
+      'rom': 'Romans', '1 cor': '1 Corinthians', '2 cor': '2 Corinthians',
+      'gal': 'Galatians', 'eph': 'Ephesians', 'phil': 'Philippians',
+      'col': 'Colossians', '1 thess': '1 Thessalonians',
+      '2 thess': '2 Thessalonians', '1 tim': '1 Timothy', '2 tim': '2 Timothy',
+      'tit': 'Titus', 'phlm': 'Philemon', 'heb': 'Hebrews', 'jas': 'James',
+      '1 pet': '1 Peter', '2 pet': '2 Peter', '1 jn': '1 John',
+      '2 jn': '2 John', '3 jn': '3 John', 'rev': 'Revelation',
+    };
+    return abbr[normalized];
   }
 
   /// Returns the text of all verses in a given chapter, in order.
