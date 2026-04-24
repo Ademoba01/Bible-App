@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "source": "Agent 14 — Children's curriculum designer, Rhema debate April 2026",
+  "ageRange": "5-10",
+  "questions": [
+    {
+      "id": "wsi-01",
+      "type": "whoSaidIt",
+      "question": "Who said, 'Here I am, send me!' to God?",
+      "options": ["Isaiah", "Moses", "Peter", "Mary"],
+      "correctAnswer": "Isaiah",
+      "verseRef": "Isaiah 6:8",
+      "explanation": "Isaiah was brave! When God asked who would go, he raised his hand right away to serve Him."
+    },
+    {
+      "id": "wsi-02",
+      "type": "whoSaidIt",
+      "question": "Who said, 'Let the little children come to me'?",
+      "options": ["Jesus", "John", "David", "Paul"],
+      "correctAnswer": "Jesus",
+      "verseRef": "Mark 10:14",
+      "explanation": "Jesus loves kids! He told His friends to let children come close so He could bless them."
+    },
+    {
+      "id": "wsi-03",
+      "type": "whoSaidIt",
+      "question": "Who said, 'I can do all things through Christ'?",
+      "options": ["Paul", "Noah", "Samson", "Joshua"],
+      "correctAnswer": "Paul",
+      "verseRef": "Philippians 4:13",
+      "explanation": "Paul wrote this from jail! He knew Jesus gives us strength even when things are hard."
+    },
+    {
+      "id": "fib-01",
+      "type": "fillBlank",
+      "question": "Jesus turned water into ______.",
+      "options": ["wine", "milk", "juice", "honey"],
+      "correctAnswer": "wine",
+      "verseRef": "John 2:1-11",
+      "explanation": "At a wedding, Jesus did His very first miracle and turned jars of water into yummy wine."
+    },
+    {
+      "id": "fib-02",
+      "type": "fillBlank",
+      "question": "David used a ______ to beat Goliath the giant.",
+      "options": ["sling and stone", "sword", "spear", "trumpet"],
+      "correctAnswer": "sling and stone",
+      "verseRef": "1 Samuel 17",
+      "explanation": "Little David trusted God more than his size. One smooth stone from his sling won the fight!"
+    },
+    {
+      "id": "fib-03",
+      "type": "fillBlank",
+      "question": "God made the world in ______ days.",
+      "options": ["six", "three", "ten", "twelve"],
+      "correctAnswer": "six",
+      "verseRef": "Genesis 1",
+      "explanation": "God made everything in six days, then rested on the seventh. Sky, sea, animals, and us!"
+    },
+    {
+      "id": "ord-01",
+      "type": "whichCameFirst",
+      "question": "Which happened FIRST in the Bible?",
+      "options": [
+        "God made light",
+        "Noah built the ark",
+        "Baby Jesus was born",
+        "David fought Goliath"
+      ],
+      "correctAnswer": "God made light",
+      "verseRef": "Genesis 1:3",
+      "explanation": "On the very first day, God said 'Let there be light!' This was before any story or person."
+    },
+    {
+      "id": "ord-02",
+      "type": "whichCameFirst",
+      "question": "Which happened FIRST?",
+      "options": [
+        "Jesus was born in a stable",
+        "Jesus walked on water",
+        "Jesus fed 5,000 people",
+        "Jesus rose from the grave"
+      ],
+      "correctAnswer": "Jesus was born in a stable",
+      "verseRef": "Luke 2:7",
+      "explanation": "Jesus came as a baby first! All His miracles happened after He grew up."
+    },
+    {
+      "id": "ani-01",
+      "type": "whatAnimal",
+      "question": "What animal swallowed Jonah?",
+      "options": ["A big fish", "A whale shark", "A dolphin", "A crocodile"],
+      "correctAnswer": "A big fish",
+      "verseRef": "Jonah 1:17",
+      "explanation": "The Bible says a great fish God sent! Jonah prayed inside for three days and God saved him."
+    },
+    {
+      "id": "ani-02",
+      "type": "whatAnimal",
+      "question": "What animal talked to Balaam on the road?",
+      "options": ["A donkey", "A camel", "A sheep", "A goat"],
+      "correctAnswer": "A donkey",
+      "verseRef": "Numbers 22:28",
+      "explanation": "God opened the donkey's mouth to warn Balaam! The donkey saw an angel Balaam couldn't see."
+    }
+  ]
+}
