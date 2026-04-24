@@ -293,7 +293,7 @@ class _KidsStoryScreenState extends ConsumerState<KidsStoryScreen>
                   // Bouncing emoji even while loading
                   SlideTransition(
                     position: _emojiBounceAnimation,
-                    child: Text(s.emoji, style: const TextStyle(fontSize: 64)),
+                    child: Text(s.emoji, style: const TextStyle(fontSize: 36)),
                   ),
                   const SizedBox(height: 16),
                   const CircularProgressIndicator(),
@@ -328,7 +328,7 @@ class _KidsStoryScreenState extends ConsumerState<KidsStoryScreen>
                     children: [
                       SlideTransition(
                         position: _emojiBounceAnimation,
-                        child: Text(s.emoji, style: const TextStyle(fontSize: 64)),
+                        child: Text(s.emoji, style: const TextStyle(fontSize: 36)),
                       ),
                       Text(
                         s.blurb,

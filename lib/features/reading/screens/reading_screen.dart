@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -10,6 +9,7 @@ import '../../../state/providers.dart';
 import '../../../theme.dart';
 import '../../listen/listen_screen.dart';
 import '../../search/similar_verses_screen.dart';
+import '../../share/verse_card_renderer.dart';
 import '../../../utils/page_transitions.dart';
 import '../../study/chapter_quiz_screen.dart';
 import 'books_screen.dart';
@@ -439,7 +439,11 @@ class _VerseListState extends State<_VerseList> {
   void _shareSelected() {
     final rangeRef = _buildRangeRef();
     final text = _buildSelectedText();
-    Share.share('$rangeRef\n$text\n\n— Rhema Study Bible\nhttps://rhemabibles.com');
+    VerseCardRenderer.shareVerseCard(
+      context: context,
+      verseText: text,
+      reference: rangeRef,
+    );
     _clearSelection();
   }
 
@@ -861,7 +865,11 @@ class _VerseListState extends State<_VerseList> {
                     final translation = widget.ref.read(settingsProvider).translation;
                     final versionName = translationById(translation).name;
                     Navigator.pop(sheetContext);
-                    Share.share('$refId ($versionName)\n${v.text}\n\n— Rhema Study Bible\nhttps://rhemabibles.com');
+                    VerseCardRenderer.shareVerseCard(
+                      context: context,
+                      verseText: v.text,
+                      reference: '$refId ($versionName)',
+                    );
                   },
                 ),
                 TextButton.icon(

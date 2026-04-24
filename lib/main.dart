@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'features/kids/kids_home_screen.dart';
-import 'features/onboarding/welcome_screen.dart';
+import 'features/onboarding/onboarding_screen.dart';
 import 'features/reading/screens/home_screen.dart';
 import 'services/notification_service.dart';
 import 'state/providers.dart';
@@ -54,7 +54,7 @@ class BibleApp extends ConsumerWidget {
 
     final Widget home;
     if (!settings.onboarded) {
-      home = const WelcomeScreen();
+      home = const OnboardingScreen();
     } else if (settings.kidsMode) {
       home = const KidsHomeScreen();
     } else {

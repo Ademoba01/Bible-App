@@ -248,6 +248,175 @@ If the question is unclear or not about the Bible, politely redirect.
     }
   }
 
+  // ─── Personal Reading Plans ────────────────────────────────
+
+  /// Generate a sequenced, dated reading plan from a stated goal.
+  ///
+  /// Returns a list of PlanDay entries (one per day) each with verse refs,
+  /// theme, and a reflection prompt. Persist the result locally — do not
+  /// re-call Gemini on every open.
+  static Future<List<({
+    int day,
+    List<String> verseRefs,
+    String theme,
+    String reflection,
+  })>> generateReadingPlan({
+    required String goal,
+    required int days,
+    String? lifeContext,
+  }) async {
+    if (!isAvailable) return [];
+
+    final contextLine = (lifeContext != null && lifeContext.trim().isNotEmpty)
+        ? 'User life context: $lifeContext'
+        : '';
+
+    final prompt = '''
+Create a $days-day Bible reading plan for a user who said:
+
+"$goal"
+
+$contextLine
+
+Guidelines:
+- Each day should be readable in 5-10 minutes (1-3 passages or one chapter).
+- Build narrative/thematic flow across the plan — not random picks.
+- Mix genres: narrative, psalm, epistle, gospel as appropriate.
+- End with a capstone passage that answers the stated goal.
+
+Return a JSON array of $days objects. Each has:
+- "day": integer 1..$days
+- "verseRefs": array of canonical references, e.g. ["Psalm 139:1-6", "John 10:27-30"]
+- "theme": 3-6 word title for the day
+- "reflection": one open-ended question under 25 words
+
+Return ONLY the JSON array, no prose.
+''';
+
+    try {
+      final response = await _model!.generateContent([Content.text(prompt)]);
+      final raw = _extractJson(response.text ?? '');
+      final List<dynamic> items = json.decode(raw) as List<dynamic>;
+      return items.map((item) {
+        final map = item as Map<String, dynamic>;
+        final refs = (map['verseRefs'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [];
+        return (
+          day: (map['day'] as num?)?.toInt() ?? 0,
+          verseRefs: refs,
+          theme: map['theme']?.toString() ?? '',
+          reflection: map['reflection']?.toString() ?? '',
+        );
+      }).where((p) => p.day > 0 && p.verseRefs.isNotEmpty).toList();
+    } catch (e) {
+      debugPrint('AI generateReadingPlan error: $e');
+      return [];
+    }
+  }
+
+  // ─── Adaptive Verse of the Day ──────────────────────────────
+
+  /// Return a verse tuned to the user's recent reading + current mood.
+  ///
+  /// `recentRefs` is a capped list (last 30 days) of verse refs. `mood` is
+  /// one of: 'anxious', 'grateful', 'lost', 'hopeful' (or ''). Falls back
+  /// to the deterministic "verse of the day" when AI unavailable.
+  static Future<({String reference, String text, String reason})>
+      adaptiveVerseOfDay({
+    required List<String> recentRefs,
+    required String mood,
+    required DateTime date,
+  }) async {
+    if (!isAvailable) {
+      return (reference: '', text: '', reason: '');
+    }
+
+    final history = recentRefs.isEmpty
+        ? '(no recent history)'
+        : recentRefs.take(30).join(', ');
+    final moodLine =
+        mood.trim().isEmpty ? '' : 'Today they feel: $mood.';
+
+    final prompt = '''
+Pick one Bible verse for this person today (${date.toIso8601String().substring(0, 10)}).
+
+$moodLine
+
+Recent reading (last 30 days): $history
+
+Pick a verse that:
+- Speaks to today's mood if a mood was given
+- Doesn't duplicate what they just read
+- Is well-known enough to feel like a companion, not obscure
+
+Return a JSON object:
+- "reference": canonical ref (e.g. "Psalm 46:10")
+- "text": the verse text (WEB or NIV)
+- "reason": under 25 words — why this verse, for this person, today
+
+Return ONLY the JSON object.
+''';
+
+    try {
+      final response = await _model!.generateContent([Content.text(prompt)]);
+      final raw = _extractJson(response.text ?? '');
+      final map = json.decode(raw) as Map<String, dynamic>;
+      return (
+        reference: map['reference']?.toString() ?? '',
+        text: map['text']?.toString() ?? '',
+        reason: map['reason']?.toString() ?? '',
+      );
+    } catch (e) {
+      debugPrint('AI adaptiveVerseOfDay error: $e');
+      return (reference: '', text: '', reason: '');
+    }
+  }
+
+  // ─── Preach to me about X ──────────────────────────────────
+
+  /// Generate a 60-90 second mini-sermon on a topic, shaped by the user's
+  /// life context (role, season, struggle).
+  ///
+  /// Streams text chunks so the UI can display as-it-writes.
+  static Stream<String> preachAboutTopic({
+    required String topic,
+    String? userLifeContext,
+  }) async* {
+    if (!isAvailable) return;
+
+    final ctxBlock =
+        (userLifeContext != null && userLifeContext.trim().isNotEmpty)
+            ? 'The listener: $userLifeContext'
+            : 'The listener: general adult Christian audience.';
+
+    final prompt = '''
+Give a 60-90 second mini-sermon on the topic: "$topic"
+
+$ctxBlock
+
+Structure:
+1. Open with a Scripture (one verse).
+2. Brief exegesis (2-3 sentences of context).
+3. A concrete application tied to the listener's context.
+4. Close with a blessing or commissioning sentence.
+
+Voice: warm, pastoral, direct. No clichés. No "beloved." Write like a trusted
+friend who happens to be a pastor. Keep the whole thing under 200 words.
+''';
+
+    try {
+      final stream = _model!.generateContentStream([Content.text(prompt)]);
+      await for (final chunk in stream) {
+        final piece = chunk.text;
+        if (piece != null && piece.isNotEmpty) yield piece;
+      }
+    } catch (e) {
+      debugPrint('AI preachAboutTopic stream error: $e');
+    }
+  }
+
   // ─── Smart Search ───────────────────────────────────────────
 
   /// Given a natural-language query (paraphrase, topic, or fragment),

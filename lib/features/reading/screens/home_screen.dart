@@ -15,7 +15,9 @@ import '../../../theme.dart';
 import '../../../data/book_descriptions.dart';
 import '../../auth/auth_screen.dart';
 import '../../bookmarks/bookmarks_screen.dart';
+import '../../codex/codex_screen.dart';
 import '../../listen/listen_screen.dart';
+import '../../prayer/prayer_wall_screen.dart';
 import '../../search/similar_verses_screen.dart';
 import '../../settings/help_screen.dart';
 import '../../settings/settings_screen.dart';
@@ -927,7 +929,10 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                   Consumer(builder: (context, ref, _) {
                     final streak = ref.watch(streakProvider);
                     return GestureDetector(
-                      onTap: () => _showStreakSheet(context, streak),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const CodexScreen()),
+                      ),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
@@ -1989,6 +1994,12 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
           () => showKidsPortal(context, () {
             widget.ref.read(settingsProvider.notifier).setKidsMode(true);
           })),
+      _TileData(Icons.volunteer_activism, 'Prayer Wall', Colors.deepPurple,
+          () => Navigator.push(context,
+              FadeSlideRoute(page: const PrayerWallScreen()))),
+      _TileData(Icons.auto_awesome_mosaic, 'Codex', const Color(0xFF7A2E2E),
+          () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const CodexScreen()))),
     ];
 
     return Column(
