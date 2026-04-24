@@ -21,25 +21,41 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   final FlutterTts _tts = FlutterTts();
   bool _playing = false;
   bool _paused = false;
-  double _speechRate = 0.75; // 0.0–1.0 range; 0.75 = 1.5× speed (default)
+  // 0.0–1.0 flutter_tts range. 0.50 ≈ 1.0× narration speed (scripture default).
+  // Loaded from settings on initState; persisted via settingsProvider.setSpeechRate.
+  double _speechRate = 0.50;
   List<Verse> _verses = [];
   int _currentVerseIndex = 0;
   int _resumeFromVerse = 0; // track where to resume after pause or speed change
   final ScrollController _scrollController = ScrollController();
 
-  // Preset speed labels (non-const because double keys)
+  // Preset speed ladder — Audible-style. Dense near the 1.0–1.5× sweet spot
+  // where ~80% of listeners settle. Includes 0.9× for archaic English (KJV).
   static final _speeds = <double, String>{
     0.25: '0.5×',
     0.38: '0.75×',
-    0.50: '1×',
+    0.45: '0.9×',
+    0.50: '1.0×',
+    0.56: '1.1×',
     0.62: '1.25×',
+    0.69: '1.4×',
     0.75: '1.5×',
-    0.88: '2×',
+    0.82: '1.75×',
+    0.88: '2.0×',
   };
+
+  double get _minSpeed => _speeds.keys.reduce((a, b) => a < b ? a : b);
+  double get _maxSpeed => _speeds.keys.reduce((a, b) => a > b ? a : b);
 
   @override
   void initState() {
     super.initState();
+    // Load persisted speed after first frame so we can access Riverpod.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final saved = ref.read(settingsProvider).speechRate;
+      setState(() => _speechRate = saved);
+    });
   }
 
   @override
@@ -97,12 +113,29 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
     final ch = chapters[(loc.chapter - 1).clamp(0, chapters.length - 1)];
     final verses = ch.verses;
 
-    final voiceName = ref.read(settingsProvider).voiceName;
+    final settings = ref.read(settingsProvider);
+    final voiceName = settings.voiceName;
     if (voiceName.isNotEmpty) {
       await _tts.setVoice({"name": voiceName, "locale": "en-US"});
     }
-    await _tts.setSpeechRate(_speechRate);
-    await _tts.setPitch(1.0);
+
+    // Translation-aware speed: older English (KJV/ASV) is harder to parse at
+    // high rates — nudge down ~8% when going above 1.0×.
+    final archaic = settings.translation.toLowerCase() == 'kjv' ||
+        settings.translation.toLowerCase() == 'asv';
+    final effectiveRate = (archaic && _speechRate > 0.50)
+        ? _speechRate * 0.92
+        : _speechRate;
+    await _tts.setSpeechRate(effectiveRate);
+
+    // Pitch compensation — platform TTS engines drift chipmunk-ward at high
+    // rates without compensation. Keeps narration voice natural 1.5×+.
+    final pitchComp = _speechRate <= 0.62
+        ? 1.0
+        : _speechRate <= 0.75
+            ? 0.96
+            : 0.92;
+    await _tts.setPitch(pitchComp);
 
     setState(() {
       _playing = true;
@@ -139,10 +172,18 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
 
       if (!_playing) break;
 
-      // Natural pause between verses — longer after sentences ending with period
-      final endsWithPeriod = verseText.endsWith('.');
+      // Pauses scale inversely with speed (faster listening = shorter breaths).
+      // Chapter-ending pause is long enough to feel liturgical, not abrupt.
+      final speedScale = 0.50 / _speechRate;
+      final endsWithTerminal = RegExp(r'[.!?]$').hasMatch(verseText);
+      final isLastVerse = i == verses.length - 1;
+      final basePause = isLastVerse
+          ? 900 // chapter beat
+          : endsWithTerminal
+              ? 400 // sentence break
+              : 200; // verse break
       await Future.delayed(
-          Duration(milliseconds: endsWithPeriod ? 400 : 200));
+          Duration(milliseconds: (basePause * speedScale).round()));
     }
 
     if (mounted) {
@@ -177,6 +218,8 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
 
   void _setSpeed(double rate) async {
     setState(() => _speechRate = rate);
+    // Persist across sessions so users don't re-set it every time (WCAG 2.2.1).
+    await ref.read(settingsProvider.notifier).setSpeechRate(rate);
     if (_playing) {
       // Remember current position, stop, and resume from same verse
       final resumeAt = _currentVerseIndex;
@@ -414,34 +457,48 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
                     IconButton(
                       icon: const Icon(Icons.remove_circle_outline, size: 24),
                       tooltip: 'Slower',
-                      onPressed: _speechRate > 0.25 ? _decreaseSpeed : null,
+                      onPressed: _speechRate > _minSpeed ? _decreaseSpeed : null,
                       color: theme.colorScheme.primary,
                     ),
                     const SizedBox(width: 4),
 
-                    // Speed label
-                    GestureDetector(
-                      onTap: () => _showSpeedPicker(context, theme),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: theme.colorScheme.primary.withValues(alpha: 0.12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.speed, size: 18, color: theme.colorScheme.primary),
-                            const SizedBox(width: 6),
-                            Text(
-                              _currentSpeedLabel,
-                              style: GoogleFonts.lora(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: theme.colorScheme.primary,
+                    // Speed label — accessible button (WCAG 2.5.8, 4.1.2).
+                    // InkWell for keyboard focus + ripple; Semantics provides
+                    // screen-reader role/state/action.
+                    Semantics(
+                      button: true,
+                      label: 'Playback speed, currently $_currentSpeedLabel. '
+                          'Double tap to change.',
+                      child: InkWell(
+                        onTap: () => _showSpeedPicker(context, theme),
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          constraints: const BoxConstraints(
+                              minHeight: 48, minWidth: 72),
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.speed,
+                                  size: 18, color: theme.colorScheme.primary),
+                              const SizedBox(width: 6),
+                              Text(
+                                _currentSpeedLabel,
+                                style: GoogleFonts.lora(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: theme.colorScheme.primary,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -452,7 +509,7 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
                     IconButton(
                       icon: const Icon(Icons.add_circle_outline, size: 24),
                       tooltip: 'Faster',
-                      onPressed: _speechRate < 0.88 ? _increaseSpeed : null,
+                      onPressed: _speechRate < _maxSpeed ? _increaseSpeed : null,
                       color: theme.colorScheme.primary,
                     ),
                   ],

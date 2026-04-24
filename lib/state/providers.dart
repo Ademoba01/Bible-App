@@ -163,6 +163,7 @@ class AppSettings {
   final bool kidsMode;
   final bool onboarded;
   final String voiceName;
+  final double speechRate; // flutter_tts 0.0-1.0 scale; 0.50 ≈ 1.0× speed
   final AiMode aiMode;
   final String geminiApiKey;
   const AppSettings({
@@ -172,6 +173,7 @@ class AppSettings {
     this.kidsMode = false,
     this.onboarded = false,
     this.voiceName = '',
+    this.speechRate = 0.50,
     this.aiMode = AiMode.auto,
     this.geminiApiKey = '',
   });
@@ -196,6 +198,7 @@ class AppSettings {
     bool? kidsMode,
     bool? onboarded,
     String? voiceName,
+    double? speechRate,
     AiMode? aiMode,
     String? geminiApiKey,
   }) =>
@@ -206,6 +209,7 @@ class AppSettings {
         kidsMode: kidsMode ?? this.kidsMode,
         onboarded: onboarded ?? this.onboarded,
         voiceName: voiceName ?? this.voiceName,
+        speechRate: speechRate ?? this.speechRate,
         aiMode: aiMode ?? this.aiMode,
         geminiApiKey: geminiApiKey ?? this.geminiApiKey,
       );
@@ -220,6 +224,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
           kidsMode: _prefs?.getBool('kidsMode') ?? false,
           onboarded: _prefs?.getBool('onboarded') ?? false,
           voiceName: _prefs?.getString('voiceName') ?? '',
+          speechRate: _prefs?.getDouble('speechRate') ?? 0.50,
           aiMode: AiMode.values.firstWhere(
             (e) => e.name == (_prefs?.getString('aiMode') ?? ''),
             orElse: () => AiMode.auto,
@@ -257,6 +262,12 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setVoiceName(String v) async {
     state = state.copyWith(voiceName: v);
     await _prefs?.setString('voiceName', v);
+  }
+
+  Future<void> setSpeechRate(double v) async {
+    final clamped = v.clamp(0.20, 0.95);
+    state = state.copyWith(speechRate: clamped);
+    await _prefs?.setDouble('speechRate', clamped);
   }
 
   Future<void> completeOnboarding() async {
