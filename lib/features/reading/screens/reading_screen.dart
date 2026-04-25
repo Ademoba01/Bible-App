@@ -13,6 +13,7 @@ import '../../listen/listen_screen.dart';
 import '../../search/similar_verses_screen.dart';
 import '../../share/verse_card_renderer.dart';
 import '../../../utils/page_transitions.dart';
+import '../../../widgets/rhema_title.dart';
 import '../../study/chapter_quiz_screen.dart';
 import 'books_screen.dart';
 import '../../../widgets/shimmer_placeholder.dart';
@@ -132,25 +133,43 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: TextButton(
-          style: TextButton.styleFrom(foregroundColor: theme.colorScheme.onPrimary),
-          onPressed: () async {
-            final picked = await Navigator.push<String>(
-              context,
-              FadeSlideRoute(page: const BooksScreen()),
-            );
-            if (picked != null) {
-              ref.read(readingLocationProvider.notifier).setBook(picked);
-            }
-          },
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('${loc.book} ${loc.chapter}',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(width: 4),
-              const Icon(Icons.arrow_drop_down, size: 22),
-            ],
+        centerTitle: true,
+        // Centered Rhema mark — taps to home. Replaces the book/chapter label
+        // that was awkwardly left-aligned. Book picker still accessible via
+        // the chapter bar below the AppBar.
+        title: const RhemaTitle(),
+        // Book/chapter pill on the leading side keeps quick book switching.
+        leadingWidth: 140,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: theme.colorScheme.onPrimary,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
+            onPressed: () async {
+              final picked = await Navigator.push<String>(
+                context,
+                FadeSlideRoute(page: const BooksScreen()),
+              );
+              if (picked != null) {
+                ref.read(readingLocationProvider.notifier).setBook(picked);
+              }
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    '${loc.book} ${loc.chapter}',
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                const Icon(Icons.arrow_drop_down, size: 18),
+              ],
+            ),
           ),
         ),
         actions: [

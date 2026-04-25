@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../theme.dart';
+import '../../widgets/rhema_title.dart';
 import 'models/prayer_request.dart';
 import 'prayer_service.dart';
 
@@ -45,14 +46,8 @@ class _PrayerWallScreenState extends ConsumerState<PrayerWallScreen>
     return Scaffold(
       backgroundColor: BrandColors.parchment,
       appBar: AppBar(
-        title: Text(
-          'Prayer Wall',
-          style: GoogleFonts.lora(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
+        centerTitle: true,
+        title: const RhemaTitle(),
         actions: [
           IconButton(
             tooltip: 'New prayer',
@@ -62,13 +57,19 @@ class _PrayerWallScreenState extends ConsumerState<PrayerWallScreen>
         ],
         bottom: TabBar(
           controller: _tabs,
-          labelStyle: GoogleFonts.lora(fontWeight: FontWeight.w600),
-          unselectedLabelStyle: GoogleFonts.lora(fontWeight: FontWeight.w500),
+          labelStyle: GoogleFonts.lora(
+              fontWeight: FontWeight.w700, fontSize: 15),
+          unselectedLabelStyle:
+              GoogleFonts.lora(fontWeight: FontWeight.w500, fontSize: 15),
           indicatorColor: BrandColors.gold,
-          labelColor: BrandColors.brown,
+          indicatorWeight: 3,
+          // High-contrast labels against the brown AppBar — was previously
+          // BrandColors.brown which was invisible on its own background.
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white.withValues(alpha: 0.62),
           tabs: const [
-            Tab(text: 'Open'),
-            Tab(text: 'Answered'),
+            Tab(text: 'Open • Active'),
+            Tab(text: 'Answered • Logged'),
           ],
         ),
       ),

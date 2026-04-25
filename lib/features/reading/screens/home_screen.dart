@@ -68,7 +68,7 @@ class HomeScreen extends ConsumerWidget {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.cottage_outlined), selectedIcon: Icon(Icons.cottage), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.auto_stories_outlined), selectedIcon: Icon(Icons.auto_stories), label: 'Read'),
-          NavigationDestination(icon: Icon(Icons.psychology_outlined), selectedIcon: Icon(Icons.psychology), label: 'Study'),
+          NavigationDestination(icon: Icon(Icons.local_library_outlined), selectedIcon: Icon(Icons.local_library), label: 'Study'),
           NavigationDestination(icon: Icon(Icons.bookmarks_outlined), selectedIcon: Icon(Icons.bookmarks), label: 'Saved'),
         ],
       ),
@@ -2218,27 +2218,32 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
   @override
   Widget build(BuildContext context) {
     final tiles = [
-      _TileData(Icons.psychology, 'Study', const Color(0xFF5D4037),
+      // Icon choices tuned for semantic clarity + visual diversity:
+      // Study uses local_library (book + lectern, not a brain), Maps uses
+      // travel_explore (compass + globe), Prayer Wall uses spa (folded leaf,
+      // contemplative not volunteerish), Codex uses auto_stories (open book
+      // with mark), Reading Plan uses fact_check (checkable list).
+      _TileData(Icons.local_library_rounded, 'Study', const Color(0xFF5D4037),
           () => widget.ref.read(tabIndexProvider.notifier).state = 2),
       _TileData(Icons.headphones_rounded, 'Listen', Colors.teal,
           () => Navigator.push(context,
               FadeSlideRoute(page: const ListenScreen()))),
-      _TileData(Icons.library_books_rounded, 'All Books', Colors.indigo,
+      _TileData(Icons.collections_bookmark_rounded, 'All Books', Colors.indigo,
           widget.onBookPicker),
-      _TileData(Icons.map_rounded, 'Maps', const Color(0xFF2E7D32),
+      _TileData(Icons.travel_explore_rounded, 'Maps', const Color(0xFF2E7D32),
           () => Navigator.push(context,
               FadeSlideRoute(page: const BibleMapsScreen()))),
-      _TileData(Icons.child_care_rounded, 'Kids', Colors.pink,
+      _TileData(Icons.face_3_rounded, 'Kids', Colors.pink,
           () => showKidsPortal(context, () {
             widget.ref.read(settingsProvider.notifier).setKidsMode(true);
           })),
-      _TileData(Icons.volunteer_activism, 'Prayer Wall', Colors.deepPurple,
+      _TileData(Icons.spa_rounded, 'Prayer Wall', Colors.deepPurple,
           () => Navigator.push(context,
               FadeSlideRoute(page: const PrayerWallScreen()))),
-      _TileData(Icons.auto_awesome_mosaic, 'Codex', const Color(0xFF7A2E2E),
+      _TileData(Icons.auto_stories_rounded, 'Codex', const Color(0xFF7A2E2E),
           () => Navigator.push(context,
               MaterialPageRoute(builder: (_) => const CodexScreen()))),
-      _TileData(Icons.event_note, 'Reading Plan', const Color(0xFF6B5B95),
+      _TileData(Icons.fact_check_rounded, 'Reading Plan', const Color(0xFF6B5B95),
           () => Navigator.push(context,
               FadeSlideRoute(page: const ReadingPlanScreen()))),
       _TileData(Icons.record_voice_over, 'Preach to Me', const Color(0xFFD4A843),

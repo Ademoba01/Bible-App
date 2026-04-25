@@ -81,67 +81,78 @@ class _KidsHomeScreenState extends ConsumerState<KidsHomeScreen> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(Icons.lock, color: BrandColors.kidsBlue),
-            const SizedBox(width: 10),
-            Text('Grown-up check!',
-                style: GoogleFonts.fredoka(fontWeight: FontWeight.w600)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Solve this to switch modes:',
-                style: GoogleFonts.fredoka(
-                    fontSize: 14, color: Colors.black54)),
-            const SizedBox(height: 12),
-            Text('What is $question = ?',
-                style: GoogleFonts.fredoka(
-                    fontSize: 24, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.fredoka(fontSize: 22),
-              decoration: InputDecoration(
-                hintText: '?',
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
+      builder: (ctx) {
+        // Submit the answer — used by both the Check button AND Enter key
+        // (TextField onSubmitted) so desktop users can complete the dialog
+        // without reaching for the mouse.
+        void submit() {
+          if (controller.text.trim() == '$answer') {
+            Navigator.pop(ctx);
+            ref.read(settingsProvider.notifier).setKidsMode(false);
+          } else {
+            controller.clear();
+            ScaffoldMessenger.of(ctx).showSnackBar(
+              SnackBar(
+                  content: Text('Not quite! Try again',
+                      style: GoogleFonts.fredoka())),
+            );
+          }
+        }
+
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Icon(Icons.lock, color: BrandColors.kidsBlue),
+              const SizedBox(width: 10),
+              Text('Grown-up check!',
+                  style: GoogleFonts.fredoka(fontWeight: FontWeight.w600)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Solve this to switch modes:',
+                  style: GoogleFonts.fredoka(
+                      fontSize: 14, color: Colors.black54)),
+              const SizedBox(height: 12),
+              Text('What is $question = ?',
+                  style: GoogleFonts.fredoka(
+                      fontSize: 24, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => submit(), // Enter key submits
+                textAlign: TextAlign.center,
+                style: GoogleFonts.fredoka(fontSize: 22),
+                decoration: InputDecoration(
+                  hintText: '?',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                autofocus: true,
               ),
-              autofocus: true,
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Cancel', style: GoogleFonts.fredoka()),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                  backgroundColor: BrandColors.kidsBlue),
+              onPressed: submit,
+              child: Text('Check',
+                  style:
+                      GoogleFonts.fredoka(fontWeight: FontWeight.w600)),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: GoogleFonts.fredoka()),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-                backgroundColor: BrandColors.kidsBlue),
-            onPressed: () {
-              if (controller.text.trim() == '$answer') {
-                Navigator.pop(ctx);
-                ref.read(settingsProvider.notifier).setKidsMode(false);
-              } else {
-                ScaffoldMessenger.of(ctx).showSnackBar(
-                  SnackBar(
-                      content: Text('Not quite! Try again',
-                          style: GoogleFonts.fredoka())),
-                );
-              }
-            },
-            child: Text('Check',
-                style:
-                    GoogleFonts.fredoka(fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
