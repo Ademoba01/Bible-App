@@ -17,8 +17,12 @@ import '../../auth/auth_screen.dart';
 import '../../bookmarks/bookmarks_screen.dart';
 import '../../codex/codex_screen.dart';
 import '../../listen/listen_screen.dart';
+import '../../personalization/personalization_service.dart';
+import '../../personalization/preach_topic_screen.dart';
+import '../../personalization/reading_plan_screen.dart';
 import '../../prayer/prayer_wall_screen.dart';
 import '../../search/similar_verses_screen.dart';
+import '../../../services/ai_service.dart';
 import '../../settings/help_screen.dart';
 import '../../settings/settings_screen.dart';
 import '../../study/bible_maps_screen.dart';
@@ -437,6 +441,14 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
   bool _speechAvailable = false;
   String _voiceText = '';
 
+  // Adaptive Verse of the Day (mood-aware override). When non-null,
+  // these replace the deterministic _verseOfTheDay tuple.
+  String? _adaptiveRef;
+  String? _adaptiveText;
+  String? _adaptiveReason;
+  String? _selectedMood;
+  bool _moodLoading = false;
+
   /// Returns a deterministic "verse of the day" based on the current date.
   /// Each entry: (reference, text, wordOfTheDay).
   static const _dailyVerses = [
@@ -478,10 +490,69 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     return _dailyVerses[dayOfYear % _dailyVerses.length];
   }
 
+  /// VotD currently rendered: adaptive (if mood-driven Gemini call succeeded)
+  /// or the deterministic daily fallback.
+  (String, String, String) get _currentVotD {
+    if (_adaptiveRef != null && _adaptiveText != null) {
+      // Use the mood as the "word of the day" badge (or 'For You' fallback).
+      final badge = (_selectedMood ?? 'For You').toUpperCase();
+      return (_adaptiveRef!, _adaptiveText!, badge);
+    }
+    return _verseOfTheDay;
+  }
+
   @override
   void initState() {
     super.initState();
     _initSpeech();
+    _loadStoredMood();
+  }
+
+  Future<void> _loadStoredMood() async {
+    final svc = ref.read(personalizationServiceProvider);
+    await svc.init();
+    final stored = svc.getMoodForToday();
+    if (stored != null && mounted) {
+      setState(() => _selectedMood = stored);
+      // Try to fetch an adaptive verse for the persisted mood, in the background.
+      _fetchAdaptiveVerse(stored);
+    }
+  }
+
+  Future<void> _onMoodTap(String mood) async {
+    final svc = ref.read(personalizationServiceProvider);
+    await svc.setMoodForToday(mood);
+    setState(() => _selectedMood = mood);
+    await _fetchAdaptiveVerse(mood);
+  }
+
+  Future<void> _fetchAdaptiveVerse(String mood) async {
+    final settings = ref.read(settingsProvider);
+    if (!settings.useOnlineAi) return; // stay on default deterministic verse
+    if (!mounted) return;
+    setState(() => _moodLoading = true);
+    final svc = ref.read(personalizationServiceProvider);
+    final recent = svc.getRecentRefs();
+    try {
+      final result = await AiService.adaptiveVerseOfDay(
+        recentRefs: recent,
+        mood: mood,
+        date: DateTime.now(),
+      );
+      if (!mounted) return;
+      if (result.reference.isNotEmpty && result.text.isNotEmpty) {
+        setState(() {
+          _adaptiveRef = result.reference;
+          _adaptiveText = result.text;
+          _adaptiveReason = result.reason;
+          _moodLoading = false;
+        });
+      } else {
+        setState(() => _moodLoading = false);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _moodLoading = false);
+    }
   }
 
   Future<void> _initSpeech() async {
@@ -551,6 +622,89 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
   Future<void> _stopListening() async {
     await _speech.stop();
     setState(() => _isListening = false);
+  }
+
+  /// "How are you feeling?" chip row, drives adaptive Verse of the Day.
+  Widget _buildMoodRow(ThemeData theme) {
+    const moods = [
+      ('anxious', '\u{1F61F}', 'anxious'),
+      ('grateful', '\u{1F64F}', 'grateful'),
+      ('lost', '\u{1F311}', 'lost'),
+      ('hopeful', '\u{2600}\u{FE0F}', 'hopeful'),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'How are you feeling?',
+              style: GoogleFonts.lora(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.onSurfaceVariant,
+                letterSpacing: 0.4,
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (_moodLoading)
+              const SizedBox(
+                width: 12,
+                height: 12,
+                child: CircularProgressIndicator(strokeWidth: 1.5),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: moods.map((m) {
+              final selected = _selectedMood == m.$1;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: GestureDetector(
+                  onTap: () => _onMoodTap(m.$1),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? BrandColors.gold.withValues(alpha: 0.18)
+                          : theme.cardColor,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: selected
+                            ? BrandColors.gold
+                            : theme.dividerColor,
+                        width: selected ? 1.6 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(m.$2, style: const TextStyle(fontSize: 16)),
+                        const SizedBox(width: 6),
+                        Text(
+                          m.$3,
+                          style: GoogleFonts.lora(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: selected
+                                ? BrandColors.gold
+                                : theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -1293,17 +1447,25 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
             _AdjustableQuickTiles(ref: ref, onBookPicker: () => _showBookPicker(context, ref)),
             const SizedBox(height: 16),
 
+            // ── Mood chips — feeds the adaptive Verse of the Day ──
+            _buildMoodRow(theme),
+            const SizedBox(height: 12),
+
             // ── Verse of the Day — prominent card ──
             GestureDetector(
               onTap: () {
                 // Navigate to the verse in context
                 final verseRef = VerseRef.tryParse(
-                  _verseOfTheDay.$1.replaceAll(RegExp(r'-\d+$'), ''),
+                  _currentVotD.$1.replaceAll(RegExp(r'-\d+$'), ''),
                 );
                 if (verseRef != null) {
                   ref.read(readingLocationProvider.notifier).setBook(verseRef.book);
                   ref.read(readingLocationProvider.notifier).setChapter(verseRef.chapter);
                   ref.read(tabIndexProvider.notifier).state = 1;
+                  // Tell the personalization service we read this ref.
+                  ref
+                      .read(personalizationServiceProvider)
+                      .recordReadVerse(_currentVotD.$1);
                 }
                 // Gentle sign-up nudge for unauthenticated users
                 _maybeShowSignUpNudge(context, ref);
@@ -1352,7 +1514,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                               Icon(Icons.wb_sunny_outlined, size: 20, color: BrandColors.gold),
                               const SizedBox(width: 8),
                               Text(
-                                _verseOfTheDay.$3.toUpperCase(),
+                                _currentVotD.$3.toUpperCase(),
                                 style: GoogleFonts.lora(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w900,
@@ -1377,7 +1539,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                     const SizedBox(height: 16),
                     // Verse text — full display, no truncation
                     Text(
-                      '\u201C${_verseOfTheDay.$2}\u201D',
+                      '\u201C${_currentVotD.$2}\u201D',
                       style: GoogleFonts.lora(
                         fontSize: 16,
                         height: 1.6,
@@ -1385,12 +1547,24 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                         color: theme.brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.9) : theme.colorScheme.onSurface,
                       ),
                     ),
+                    if (_adaptiveReason != null && _adaptiveReason!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _adaptiveReason!,
+                        style: GoogleFonts.cormorantGaramond(
+                          fontSize: 14,
+                          height: 1.4,
+                          fontStyle: FontStyle.italic,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     // Reference + find similar
                     Row(
                       children: [
                         Text(
-                          '— ${_verseOfTheDay.$1}',
+                          '— ${_currentVotD.$1}',
                           style: GoogleFonts.lora(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -1402,7 +1576,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                         GestureDetector(
                           onTap: () {
                             final verseRef = VerseRef.tryParse(
-                              _verseOfTheDay.$1.replaceAll(RegExp(r'-\d+$'), ''),
+                              _currentVotD.$1.replaceAll(RegExp(r'-\d+$'), ''),
                             );
                             if (verseRef != null) {
                               Navigator.push(
@@ -1410,7 +1584,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                                 FadeSlideRoute(
                                   page: SimilarVersesScreen(
                                     sourceRef: verseRef,
-                                    sourceText: _verseOfTheDay.$2,
+                                    sourceText: _currentVotD.$2,
                                   ),
                                 ),
                               );
@@ -2000,6 +2174,12 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
       _TileData(Icons.auto_awesome_mosaic, 'Codex', const Color(0xFF7A2E2E),
           () => Navigator.push(context,
               MaterialPageRoute(builder: (_) => const CodexScreen()))),
+      _TileData(Icons.event_note, 'Reading Plan', const Color(0xFF6B5B95),
+          () => Navigator.push(context,
+              FadeSlideRoute(page: const ReadingPlanScreen()))),
+      _TileData(Icons.record_voice_over, 'Preach to Me', const Color(0xFFD4A843),
+          () => Navigator.push(context,
+              FadeSlideRoute(page: const PreachTopicScreen()))),
     ];
 
     return Column(

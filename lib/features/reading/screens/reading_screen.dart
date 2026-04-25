@@ -5,8 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../data/models.dart';
 import '../../../data/translations.dart';
+import '../../../state/codex_provider.dart';
 import '../../../state/providers.dart';
 import '../../../theme.dart';
+import '../../cross_references/cross_references_sheet.dart';
 import '../../listen/listen_screen.dart';
 import '../../search/similar_verses_screen.dart';
 import '../../share/verse_card_renderer.dart';
@@ -175,6 +177,11 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
         data: (chapters) {
           // Record streak when chapter data loads
           ref.read(streakProvider.notifier).recordToday();
+          // Mark this chapter read in the Codex (chapter milestones, book
+          // completion seals). markChapterRead is idempotent per chapter.
+          ref
+              .read(codexProvider.notifier)
+              .markChapterRead(loc.book, loc.chapter);
 
           if (chapters.isEmpty) {
             return const Center(child: Text('No chapters found.'));
@@ -445,6 +452,14 @@ class _VerseListState extends State<_VerseList> {
       reference: rangeRef,
     );
     _clearSelection();
+  }
+
+  void _openCrossRefs() {
+    if (_selectedVerses.isEmpty) return;
+    final firstVerse = (_selectedVerses.toList()..sort()).first;
+    final source = VerseRef(widget.book, widget.chapterNum, firstVerse);
+    _clearSelection();
+    showCrossReferencesSheet(context, widget.ref, source);
   }
 
   @override
@@ -779,6 +794,12 @@ class _VerseListState extends State<_VerseList> {
                     ),
                   ),
                   const Spacer(),
+                  // Cross-references (uses lowest-numbered selected verse)
+                  IconButton(
+                    icon: const Icon(Icons.alt_route, size: 20, color: Colors.white),
+                    tooltip: 'Cross-references',
+                    onPressed: _openCrossRefs,
+                  ),
                   // Copy
                   IconButton(
                     icon: const Icon(Icons.copy, size: 20, color: Colors.white),
@@ -896,6 +917,16 @@ class _VerseListState extends State<_VerseList> {
                           ),
                         ),
                       );
+                    }
+                  },
+                ),
+                TextButton.icon(
+                  icon: Icon(Icons.alt_route, color: theme.colorScheme.primary),
+                  label: const Text('Cross-references'),
+                  onPressed: () {
+                    Navigator.pop(sheetContext);
+                    if (parsedRef != null) {
+                      showCrossReferencesSheet(context, widget.ref, parsedRef);
                     }
                   },
                 ),
