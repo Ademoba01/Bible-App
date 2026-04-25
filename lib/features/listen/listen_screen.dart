@@ -21,9 +21,9 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   final FlutterTts _tts = FlutterTts();
   bool _playing = false;
   bool _paused = false;
-  // 0.0–1.0 flutter_tts range. 0.50 ≈ 1.0× narration speed (scripture default).
+  // 0.0–1.0 flutter_tts range. 0.69 ≈ 1.4× narration speed (default).
   // Loaded from settings on initState; persisted via settingsProvider.setSpeechRate.
-  double _speechRate = 0.50;
+  double _speechRate = 0.69;
   List<Verse> _verses = [];
   int _currentVerseIndex = 0;
   int _resumeFromVerse = 0; // track where to resume after pause or speed change
@@ -50,6 +50,13 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   @override
   void initState() {
     super.initState();
+    // CRITICAL: makes _tts.speak() actually await until utterance finishes.
+    // Without this, the for-loop's setCompletionHandler/Completer dance is
+    // racy on Web Speech API and only verse 1 reliably plays before the loop
+    // exits. With awaitSpeakCompletion(true), each speak() resolves only when
+    // the synthesizer is truly done — verse-by-verse playback works on web,
+    // iOS, and Android consistently.
+    _tts.awaitSpeakCompletion(true);
     // Load persisted speed after first frame so we can access Riverpod.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -66,42 +73,55 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   }
 
   /// Processes Bible text for more natural TTS reading.
+  ///
+  /// Strategy: keep ALL punctuation TTS engines actually use to phrase
+  /// (. , ; : ! ? — — …) and only normalize the visual artifacts that
+  /// break narration (smart quotes, brackets, square-bracket editorial
+  /// additions, multiple whitespace). Web Speech API and platform TTS
+  /// engines pause naturally on every kept mark.
   String _processTextForSpeech(String rawText) {
     var text = rawText;
 
     // Remove verse numbers (patterns like "1 ", "23 " at start of verses)
     text = text.replaceAll(RegExp(r'^\d+\s+', multiLine: true), '');
 
-    // Replace semicolons with period (longer pause)
-    text = text.replaceAll(';', '.');
+    // Remove square-bracket editorial additions ([the LORD], etc.)
+    text = text.replaceAll(RegExp(r'\[.*?\]'), '');
 
-    // Replace colons in speech (not verse refs like 3:16) with comma for short pause
-    text = text.replaceAll(RegExp(r':(?!\d)'), ',');
+    // Normalize smart quotes to plain quotes — TTS engines vary on whether
+    // they treat curly quotes as quotation marks. Plain quotes are safer.
+    text = text.replaceAll(RegExp(r'["\u201C\u201D\u201E\u00AB\u00BB]'), '"');
+    text = text.replaceAll(RegExp(r'[\u2018\u2019\u201A\u2039\u203A`]'), "'");
 
-    // Ensure sentences end clearly with a space for natural pacing
-    text = text.replaceAll(RegExp(r'\.(?=\S)'), '. ');
+    // Strip the now-normalized double quotes (TTS reads "quote" on some
+    // engines) BUT keep apostrophes — they're needed for contractions.
+    text = text.replaceAll('"', '');
 
-    // Add natural pauses after commas that are too close
-    text = text.replaceAll(RegExp(r',(?=\S)'), ', ');
+    // Convert em-dash / en-dash to a comma for natural breath pause.
+    text = text.replaceAll(RegExp(r'\s*[—–]\s*'), ', ');
 
-    // Replace em-dashes and long dashes with comma (natural pause)
-    text = text.replaceAll(RegExp(r'[—–]'), ', ');
+    // Ellipsis -> period + space for trailing pause behavior.
+    text = text.replaceAll(RegExp(r'\.{3,}|\u2026'), '. ');
 
-    // Expand common abbreviations for clearer speech
-    text = text.replaceAll('LORD', 'Lord');
-    text = text.replaceAll('GOD', 'God');
-
-    // Clean up multiple spaces
-    text = text.replaceAll(RegExp(r'\s+'), ' ');
-
-    // Remove quotation marks that confuse TTS
-    text = text.replaceAll(RegExp(r'["""''`]'), '');
-
-    // Remove parentheses but keep content
+    // Drop parens but keep content (parens add a subtle voice shift on some
+    // engines; removing them yields cleaner phrasing).
     text = text.replaceAll(RegExp(r'[()]'), '');
 
-    // Remove brackets (often editorial additions)
-    text = text.replaceAll(RegExp(r'\[.*?\]'), '');
+    // Colons inside verse refs (3:16) stay as digits-only; everywhere else
+    // a colon becomes a soft comma pause.
+    text = text.replaceAll(RegExp(r':(?!\d)'), ',');
+
+    // Ensure period / exclamation / question / comma / semicolon all have a
+    // following space so the TTS engine treats them as a phrase boundary.
+    text = text.replaceAll(RegExp(r'([.!?;,])(?=\S)'), r'$1 ');
+
+    // Expand all-caps divine names so engines don't shout-spell them.
+    text = text.replaceAll('LORD', 'Lord');
+    text = text.replaceAll('GOD', 'God');
+    text = text.replaceAll('YHWH', 'Yahweh');
+
+    // Collapse runs of whitespace.
+    text = text.replaceAll(RegExp(r'\s+'), ' ');
 
     return text.trim();
   }
@@ -162,13 +182,9 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
 
       final verseText = _processTextForSpeech(verses[i].text);
 
-      final completer = Completer<void>();
-      _tts.setCompletionHandler(() {
-        completer.complete();
-      });
-
+      // awaitSpeakCompletion(true) was called in initState — speak() now
+      // returns only when the utterance is fully spoken. No Completer needed.
       await _tts.speak(verseText);
-      await completer.future;
 
       if (!_playing) break;
 
@@ -214,6 +230,26 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
       _paused = false;
       _resumeFromVerse = 0;
     });
+  }
+
+  /// Open the voice picker. If currently playing, restart with the new voice
+  /// from the current verse so the change feels instant.
+  void _showVoicePicker(BuildContext context) {
+    final wasPlaying = _playing;
+    final resumeAt = _currentVerseIndex;
+    showVoiceSettings(context);
+    // showVoiceSettings opens a modal; rebuild after it closes to pick up the
+    // newly selected voiceName from settingsProvider.
+    if (wasPlaying) {
+      Future.delayed(const Duration(milliseconds: 300), () async {
+        if (!mounted) return;
+        await _tts.stop();
+        if (mounted) {
+          setState(() => _playing = false);
+          _play(startFromVerse: resumeAt);
+        }
+      });
+    }
   }
 
   void _setSpeed(double rate) async {
@@ -512,12 +548,24 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
                       onPressed: _speechRate < _maxSpeed ? _increaseSpeed : null,
                       color: theme.colorScheme.primary,
                     ),
+                    const SizedBox(width: 6),
+                    // Voice change — quick switch without leaving Listen
+                    Semantics(
+                      button: true,
+                      label: 'Change narrator voice',
+                      child: IconButton(
+                        icon: const Icon(Icons.record_voice_over, size: 22),
+                        tooltip: 'Change voice',
+                        onPressed: () => _showVoicePicker(context),
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 6),
               Text(
-                'Speech speed',
+                'Speech speed  •  tap voice icon to change narrator',
                 style: GoogleFonts.lora(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
               ),
 

@@ -502,11 +502,23 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     return _verseOfTheDay;
   }
 
+  // Welcome state: snapshotted at first frame so the welcome card doesn't
+  // flicker between "Welcome to" and "Welcome back" mid-session.
+  late bool _isFirstVisit;
+  late int _daysSinceLastVisit;
+
   @override
   void initState() {
     super.initState();
     _initSpeech();
     _loadStoredMood();
+    // Snapshot visit state BEFORE recording the new visit, so the very first
+    // open shows "Welcome to Rhema" and every later open shows "Welcome back".
+    final settingsNotifier = ref.read(settingsProvider.notifier);
+    _isFirstVisit = settingsNotifier.isFirstVisit;
+    _daysSinceLastVisit = settingsNotifier.daysSinceLastVisit;
+    // Record this visit immediately so the next session shows "Welcome back".
+    settingsNotifier.recordVisit();
   }
 
   Future<void> _loadStoredMood() async {
@@ -1061,84 +1073,9 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Greeting row: greeting left, streak + settings right ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-              child: Row(
-                children: [
-                  Text(
-                    _greeting(),
-                    style: GoogleFonts.lora(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Rhema Study Bible',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: BrandColors.gold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const Spacer(),
-                  // Streak fire badge
-                  Consumer(builder: (context, ref, _) {
-                    final streak = ref.watch(streakProvider);
-                    return GestureDetector(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const CodexScreen()),
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: streak.currentStreak > 0
-                              ? BrandColors.gold.withValues(alpha: 0.15)
-                              : theme.colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              streak.currentStreak > 0 ? '\u{1F525}' : '\u{1F4D6}',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${streak.currentStreak}',
-                              style: GoogleFonts.lora(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    icon: Icon(Icons.settings_outlined,
-                        size: 22,
-                        color: theme.colorScheme.onSurfaceVariant),
-                    tooltip: 'Settings',
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-                    onPressed: () => Navigator.push(
-                      context,
-                      FadeSlideRoute(page: const SettingsScreen()),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
+            // ── Welcome header: time-based greeting + new/returning copy ──
+            _buildWelcomeHeader(theme),
+            const SizedBox(height: 16),
 
             // ── Continue reading CTA — separated from greeting ──
             Container(
@@ -1880,6 +1817,127 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     if (h < 12) return 'Good morning';
     if (h < 18) return 'Good afternoon';
     return 'Good evening';
+  }
+
+  /// Time-aware welcome card: greeting line + new-vs-returning copy + streak +
+  /// settings cluster. New users see "Welcome to Rhema". Returning users see
+  /// "Welcome back" with a contextual nicety based on days away.
+  Widget _buildWelcomeHeader(ThemeData theme) {
+    final brand = 'Rhema Study Bible';
+    final welcomeLine = _isFirstVisit
+        ? 'Welcome to $brand'
+        : _daysSinceLastVisit == 0
+            ? 'Welcome back to $brand'
+            : _daysSinceLastVisit == 1
+                ? 'Welcome back — see you yesterday\'s chapter waiting'
+                : _daysSinceLastVisit < 7
+                    ? "Welcome back — it's been $_daysSinceLastVisit days"
+                    : _daysSinceLastVisit < 30
+                        ? "Welcome back to $brand — we missed you"
+                        : 'Welcome back, friend — let\'s pick up where we left off';
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 16, 12, 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            BrandColors.gold.withValues(alpha: 0.18),
+            BrandColors.gold.withValues(alpha: 0.06),
+            theme.colorScheme.surface,
+          ],
+          stops: const [0.0, 0.55, 1.0],
+        ),
+        border: Border.all(
+          color: BrandColors.gold.withValues(alpha: 0.30),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${_greeting()} ✦',
+                  style: GoogleFonts.lora(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
+                    color: BrandColors.brown.withValues(alpha: 0.75),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  welcomeLine,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.cormorantGaramond(
+                    fontSize: 22,
+                    height: 1.15,
+                    fontWeight: FontWeight.w700,
+                    color: BrandColors.brown,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Streak fire badge → Codex
+          Consumer(builder: (context, ref, _) {
+            final streak = ref.watch(streakProvider);
+            return GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CodexScreen()),
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: streak.currentStreak > 0
+                      ? BrandColors.gold.withValues(alpha: 0.20)
+                      : theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      streak.currentStreak > 0 ? '\u{1F525}' : '\u{1F4D6}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${streak.currentStreak}',
+                      style: GoogleFonts.lora(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+          IconButton(
+            icon: Icon(Icons.settings_outlined,
+                size: 22, color: theme.colorScheme.onSurfaceVariant),
+            tooltip: 'Settings',
+            padding: const EdgeInsets.all(8),
+            constraints:
+                const BoxConstraints(minWidth: 40, minHeight: 40),
+            onPressed: () => Navigator.push(
+              context,
+              FadeSlideRoute(page: const SettingsScreen()),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Full-screen book picker with search, testament tabs, and chapter grid.

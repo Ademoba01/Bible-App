@@ -163,7 +163,7 @@ class AppSettings {
   final bool kidsMode;
   final bool onboarded;
   final String voiceName;
-  final double speechRate; // flutter_tts 0.0-1.0 scale; 0.50 ≈ 1.0× speed
+  final double speechRate; // flutter_tts 0.0-1.0 scale; 0.69 ≈ 1.4× speed
   final AiMode aiMode;
   final String geminiApiKey;
   const AppSettings({
@@ -173,7 +173,7 @@ class AppSettings {
     this.kidsMode = false,
     this.onboarded = false,
     this.voiceName = '',
-    this.speechRate = 0.50,
+    this.speechRate = 0.69,
     this.aiMode = AiMode.auto,
     this.geminiApiKey = '',
   });
@@ -224,7 +224,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
           kidsMode: _prefs?.getBool('kidsMode') ?? false,
           onboarded: _prefs?.getBool('onboarded') ?? false,
           voiceName: _prefs?.getString('voiceName') ?? '',
-          speechRate: _prefs?.getDouble('speechRate') ?? 0.50,
+          speechRate: _prefs?.getDouble('speechRate') ?? 0.69,
           aiMode: AiMode.values.firstWhere(
             (e) => e.name == (_prefs?.getString('aiMode') ?? ''),
             orElse: () => AiMode.auto,
@@ -268,6 +268,26 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final clamped = v.clamp(0.20, 0.95);
     state = state.copyWith(speechRate: clamped);
     await _prefs?.setDouble('speechRate', clamped);
+  }
+
+  /// Has the user opened the app before this session?
+  /// Returns true on the very first launch, false on every subsequent open.
+  bool get isFirstVisit => (_prefs?.getInt('last_visit_ms') ?? 0) == 0;
+
+  /// Days since last app open (0 if today / never opened).
+  int get daysSinceLastVisit {
+    final last = _prefs?.getInt('last_visit_ms') ?? 0;
+    if (last == 0) return 0;
+    final lastDt = DateTime.fromMillisecondsSinceEpoch(last);
+    final now = DateTime.now();
+    final lastDay = DateTime(lastDt.year, lastDt.month, lastDt.day);
+    final today = DateTime(now.year, now.month, now.day);
+    return today.difference(lastDay).inDays;
+  }
+
+  /// Mark this moment as the most recent visit. Call once on app open.
+  Future<void> recordVisit() async {
+    await _prefs?.setInt('last_visit_ms', DateTime.now().millisecondsSinceEpoch);
   }
 
   Future<void> completeOnboarding() async {
