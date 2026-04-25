@@ -48,8 +48,9 @@ class _KidsAnimatedStoryScreenState extends State<KidsAnimatedStoryScreen>
 
   Future<void> _initTts() async {
     await _tts.setLanguage('en-US');
-    await _tts.setSpeechRate(0.4);
-    await _tts.setPitch(1.2);
+    // 0.55 ≈ 1.1× — natural lively pace for kids; 0.4 was sluggish.
+    await _tts.setSpeechRate(0.55);
+    await _tts.setPitch(1.15);
     _tts.setCompletionHandler(() {
       if (mounted) setState(() => _isSpeaking = false);
     });

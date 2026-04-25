@@ -533,14 +533,14 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
   }
 
   Future<void> _onMoodTap(String mood) async {
+    // 1) Open the sheet IMMEDIATELY so the user always gets feedback,
+    //    even if persistence or the AI fetch is slow / fails.
+    showMoodVersesSheet(context: context, ref: ref, mood: mood);
+    // 2) Mark the chip as selected so the gold ring shows.
+    setState(() => _selectedMood = mood);
+    // 3) Persist the mood + refresh the VotD card in the background.
     final svc = ref.read(personalizationServiceProvider);
     await svc.setMoodForToday(mood);
-    setState(() => _selectedMood = mood);
-    // Open the mood verses sheet so the user can browse a list of suggestions
-    // (curated topic verses + AI-tuned additions when Gemini is available).
-    showMoodVersesSheet(context: context, ref: ref, mood: mood);
-    // Also refresh the single Verse-of-the-Day card in the background so the
-    // home screen visual reflects the new mood next time it renders.
     _fetchAdaptiveVerse(mood);
   }
 

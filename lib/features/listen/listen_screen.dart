@@ -29,6 +29,13 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   int _resumeFromVerse = 0; // track where to resume after pause or speed change
   final ScrollController _scrollController = ScrollController();
 
+  /// Monotonic session counter. Each call to [_play] captures one. The play
+  /// loop checks "is my session still current?" between iterations and exits
+  /// if not. Pause / Stop / chapter-skip / verse-jump all bump this counter
+  /// to ensure the previous loop terminates cleanly before a new one starts —
+  /// fixes the dual-loop race that caused Resume to start over from verse 1.
+  int _playSession = 0;
+
   // Preset speed ladder — Audible-style. Dense near the 1.0–1.5× sweet spot
   // where ~80% of listeners settle. Includes 0.9× for archaic English (KJV).
   static final _speeds = <double, String>{
@@ -127,9 +134,14 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   }
 
   Future<void> _play({int startFromVerse = 0}) async {
+    // Bump session — any previously-running loop will see its session is
+    // stale and break on its next iteration check.
+    final session = ++_playSession;
+
     final loc = ref.read(readingLocationProvider);
     final chapters = await ref.read(currentBookChaptersProvider.future);
     if (chapters.isEmpty) return;
+    if (session != _playSession) return; // someone bumped while we awaited
     final ch = chapters[(loc.chapter - 1).clamp(0, chapters.length - 1)];
     final verses = ch.verses;
 
@@ -166,7 +178,10 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
 
     // Read verse by verse with natural pauses
     for (int i = startFromVerse; i < verses.length; i++) {
-      if (!_playing) break;
+      // Two exits: user stopped (_playing false) OR a new session started
+      // (pause/jump/skip). Without the session check, a stuck Web Speech API
+      // future could keep an old loop alive in parallel with the new one.
+      if (!_playing || session != _playSession) break;
 
       setState(() => _currentVerseIndex = i);
       _resumeFromVerse = i;
@@ -186,7 +201,7 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
       // returns only when the utterance is fully spoken. No Completer needed.
       await _tts.speak(verseText);
 
-      if (!_playing) break;
+      if (!_playing || session != _playSession) break;
 
       // Pauses scale inversely with speed (faster listening = shorter breaths).
       // Chapter-ending pause is long enough to feel liturgical, not abrupt.
@@ -211,11 +226,13 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   }
 
   Future<void> _pause() async {
+    // Bump session so the running play loop terminates cleanly. _resumeFromVerse
+    // was set inside the loop on the verse currently being read.
+    _playSession++;
     await _tts.stop();
     setState(() {
       _playing = false;
       _paused = true;
-      // _resumeFromVerse already tracks current position
     });
   }
 
@@ -224,12 +241,38 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   }
 
   Future<void> _stop() async {
+    _playSession++;
     await _tts.stop();
     setState(() {
       _playing = false;
       _paused = false;
       _resumeFromVerse = 0;
     });
+  }
+
+  /// Jump to a specific verse during playback. If currently playing, the
+  /// running loop terminates and a new one starts at the requested verse.
+  /// If paused, just updates the resume marker so Resume picks up there.
+  Future<void> _jumpToVerse(int verseIndex) async {
+    if (verseIndex < 0 || verseIndex >= _verses.length) return;
+    if (_playing) {
+      _playSession++;
+      await _tts.stop();
+      setState(() {
+        _playing = false;
+        _resumeFromVerse = verseIndex;
+        _currentVerseIndex = verseIndex;
+      });
+      // Small delay so the previous speak() future resolves before we restart.
+      await Future.delayed(const Duration(milliseconds: 50));
+      _play(startFromVerse: verseIndex);
+    } else {
+      setState(() {
+        _resumeFromVerse = verseIndex;
+        _currentVerseIndex = verseIndex;
+        _paused = true; // expose Resume button so user can continue from here
+      });
+    }
   }
 
   /// Open the voice picker. If currently playing, restart with the new voice
@@ -647,7 +690,8 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
                   ),
                 ),
 
-              // Show verses being read with current verse highlighted
+              // Show verses being read with current verse highlighted.
+              // Tap any verse to jump TTS playback to it.
               if (_verses.isNotEmpty)
                 Expanded(
                   child: ListView.builder(
@@ -656,38 +700,57 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
                     itemCount: _verses.length,
                     itemBuilder: (context, i) {
                       final isCurrent = (_playing || _paused) && i == _currentVerseIndex;
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isCurrent
-                              ? theme.colorScheme.primaryContainer.withValues(alpha: 0.5)
-                              : null,
-                          borderRadius: BorderRadius.circular(12),
-                          border: isCurrent
-                              ? Border.all(color: theme.colorScheme.primary, width: 1.5)
-                              : null,
-                        ),
-                        child: RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: '${i + 1} ',
-                                style: GoogleFonts.lora(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: theme.colorScheme.primary,
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => _jumpToVerse(i),
+                            borderRadius: BorderRadius.circular(12),
+                            child: Tooltip(
+                              message: _playing
+                                  ? 'Tap to jump TTS to verse ${i + 1}'
+                                  : 'Tap to start playback from verse ${i + 1}',
+                              waitDuration: const Duration(milliseconds: 600),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: isCurrent
+                                      ? theme.colorScheme.primaryContainer
+                                          .withValues(alpha: 0.5)
+                                      : null,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: isCurrent
+                                      ? Border.all(
+                                          color: theme.colorScheme.primary,
+                                          width: 1.5)
+                                      : null,
+                                ),
+                                child: RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: '${i + 1} ',
+                                        style: GoogleFonts.lora(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: _verses[i].text,
+                                        style: GoogleFonts.lora(
+                                          fontSize: 16,
+                                          height: 1.6,
+                                          color:
+                                              theme.colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                              TextSpan(
-                                text: _verses[i].text,
-                                style: GoogleFonts.lora(
-                                  fontSize: 16,
-                                  height: 1.6,
-                                  color: theme.colorScheme.onSurface,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       );

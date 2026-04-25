@@ -46,6 +46,9 @@ class _KidsStoryScreenState extends ConsumerState<KidsStoryScreen>
   @override
   void initState() {
     super.initState();
+    // Make _tts.speak() actually await — fixes the verse-1-only stop bug
+    // also seen on the adult Listen screen (see listen_screen.dart:initState).
+    _tts.awaitSpeakCompletion(true);
     // 1) Bouncing emoji — gentle continuous bounce
     _emojiBounceController = AnimationController(
       vsync: this,
@@ -162,8 +165,10 @@ class _KidsStoryScreenState extends ConsumerState<KidsStoryScreen>
     if (voiceName.isNotEmpty) {
       await _tts.setVoice({"name": voiceName, "locale": "en-US"});
     }
-    await _tts.setSpeechRate(0.42);
-    await _tts.setPitch(1.2);
+    // 0.55 ≈ 1.1× — natural, lively but still clear for ages 5-10.
+    // 0.42 was about 0.85× which felt sluggish.
+    await _tts.setSpeechRate(0.55);
+    await _tts.setPitch(1.15);
 
     setState(() {
       _playing = true;
@@ -186,13 +191,8 @@ class _KidsStoryScreenState extends ConsumerState<KidsStoryScreen>
 
       final verseText = _processTextForSpeech(verses[i].text);
 
-      final completer = Completer<void>();
-      _tts.setCompletionHandler(() {
-        completer.complete();
-      });
-
+      // awaitSpeakCompletion(true) was set in initState; speak() awaits.
       await _tts.speak(verseText);
-      await completer.future;
 
       if (!_playing) break;
 

@@ -6,6 +6,7 @@ import '../../data/bible_repository.dart';
 import '../../services/ai_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import 'personalization_service.dart';
 
 /// Map a mood chip to one or more topics in BibleRepository's curated topic
 /// pool. Multiple topics are merged + de-duplicated to give richer suggestions.
@@ -36,7 +37,9 @@ void showMoodVersesSheet({
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.45),
     builder: (_) => _MoodVersesSheet(mood: mood, parentRef: ref),
   );
 }
