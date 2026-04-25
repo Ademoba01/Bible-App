@@ -17,6 +17,7 @@ import '../../auth/auth_screen.dart';
 import '../../bookmarks/bookmarks_screen.dart';
 import '../../codex/codex_screen.dart';
 import '../../listen/listen_screen.dart';
+import '../../personalization/mood_verses_sheet.dart';
 import '../../personalization/personalization_service.dart';
 import '../../personalization/preach_topic_screen.dart';
 import '../../personalization/reading_plan_screen.dart';
@@ -523,7 +524,12 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     final svc = ref.read(personalizationServiceProvider);
     await svc.setMoodForToday(mood);
     setState(() => _selectedMood = mood);
-    await _fetchAdaptiveVerse(mood);
+    // Open the mood verses sheet so the user can browse a list of suggestions
+    // (curated topic verses + AI-tuned additions when Gemini is available).
+    showMoodVersesSheet(context: context, ref: ref, mood: mood);
+    // Also refresh the single Verse-of-the-Day card in the background so the
+    // home screen visual reflects the new mood next time it renders.
+    _fetchAdaptiveVerse(mood);
   }
 
   Future<void> _fetchAdaptiveVerse(String mood) async {
