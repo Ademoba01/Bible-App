@@ -12,6 +12,9 @@
 .swiftpm/
 migrate_working_dir/
 
+# Kotlin compile daemon scratch (created by Gradle Android builds)
+android/.kotlin/
+
 # macOS iCloud sync duplicates — files like "foo 2.txt", "foo 3.txt"
 # appear when the same file is edited concurrently across devices.
 # These are filesystem artifacts, never to be committed.
