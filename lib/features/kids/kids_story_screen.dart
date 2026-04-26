@@ -354,7 +354,10 @@ class _KidsStoryScreenState extends ConsumerState<KidsStoryScreen>
                     children: [
                       ListView.builder(
                         controller: _verseScrollController,
-                        padding: const EdgeInsets.all(20),
+                        // Bottom padding leaves room for the "Tap the button
+                        // below" hint overlay so the last verse stays readable
+                        // and isn't masked by the hint's gradient fade.
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 80),
                         itemCount: verses.length,
                         itemBuilder: (_, i) {
                           final v = verses[i];
@@ -420,33 +423,56 @@ class _KidsStoryScreenState extends ConsumerState<KidsStoryScreen>
                           );
                         },
                       ),
-                      // Audio-first prompt overlay — shown when not playing and just loaded
+                      // Audio-first prompt overlay — shown when not playing and just loaded.
+                      // Uses a TALL gradient so the fade fully obscures any verse
+                      // text behind it, then a centered hint chip on solid bg
+                      // so the message reads cleanly on every device size.
                       if (!_playing && _currentVerseIndex == -1)
                         Positioned(
                           bottom: 0,
                           left: 0,
                           right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0),
-                                  Theme.of(context).scaffoldBackgroundColor,
-                                ],
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '\u{1F3A7} Tap the button below to hear the story!',
-                                style: GoogleFonts.fredoka(
-                                  fontSize: 14,
-                                  color: cardColor,
-                                  fontWeight: FontWeight.w500,
+                          child: IgnorePointer(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Tall fade so verse text dissolves into the
+                                // background before the hint chip.
+                                Container(
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Theme.of(context)
+                                            .scaffoldBackgroundColor
+                                            .withValues(alpha: 0),
+                                        Theme.of(context)
+                                            .scaffoldBackgroundColor,
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                // Hint chip on solid bg
+                                Container(
+                                  width: double.infinity,
+                                  color: Theme.of(context)
+                                      .scaffoldBackgroundColor,
+                                  padding: const EdgeInsets.fromLTRB(
+                                      20, 0, 20, 8),
+                                  child: Center(
+                                    child: Text(
+                                      '\u{1F3A7} Tap the button below to hear the story!',
+                                      style: GoogleFonts.fredoka(
+                                        fontSize: 14,
+                                        color: cardColor,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
