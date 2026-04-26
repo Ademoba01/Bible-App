@@ -36,6 +36,17 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   /// fixes the dual-loop race that caused Resume to start over from verse 1.
   int _playSession = 0;
 
+  /// Karaoke-style word highlighting. Each call to flutter_tts'
+  /// setProgressHandler increments this counter — that's the index of the
+  /// word currently being spoken WITHIN the current verse. Reset to -1 on
+  /// each new verse, pause, jump, or stop.
+  ///
+  /// Display matches by counting word-tokens (letter-bearing) in the
+  /// displayed verse text. Pure-punctuation tokens are skipped. The mapping
+  /// is approximate — punctuation differences between displayed and spoken
+  /// text are normalized in _processTextForSpeech, so word counts align.
+  int _spokenWordIndex = -1;
+
   // Preset speed ladder — Audible-style. Dense near the 1.0–1.5× sweet spot
   // where ~80% of listeners settle. Includes 0.9× for archaic English (KJV).
   static final _speeds = <double, String>{
@@ -64,6 +75,15 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
     // the synthesizer is truly done — verse-by-verse playback works on web,
     // iOS, and Android consistently.
     _tts.awaitSpeakCompletion(true);
+
+    // Word-level karaoke. flutter_tts' progress handler fires once per
+    // spoken word on iOS/Android/Web. We just count — the display side
+    // walks the displayed verse and highlights the Nth word-token.
+    _tts.setProgressHandler((String text, int start, int end, String word) {
+      if (!mounted) return;
+      setState(() => _spokenWordIndex++);
+    });
+
     // Load persisted speed after first frame so we can access Riverpod.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -133,6 +153,56 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
     return text.trim();
   }
 
+  /// Tokenize verse text into an alternating list of "word" and "non-word"
+  /// (whitespace + punctuation) chunks, then return a list of TextSpans
+  /// where the [activeWordIndex]-th letter-bearing token is highlighted.
+  ///
+  /// Pass activeWordIndex = -1 to render flat (no highlight). The mapping
+  /// between TTS progressHandler word index and displayed token index is
+  /// 1-to-1 because _processTextForSpeech doesn't add or drop words —
+  /// it only normalizes punctuation around them.
+  List<TextSpan> _buildKaraokeSpans(
+    String verseText,
+    int activeWordIndex,
+    ThemeData theme,
+  ) {
+    // Split on whitespace AND punctuation boundaries while keeping the
+    // delimiters as separate tokens. RegExp lookarounds let us preserve
+    // every character — concatenating tokens reconstructs the verse.
+    final tokens = verseText.split(RegExp(r'(\s+|(?<=\w)(?=[^\w\s])|(?<=[^\w\s])(?=\w))'));
+
+    final spans = <TextSpan>[];
+    int wordCounter = 0;
+    final baseStyle = GoogleFonts.lora(
+      fontSize: 16,
+      height: 1.6,
+      color: theme.colorScheme.onSurface,
+    );
+    final highlightStyle = GoogleFonts.lora(
+      fontSize: 16,
+      height: 1.6,
+      color: theme.colorScheme.onPrimary,
+      fontWeight: FontWeight.w700,
+      backgroundColor: theme.colorScheme.primary,
+    );
+
+    for (final token in tokens) {
+      final isWord = RegExp(r'[A-Za-z\u00C0-\u024F]').hasMatch(token);
+      if (isWord) {
+        final isActive = activeWordIndex >= 0 && wordCounter == activeWordIndex;
+        spans.add(TextSpan(
+          text: token,
+          style: isActive ? highlightStyle : baseStyle,
+        ));
+        wordCounter++;
+      } else {
+        spans.add(TextSpan(text: token, style: baseStyle));
+      }
+    }
+
+    return spans;
+  }
+
   Future<void> _play({int startFromVerse = 0}) async {
     // Bump session — any previously-running loop will see its session is
     // stale and break on its next iteration check.
@@ -197,6 +267,10 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
 
       final verseText = _processTextForSpeech(verses[i].text);
 
+      // Reset karaoke counter for the new verse — first progressHandler
+      // call will bump us to 0 (the first word).
+      _spokenWordIndex = -1;
+
       // awaitSpeakCompletion(true) was called in initState — speak() now
       // returns only when the utterance is fully spoken. No Completer needed.
       await _tts.speak(verseText);
@@ -233,6 +307,7 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
     setState(() {
       _playing = false;
       _paused = true;
+      _spokenWordIndex = -1;
     });
   }
 
@@ -247,6 +322,7 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
       _playing = false;
       _paused = false;
       _resumeFromVerse = 0;
+      _spokenWordIndex = -1;
     });
   }
 
@@ -692,6 +768,9 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
 
               // Show verses being read with current verse highlighted.
               // Tap any verse to jump TTS playback to it.
+              // Within the current verse, the word being spoken is
+              // highlighted in real time (karaoke-style) so audio-visual
+              // learners can read along.
               if (_verses.isNotEmpty)
                 Expanded(
                   child: ListView.builder(
@@ -737,14 +816,15 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
                                           color: theme.colorScheme.primary,
                                         ),
                                       ),
-                                      TextSpan(
-                                        text: _verses[i].text,
-                                        style: GoogleFonts.lora(
-                                          fontSize: 16,
-                                          height: 1.6,
-                                          color:
-                                              theme.colorScheme.onSurface,
-                                        ),
+                                      ..._buildKaraokeSpans(
+                                        _verses[i].text,
+                                        // Only the active verse gets
+                                        // word-level highlighting; other
+                                        // verses render flat.
+                                        isCurrent && _playing
+                                            ? _spokenWordIndex
+                                            : -1,
+                                        theme,
                                       ),
                                     ],
                                   ),
