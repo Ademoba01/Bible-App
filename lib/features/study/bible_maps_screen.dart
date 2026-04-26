@@ -675,6 +675,11 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
     final traveled = _traveledRoute;
 
     return Stack(
+      // Tight constraints so FlutterMap fills the parent's bounds —
+      // without this, default StackFit.loose passes unbounded
+      // constraints which can starve the map of a usable canvas
+      // (the same Stack-bug class that broke home scroll in 10e8c51).
+      fit: StackFit.expand,
       children: [
         FlutterMap(
           mapController: _mapController,

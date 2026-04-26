@@ -2460,14 +2460,18 @@ class _QuickTileLarge extends StatelessWidget {
           borderRadius: BorderRadius.circular(22),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
+            // Tightened from (18, 8) to (10, 6) — was overflowing the
+            // square aspect-ratio tile by ~10dp on iPhone widths
+            // ("BOTTOM OVERFLOWED BY 10.0" hazard tape).
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Larger filled circle icon badge
+                // Filled circle icon badge — sized down to fit square
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
@@ -2490,15 +2494,19 @@ class _QuickTileLarge extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Icon(icon, color: color, size: 28),
+                  child: Icon(icon, color: color, size: 24),
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  label,
-                  style: GoogleFonts.lora(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: color,
+                const SizedBox(height: 6),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.lora(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
                   ),
                 ),
               ],

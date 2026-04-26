@@ -539,6 +539,10 @@ class _VerseListState extends State<_VerseList> {
       }
     }
     return Stack(
+      // Tight constraints — same fix class as home_screen Stack. Without
+      // fit:expand, the inner ListView gets unbounded vertical and can't
+      // compute its viewport.
+      fit: StackFit.expand,
       children: [
         Container(
       color: isDark ? const Color(0xFF2B1E19) : BrandColors.parchment,
