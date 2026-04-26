@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Rhema Study Bible — free, ad-free Bible app with AI search, audio narration, interactive maps, and a kids mode. Works offline. iOS, Android, Web." />
+  <meta property="og:title" content="Rhema Study Bible — The Bible that listens & speaks your language" />
+  <meta property="og:description" content="Free, ad-free Bible app with AI search, audio narration, interactive maps, and a kids mode." />
+  <meta property="og:image" content="https://rhemabibles.com/icons/Icon-512.png" />
+  <meta property="og:url" content="https://rhemabibles.com/welcome.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="canonical" href="https://rhemabibles.com/welcome.html" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <title>Rhema Study Bible — The Bible that listens &amp; speaks your language</title>
+
+  <!-- Brand fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700;800&family=Lora:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --parchment: #FBF6E9;
+      --parchment-deep: #F4E9D0;
+      --brown: #5D4037;
+      --brown-deep: #2B1610;
+      --gold: #C4923E;
+      --gold-soft: #D4A843;
+      --ink: #2A2118;
+      --ink-soft: #5D4E40;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Lora', Georgia, serif;
+      color: var(--ink);
+      background: var(--parchment);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    h1, h2, h3, .display { font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; }
+    .wordmark { font-family: 'Playfair Display', Georgia, serif; }
+
+    /* Layout */
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+    .stack-32 > * + * { margin-top: 32px; }
+    .section { padding: 96px 0; }
+
+    /* Hero */
+    .hero {
+      position: relative;
+      min-height: 92vh;
+      display: flex;
+      align-items: center;
+      color: white;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(43,22,16,0.88) 0%, rgba(93,64,55,0.85) 50%, rgba(43,22,16,0.92) 100%),
+        radial-gradient(circle at 30% 20%, rgba(196,146,62,0.35), transparent 50%),
+        var(--brown-deep);
+    }
+    .hero-grid {
+      position: absolute; inset: 0; opacity: 0.06;
+      background-image:
+        linear-gradient(white 1px, transparent 1px),
+        linear-gradient(90deg, white 1px, transparent 1px);
+      background-size: 80px 80px;
+      pointer-events: none;
+    }
+    .hero-content { position: relative; text-align: center; }
+    .brand-badge {
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.25);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 999px;
+      margin-bottom: 32px;
+      font-size: 18px;
+      letter-spacing: 0.5px;
+    }
+    .brand-badge img {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+    .hero h1 {
+      font-size: clamp(40px, 7vw, 84px);
+      line-height: 1.05;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--gold-soft);
+      font-weight: 800;
+    }
+    .hero-tagline {
+      font-size: clamp(16px, 2vw, 22px);
+      color: rgba(255,255,255,0.82);
+      max-width: 640px;
+      margin: 0 auto 40px;
+    }
+
+    /* CTAs */
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 32px;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+      color: white;
+      box-shadow: 0 6px 20px rgba(196,146,62,0.4);
+    }
+    .btn-primary:hover { box-shadow: 0 8px 28px rgba(196,146,62,0.55); }
+    .btn-glass {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .btn-glass:hover { background: rgba(255,255,255,0.16); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--brown);
+      border: 2px solid var(--brown);
+    }
+    .btn-ghost:hover { background: var(--brown); color: white; }
+
+    /* Section headings */
+    .section-eyebrow {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .section h2 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      color: var(--brown-deep);
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    .section .lede {
+      font-size: 18px;
+      color: var(--ink-soft);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .section-head { text-align: center; margin-bottom: 64px; }
+
+    /* Feature grid */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+    }
+    .feature-card {
+      background: white;
+      padding: 32px 28px;
+      border-radius: 24px;
+      border: 1px solid rgba(196,146,62,0.18);
+      box-shadow: 0 4px 20px rgba(93,64,55,0.06);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 36px rgba(93,64,55,0.12);
+    }
+    .feature-icon {
+      width: 64px; height: 64px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 20px;
+      background: radial-gradient(circle at 30% 30%, rgba(196,146,62,0.25), rgba(196,146,62,0.10));
+      border: 1px solid rgba(196,146,62,0.3);
+    }
+    .feature-card h3 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--brown-deep);
+      margin-bottom: 10px;
+    }
+    .feature-card p {
+      font-size: 15px;
+      color: var(--ink-soft);
+      line-height: 1.6;
+    }
+
+    /* Kids/family band */
+    .band-cream { background: var(--parchment-deep); }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+    @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
+    .checklist { list-style: none; padding: 0; }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(93,64,55,0.10);
+      font-size: 17px;
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist .check {
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      background: var(--gold);
+      color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+    }
+    .device-frame {
+      background: linear-gradient(145deg, var(--brown-deep), var(--brown));
+      border-radius: 32px;
+      padding: 16px;
+      box-shadow: 0 24px 60px rgba(43,22,16,0.30);
+    }
+    .device-frame img {
+      width: 100%;
+      border-radius: 20px;
+      display: block;
+    }
+
+    /* Final CTA */
+    .final-cta {
+      background:
+        radial-gradient(circle at 80% 0%, rgba(196,146,62,0.25), transparent 50%),
+        linear-gradient(135deg, var(--brown-deep), var(--brown));
+      color: white;
+      text-align: center;
+      padding: 96px 0;
+    }
+    .final-cta h2 { color: white; }
+    .final-cta .lede { color: rgba(255,255,255,0.78); }
+
+    /* Footer */
+    footer {
+      background: #1A1208;
+      color: rgba(255,255,255,0.55);
+      padding: 40px 0;
+      text-align: center;
+      font-size: 14px;
+    }
+    footer a { color: var(--gold-soft); text-decoration: none; }
+    footer a:hover { color: white; }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div class="container hero-content">
+      <a href="/" class="brand-badge" style="text-decoration:none; color:white;">
+        <img src="favicon.png" alt="Rhema icon" />
+        <span class="wordmark" style="font-weight:800;">Rhema Study Bible</span>
+      </a>
+      <h1>
+        The Bible that<br>
+        <em>listens</em> and speaks<br>
+        your language
+      </h1>
+      <p class="hero-tagline">
+        Free • Ad-free • Smart search • Audio with karaoke highlighting<br>
+        Built for families, kids, and serious students of Scripture.
+      </p>
+      <div class="cta-row">
+        <a href="/" class="btn btn-primary">📖 Open the App</a>
+        <a href="https://play.google.com/store/apps/details?id=com.rhemabibles.app" class="btn btn-glass">▷ Get on Google Play</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-eyebrow">What's inside</div>
+        <h2>Everything you need to grow</h2>
+        <p class="lede">Read, listen, study, share, pray. All without ads or subscriptions.</p>
+      </div>
+      <div class="features">
+
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h3>Smart Bible Search</h3>
+          <p>Type a verse, a topic, or a paraphrase like <em>"god is consuming fire"</em> — find the matching verses across translations, with an AI overview that interprets your query.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🎧</div>
+          <h3>Audio with Karaoke</h3>
+          <p>Each word lights up as the narrator reads it. Tap any verse to jump there. Adjustable speed (0.5×–2×), 14+ voices, KJV-aware pacing.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🗺️</div>
+          <h3>Interactive Bible Maps</h3>
+          <p>56+ historical locations. Trace Paul's journeys, Abraham's migration, Jesus' ministry. Era filters and animated routes.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📚</div>
+          <h3>Cross-References Built In</h3>
+          <p>340,000+ Treasury of Scripture Knowledge links. Long-press any verse to see ranked citations sorted by scholarly votes.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🙏</div>
+          <h3>Private Prayer Wall</h3>
+          <p>Track your intercessions. Mark them answered with a reflection. A running log of God's faithfulness, only you see it.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🌍</div>
+          <h3>10 Languages, 14+ Translations</h3>
+          <p>KJV &amp; WEB work fully offline. Yoruba, Hausa, Igbo, Hindi, Arabic, Bengali, Amharic, Tibetan and more stream from cloud.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- KIDS / FAMILIES -->
+  <section class="section band-cream">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-eyebrow">For families</div>
+        <h2>Made for kids and families</h2>
+        <p class="lede">Safe. Ad-free. No social features. Just God's Word, told well.</p>
+      </div>
+      <div class="two-col">
+        <ul class="checklist">
+          <li><span class="check">✓</span> Audio Bible stories perfect for bedtime</li>
+          <li><span class="check">✓</span> Fun quizzes that adapt to age 5–10</li>
+          <li><span class="check">✓</span> Animated story scenes that make Scripture stick</li>
+          <li><span class="check">✓</span> Parent dashboard tracks reading without spying on content</li>
+          <li><span class="check">✓</span> Math gate keeps Kids Mode kid-safe</li>
+        </ul>
+        <div class="device-frame">
+          <img src="https://rhemabibles.com/icons/Icon-512.png" alt="Rhema Kids Mode" loading="lazy" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final-cta">
+    <div class="container">
+      <div class="section-eyebrow" style="color:var(--gold-soft);">Start today</div>
+      <h2 style="font-size: clamp(36px, 6vw, 56px); margin-bottom: 16px;">Pick up where you left off</h2>
+      <p class="lede" style="margin: 0 auto 40px;">No signup required. Open the app, choose a translation, and start reading.</p>
+      <div class="cta-row">
+        <a href="/" class="btn btn-primary">📖 Open the Web App</a>
+        <a href="https://play.google.com/store/apps/details?id=com.rhemabibles.app" class="btn btn-glass">▷ Google Play</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>Made with reverence for God's Word. <a href="/privacy.html">Privacy</a> · <a href="/api-docs.html">API</a> · <a href="/">Launch app</a></p>
+    </div>
+  </footer>
+</body>
+</html>
