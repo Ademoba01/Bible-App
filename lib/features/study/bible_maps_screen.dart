@@ -31,6 +31,11 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
   /// null => show all eras; otherwise filter to selected era.
   BiblicalEra? _selectedEra;
 
+  /// The place currently shown in the info-card sheet (null when closed).
+  /// Captured so navigating to a verse can persist "return to this place"
+  /// so the floating "Back to Maps" chip can re-open the same info card.
+  BiblicalPlace? _currentInfoPlace;
+
   /// Testament filter: null => Both, true => OT only, false => NT only.
   /// Cuts horizontally across all eras for a coarser/clearer first cut.
   bool? _onlyOldTestament;
@@ -80,6 +85,24 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
+
+    // If the user came back from a verse via the "Back to Map" chip,
+    // re-open the same info card on the next frame so they pick up
+    // exactly where they left off.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final returnPlace = ref.read(mapReturnPlaceProvider);
+      if (returnPlace != null) {
+        ref.read(mapReturnPlaceProvider.notifier).state = null;
+        final place = kBiblicalPlaces.firstWhere(
+          (p) => p.name == returnPlace,
+          orElse: () => kBiblicalPlaces.first,
+        );
+        if (place.name == returnPlace) {
+          _showPlaceInfo(place);
+        }
+      }
+    });
   }
 
   @override
@@ -249,6 +272,7 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
   }
 
   void _showPlaceInfo(BiblicalPlace place) {
+    _currentInfoPlace = place; // capture for return-to-Maps from reading
     final parentJourneys = kBiblicalJourneys.where((j) {
       return j.stops.any((s) => s.name == place.name);
     }).toList();
@@ -312,7 +336,10 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
     );
   }
 
-  /// Parse a verse reference like "Genesis 12:1" and navigate.
+  /// Parse a verse reference like "Acts 9:3" and navigate to the Read tab,
+  /// highlighting the specific verse AND marking the return context so the
+  /// reading screen can show "← Back to Maps" and re-select the current
+  /// place when tapped.
   void _navigateToVerse(String verseRef) {
     final parts = verseRef.trim().split(RegExp(r'\s+'));
     if (parts.length < 2) return;
@@ -322,11 +349,19 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
 
     String book;
     String chapterStr;
+    int? verseNum;
 
-    if (chapterVersePart.contains(':') ||
-        int.tryParse(chapterVersePart) != null) {
+    if (chapterVersePart.contains(':')) {
+      // "Acts 9:3" — split chapter:verse
       book = bookParts.join(' ');
-      chapterStr = chapterVersePart.split(':').first;
+      final cv = chapterVersePart.split(':');
+      chapterStr = cv[0];
+      // Verse may include a range "3-5" — take the first number
+      final vRaw = cv.length > 1 ? cv[1].split(RegExp(r'[-,]')).first : '';
+      verseNum = int.tryParse(vRaw);
+    } else if (int.tryParse(chapterVersePart) != null) {
+      book = bookParts.join(' ');
+      chapterStr = chapterVersePart;
     } else {
       book = verseRef;
       chapterStr = '1';
@@ -336,6 +371,15 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
 
     ref.read(readingLocationProvider.notifier).setBook(book);
     ref.read(readingLocationProvider.notifier).setChapter(chapter);
+    if (verseNum != null) {
+      ref.read(highlightVerseProvider.notifier).state = verseNum;
+    }
+    // Mark return context so the reading screen can show "Back to Maps".
+    ref.read(returnContextProvider.notifier).state = 'map';
+    if (_currentInfoPlace != null) {
+      ref.read(mapReturnPlaceProvider.notifier).state =
+          _currentInfoPlace!.name;
+    }
     ref.read(tabIndexProvider.notifier).set(1);
     Navigator.of(context).popUntil((route) => route.isFirst);
   }

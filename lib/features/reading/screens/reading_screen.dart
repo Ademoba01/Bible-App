@@ -13,7 +13,9 @@ import '../../listen/listen_screen.dart';
 import '../../search/similar_verses_screen.dart';
 import '../../share/verse_card_renderer.dart';
 import '../../../utils/page_transitions.dart';
+import '../../../utils/sub_route_navigation.dart';
 import '../../../widgets/rhema_title.dart';
+import '../../study/bible_maps_screen.dart';
 import '../../study/chapter_quiz_screen.dart';
 import 'books_screen.dart';
 import '../../../widgets/shimmer_placeholder.dart';
@@ -302,10 +304,33 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   GestureDetector(
-                                    onTap: () {
+                                    onTap: () async {
+                                      final ctx = returnContext;
                                       _dismissBackChip();
-                                      ref.read(highlightVerseProvider.notifier).state = null;
-                                      Navigator.of(context).maybePop();
+                                      ref
+                                          .read(highlightVerseProvider
+                                              .notifier)
+                                          .state = null;
+                                      if (ctx == 'map') {
+                                        // Maps was popped when we
+                                        // navigated to the verse — push
+                                        // it again. The screen reads
+                                        // mapReturnPlaceProvider on init
+                                        // and re-opens that info card.
+                                        ref
+                                            .read(returnContextProvider
+                                                .notifier)
+                                            .state = null;
+                                        await pushSubRoute(
+                                          context,
+                                          ref,
+                                          route: SubRoute.maps,
+                                          builder: (_) =>
+                                              const BibleMapsScreen(),
+                                        );
+                                      } else {
+                                        Navigator.of(context).maybePop();
+                                      }
                                     },
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,

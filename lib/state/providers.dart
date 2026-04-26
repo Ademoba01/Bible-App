@@ -579,3 +579,8 @@ final highlightVerseProvider = StateProvider<int?>((ref) => null);
 /// When set, the ReadingScreen shows a floating "Back to ..." chip.
 /// Values: 'similar_verses', 'map', etc.
 final returnContextProvider = StateProvider<String?>((ref) => null);
+
+/// When set with returnContextProvider == 'map', the BibleMapsScreen
+/// can re-select this place on next mount so the user picks up the same
+/// info-card they were on before tapping a related verse.
+final mapReturnPlaceProvider = StateProvider<String?>((ref) => null);
