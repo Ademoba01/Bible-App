@@ -12,6 +12,16 @@
 .swiftpm/
 migrate_working_dir/
 
+# macOS iCloud sync duplicates — files like "foo 2.txt", "foo 3.txt"
+# appear when the same file is edited concurrently across devices.
+# These are filesystem artifacts, never to be committed.
+* 2.*
+* 3.*
+* 4.*
+* 5.*
+* 2
+* 3
+
 # IntelliJ related
 *.iml
 *.ipr
