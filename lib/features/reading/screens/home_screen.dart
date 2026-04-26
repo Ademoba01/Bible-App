@@ -30,6 +30,7 @@ import '../../study/bible_maps_screen.dart';
 import '../../study/study_screen.dart';
 import '../../../utils/kids_portal_transition.dart';
 import '../../../utils/page_transitions.dart';
+import '../../../utils/voice_text_normalizer.dart';
 import 'reading_screen.dart';
 
 /// Adult-mode shell: bottom nav + "Home" tab with a warm greeting card.
@@ -618,11 +619,18 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     await _speech.listen(
       onResult: (result) {
         if (mounted) {
+          // Normalize STT output: capitalize Bible names ("jesus" -> "Jesus")
+          // AND map common Pidgin words to their English equivalents
+          // ("pikin" -> "son") so search hits Bible text. Both passes are
+          // word-boundary-safe pure-string substitution — see
+          // voice_text_normalizer.dart for the substitution maps.
+          final normalized =
+              VoiceTextNormalizer.normalize(result.recognizedWords);
           setState(() {
-            _voiceText = result.recognizedWords;
-            _searchCtrl.text = _voiceText;
+            _voiceText = normalized;
+            _searchCtrl.text = normalized;
             _searchCtrl.selection = TextSelection.fromPosition(
-              TextPosition(offset: _voiceText.length),
+              TextPosition(offset: normalized.length),
             );
           });
           // Auto-search when confidence is high enough
