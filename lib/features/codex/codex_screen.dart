@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../data/books.dart';
 import '../../state/codex_provider.dart';
+import '../../widgets/lottie_or_fallback.dart';
 import '../../widgets/wax_seal.dart';
 
 /// "Your Codex" — gamified milestone screen rendered on parchment with
@@ -186,7 +187,32 @@ class _CodexScreenState extends ConsumerState<CodexScreen> {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            WaxSeal(emblem: m.emblem, size: 76, earned: earned),
+            // Stack the seal under a Lottie sparkle when earned — gives an
+            // ambient "this milestone is alive" treatment without an
+            // intrusive popup. Sparkle loops gently, low-key.
+            SizedBox(
+              width: 92,
+              height: 92,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  WaxSeal(emblem: m.emblem, size: 76, earned: earned),
+                  if (earned)
+                    IgnorePointer(
+                      child: Opacity(
+                        opacity: 0.7,
+                        child: LottieOrFallback(
+                          assetPath: LottieAssets.sparkle,
+                          fallbackIcon: Icons.auto_awesome,
+                          fallbackColor: const Color(0xFFC4923E),
+                          size: 92,
+                          repeat: true,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
             const SizedBox(height: 8),
             Text(
               m.label,

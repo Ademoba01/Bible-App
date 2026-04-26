@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../data/models.dart';
 import '../../state/providers.dart';
+import '../../widgets/lottie_or_fallback.dart';
 
 /// A quiz question for kids mode.
 class _KidsQuizQuestion {
@@ -517,35 +518,55 @@ class _KidsQuizScreenState extends ConsumerState<KidsQuizScreen>
               );
             }),
 
-            // Result emoji & encouragement
+            // Result celebration & encouragement.
+            // Correct -> Lottie confetti burst (one-shot, ~2s).
+            // Wrong   -> kept the emoji + scale-in to stay gentle.
             if (_answered)
-              ScaleTransition(
-                scale: _resultEmojiAnimation,
-                child: Column(
-                  children: [
-                    Text(
-                      isCorrect ? '🎉' : '😊',
-                      style: const TextStyle(fontSize: 40),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      isCorrect
-                          ? _encourageCorrect[
-                              random.nextInt(_encourageCorrect.length)]
-                          : _encourageWrong[
-                              random.nextInt(_encourageWrong.length)],
-                      style: GoogleFonts.fredoka(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: isCorrect
-                            ? Colors.green.shade700
-                            : Colors.orange.shade700,
+              isCorrect
+                  ? Column(
+                      children: [
+                        SizedBox(
+                          height: 110,
+                          child: LottieOrFallback(
+                            assetPath: LottieAssets.confetti,
+                            fallbackIcon: Icons.celebration_rounded,
+                            fallbackColor: Colors.green.shade600,
+                            size: 110,
+                            repeat: false,
+                          ),
+                        ),
+                        Text(
+                          _encourageCorrect[
+                              random.nextInt(_encourageCorrect.length)],
+                          style: GoogleFonts.fredoka(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.green.shade700,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    )
+                  : ScaleTransition(
+                      scale: _resultEmojiAnimation,
+                      child: Column(
+                        children: [
+                          const Text('😊',
+                              style: TextStyle(fontSize: 40)),
+                          const SizedBox(height: 4),
+                          Text(
+                            _encourageWrong[
+                                random.nextInt(_encourageWrong.length)],
+                            style: GoogleFonts.fredoka(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.orange.shade700,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                  ],
-                ),
-              ),
           ],
         ),
       ),
