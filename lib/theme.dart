@@ -28,6 +28,32 @@ class BrandColors {
   static const warmWhite = Color(0xFFFFFBF5);   // card background
   static const verseBeige = Color(0xFFEDE4D5);  // highlighted verse bg
 
+  /// Typography helpers — call these instead of inline GoogleFonts so the
+  /// app's verse rendering is consistent and easy to retune in one place.
+  static TextStyle verseStyle({
+    double size = 19.5,
+    Color? color,
+  }) {
+    // Literata: a serif designed for long-form digital reading. Slightly
+    // taller line height + tight letter spacing produces the calm cadence
+    // that distinguishes Scripture from UI text.
+    return GoogleFonts.literata(
+      fontSize: size,
+      height: 1.75,
+      letterSpacing: -0.2,
+      color: color,
+    );
+  }
+
+  static TextStyle verseNumberStyle({Color? color}) {
+    return GoogleFonts.literata(
+      fontSize: 13,
+      fontWeight: FontWeight.w700,
+      color: color,
+      height: 1.0,
+    );
+  }
+
   // Kids palette — brighter, cheerful
   static const kidsBlue = Color(0xFF42A5F5);
   static const kidsYellow = Color(0xFFFFCA28);

@@ -730,19 +730,19 @@ class _VerseListState extends State<_VerseList> {
               },
               child: RichText(
                 text: TextSpan(
-                  style: GoogleFonts.lora(
-                        fontSize: fontSize,
-                        height: 1.7,
-                        color: theme.colorScheme.onSurface,
-                      ),
+                  // Literata for Bible verses — designed for long-form
+                  // devotional reading. Tighter letter spacing, taller
+                  // line height than Lora.
+                  style: BrandColors.verseStyle(
+                    size: fontSize,
+                    color: theme.colorScheme.onSurface,
+                  ),
                   children: [
                     TextSpan(
                       text: '${v.number}  ',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: fontSize - 2,
+                      style: BrandColors.verseNumberStyle(
                         color: BrandColors.brownMid,
-                      ),
+                      ).copyWith(fontSize: fontSize - 4),
                     ),
                     TextSpan(text: v.text),
                     if (isMarked)
@@ -878,7 +878,7 @@ class _VerseListState extends State<_VerseList> {
           children: [
             Text(refId, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
-            Text(v.text, style: const TextStyle(fontSize: 17, height: 1.5)),
+            Text(v.text, style: BrandColors.verseStyle(size: 17)),
             const SizedBox(height: 16),
             Wrap(
               spacing: 4,

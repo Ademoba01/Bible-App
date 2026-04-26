@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../data/books.dart';
 import '../../data/models.dart';
 import '../../state/providers.dart';
+import '../../theme.dart';
 import '../settings/voice_settings.dart';
 
 class ListenScreen extends ConsumerStatefulWidget {
@@ -17,7 +18,12 @@ class ListenScreen extends ConsumerStatefulWidget {
   ConsumerState<ListenScreen> createState() => _ListenScreenState();
 }
 
-class _ListenScreenState extends ConsumerState<ListenScreen> {
+class _ListenScreenState extends ConsumerState<ListenScreen>
+    with SingleTickerProviderStateMixin {
+  /// Pulse controller for the big speaker disc — runs while _playing,
+  /// stopped otherwise. Drives an animated glow/spread shadow so the
+  /// listener feels the rhythm of the narration.
+  late final AnimationController _pulseController;
   final FlutterTts _tts = FlutterTts();
   bool _playing = false;
   bool _paused = false;
@@ -68,6 +74,10 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
     // CRITICAL: makes _tts.speak() actually await until utterance finishes.
     // Without this, the for-loop's setCompletionHandler/Completer dance is
     // racy on Web Speech API and only verse 1 reliably plays before the loop
@@ -96,6 +106,7 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   void dispose() {
     _tts.stop();
     _scrollController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -173,15 +184,15 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
 
     final spans = <TextSpan>[];
     int wordCounter = 0;
-    final baseStyle = GoogleFonts.lora(
-      fontSize: 16,
-      height: 1.6,
+    // Literata for verse text — designed for long-form devotional reading.
+    final baseStyle = BrandColors.verseStyle(
+      size: 18,
       color: theme.colorScheme.onSurface,
     );
-    final highlightStyle = GoogleFonts.lora(
-      fontSize: 16,
-      height: 1.6,
+    final highlightStyle = BrandColors.verseStyle(
+      size: 18,
       color: theme.colorScheme.onPrimary,
+    ).copyWith(
       fontWeight: FontWeight.w700,
       backgroundColor: theme.colorScheme.primary,
     );
@@ -245,6 +256,8 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
       _verses = verses;
       _currentVerseIndex = startFromVerse;
     });
+    // Start the pulse — the speaker disc breathes while narration plays.
+    _pulseController.repeat(reverse: true);
 
     // Read verse by verse with natural pauses
     for (int i = startFromVerse; i < verses.length; i++) {
@@ -304,6 +317,7 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
     // was set inside the loop on the verse currently being read.
     _playSession++;
     await _tts.stop();
+    _pulseController.stop();
     setState(() {
       _playing = false;
       _paused = true;
@@ -318,6 +332,8 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
   Future<void> _stop() async {
     _playSession++;
     await _tts.stop();
+    _pulseController.stop();
+    _pulseController.value = 0;
     setState(() {
       _playing = false;
       _paused = false;
@@ -540,14 +556,63 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
         child: Column(
             children: [
               const SizedBox(height: 16),
-              // ── Headphone icon ──
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+              // ── Animated speaker disc ──
+              // 160px circle with radial gold→brown gradient. While playing,
+              // a pulsing outer glow + scale tween conveys the rhythm of
+              // narration. Tap to play/pause as a primary affordance.
+              GestureDetector(
+                onTap: _playing
+                    ? _pause
+                    : (_paused ? _resume : _play),
+                child: AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, _) {
+                    final pulse = _pulseController.value; // 0 → 1 reverse-tween
+                    final scale = _playing ? (1.0 + 0.04 * pulse) : 1.0;
+                    return Transform.scale(
+                      scale: scale,
+                      child: Container(
+                        width: 160,
+                        height: 160,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: const RadialGradient(
+                            center: Alignment(-0.3, -0.4),
+                            radius: 1.0,
+                            colors: [
+                              BrandColors.goldDeep,
+                              BrandColors.brownDeep,
+                            ],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: BrandColors.goldDeep.withValues(
+                                alpha: _playing
+                                    ? 0.30 + 0.30 * pulse
+                                    : 0.20,
+                              ),
+                              blurRadius: _playing ? 30 + 30 * pulse : 20,
+                              spreadRadius: _playing ? 4 + 8 * pulse : 2,
+                            ),
+                          ],
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.18),
+                            width: 2,
+                          ),
+                        ),
+                        child: Icon(
+                          _playing
+                              ? Icons.graphic_eq
+                              : (_paused
+                                  ? Icons.play_arrow_rounded
+                                  : Icons.headphones_rounded),
+                          size: 72,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  },
                 ),
-                child: Icon(Icons.headphones, size: 60, color: theme.colorScheme.primary),
               ),
               const SizedBox(height: 24),
 
@@ -810,10 +875,9 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
                                     children: [
                                       TextSpan(
                                         text: '${i + 1} ',
-                                        style: GoogleFonts.lora(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
-                                          color: theme.colorScheme.primary,
+                                        style: BrandColors.verseNumberStyle(
+                                          color:
+                                              theme.colorScheme.primary,
                                         ),
                                       ),
                                       ..._buildKaraokeSpans(
