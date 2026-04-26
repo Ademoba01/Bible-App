@@ -12,6 +12,7 @@ import '../../../state/providers.dart';
 import '../../../theme.dart';
 import '../../cross_references/cross_references_sheet.dart';
 import '../../study/strongs_sheet.dart';
+import '../../study/my_lexicon_screen.dart';
 import '../../listen/listen_screen.dart';
 import '../../search/similar_verses_screen.dart';
 import '../../share/verse_card_renderer.dart';
@@ -237,6 +238,33 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                   context,
                   FadeSlideRoute(page: const ListenScreen()),
                 ),
+                scholarMode: ref.watch(
+                    settingsProvider.select((s) => s.scholarMode)),
+                onToggleScholar: () {
+                  final wasOn = ref.read(settingsProvider).scholarMode;
+                  ref
+                      .read(settingsProvider.notifier)
+                      .setScholarMode(!wasOn);
+                  HapticFeedback.lightImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(wasOn
+                          ? 'Word study turned off'
+                          : 'Word study on — tap any underlined word for Greek/Hebrew'),
+                      duration: const Duration(seconds: 3),
+                      action: !wasOn
+                          ? SnackBarAction(
+                              label: 'My Lexicon',
+                              onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const MyLexiconScreen(),
+                                ),
+                              ),
+                            )
+                          : null,
+                    ),
+                  );
+                },
               ),
               // Decorative divider with gold accent
               Container(
@@ -534,7 +562,7 @@ class _VerseListState extends State<_VerseList> {
           ),
           recognizer: _newRecognizer(() {
             HapticFeedback.selectionClick();
-            _openStrongs(hit!);
+            _openStrongs(hit!, verseRef: '$book $chapterNum:${verse.number}');
           }),
         ));
       } else {
@@ -558,7 +586,7 @@ class _VerseListState extends State<_VerseList> {
         .trim();
   }
 
-  void _openStrongs(StrongsWord w) {
+  void _openStrongs(StrongsWord w, {String? verseRef}) {
     final svc = widget.ref.read(strongsServiceProvider);
     final entry = svc.lookupStrong(w.strongs);
     final occ = svc.occurrencesOf(w.strongs);
@@ -567,6 +595,7 @@ class _VerseListState extends State<_VerseList> {
       word: w,
       entry: entry,
       occurrences: occ,
+      sourceVerseRef: verseRef,
     );
   }
 
@@ -632,6 +661,23 @@ class _VerseListState extends State<_VerseList> {
     setState(() {
       _selectionMode = false;
       _selectedVerses.clear();
+      _dragSelectionAnchor = null;
+    });
+  }
+
+  /// Web/desktop entry to drag-select. Mobile users get the same flow via
+  /// long-press, but on a mouse the 500-ms hold required by long-press
+  /// feels broken — desktop users expect immediate click-and-drag like
+  /// text selection. The verse-modal "Select multiple" action calls this
+  /// to seed selection mode so subsequent click-drags extend the range
+  /// (handled by the Listener around the ListView, see [build]).
+  void _enterSelectionFromModal(int verseNumber) {
+    setState(() {
+      _selectionMode = true;
+      _selectedVerses
+        ..clear()
+        ..add(verseNumber);
+      _dragSelectionAnchor = verseNumber;
     });
   }
 
@@ -743,7 +789,24 @@ class _VerseListState extends State<_VerseList> {
         verseKeys!.putIfAbsent(v.number, () => GlobalKey());
       }
     }
-    return Stack(
+    return Listener(
+      // ── Web/desktop click-and-drag selection ──
+      // On touch the existing onLongPressMoveUpdate handles drag-extend.
+      // On web/desktop, that gesture requires holding the mouse still for
+      // 500 ms before moving — unnatural for a text-selection-style
+      // interaction. Listener fires on every PointerMove regardless of
+      // hold duration. We only react when the user is already in
+      // selection mode (entered via long-press OR the modal's "Select
+      // multiple" affordance) AND a primary button is held, so this
+      // never interferes with normal scroll.
+      behavior: HitTestBehavior.translucent,
+      onPointerMove: (event) {
+        if (!_selectionMode) return;
+        if (event.buttons & kPrimaryButton == 0) return;
+        if (_dragSelectionAnchor == null) return;
+        _extendDragSelectionTo(event.position);
+      },
+      child: Stack(
       // Tight constraints — same fix class as home_screen Stack. Without
       // fit:expand, the inner ListView gets unbounded vertical and can't
       // compute its viewport.
@@ -836,6 +899,23 @@ class _VerseListState extends State<_VerseList> {
         // Drop cap for the first verse — with watermark chapter number
         if (i == 0 && v.text.isNotEmpty) {
           final firstLetter = v.text[0];
+          // ── Trojan horse: drop-cap is the front door to Strong's ──
+          // Even when scholarMode is OFF, tapping the ornate drop-cap opens
+          // the lexicon for the verse's first significant word. The tile
+          // is the most attention-grabbing element on the page; binding
+          // it to the lookup means users discover the feature visually
+          // rather than via Settings spelunking. The recognizer on the
+          // TextSpan wins over the parent InkWell when tapped directly.
+          final dropCapStrongs = ref
+              .read(strongsServiceProvider)
+              .wordsForVerse(book, chapterNum, v.number);
+          StrongsWord? dropCapHit;
+          for (final w in dropCapStrongs) {
+            if (w.strongs != null && w.strongs!.isNotEmpty) {
+              dropCapHit = w;
+              break;
+            }
+          }
           Widget dropCapWidget = Padding(
             key: verseKey,
             padding: const EdgeInsets.only(bottom: 6),
@@ -904,6 +984,16 @@ class _VerseListState extends State<_VerseList> {
                           color: isDark ? BrandColors.gold : BrandColors.goldDark,
                           height: 0.85,
                         ),
+                        recognizer: dropCapHit == null
+                            ? null
+                            : _newRecognizer(() {
+                                HapticFeedback.selectionClick();
+                                _openStrongs(
+                                  dropCapHit!,
+                                  verseRef:
+                                      '$book $chapterNum:${v.number}',
+                                );
+                              }),
                       ),
                       ..._buildVerseSpans(
                         verse: v,
@@ -1146,6 +1236,7 @@ class _VerseListState extends State<_VerseList> {
             ),
           ),
       ],
+      ),
     );
   }
 
@@ -1230,6 +1321,28 @@ class _VerseListState extends State<_VerseList> {
                     );
                   },
                 ),
+                // ── Web/desktop entry to drag-select ──
+                // On mobile users discover this via long-press; on web a
+                // long-press-on-mouse is awkward. This action enters
+                // selection mode immediately so the user can click+drag
+                // (handled by the Listener around the verse list) or
+                // click subsequent verses to toggle them.
+                TextButton.icon(
+                  icon: Icon(Icons.checklist, color: theme.colorScheme.primary),
+                  label: const Text('Select multiple'),
+                  onPressed: () {
+                    Navigator.pop(sheetContext);
+                    _enterSelectionFromModal(v.number);
+                    HapticFeedback.lightImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content:
+                            Text('Drag down or tap verses to add'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
                 TextButton.icon(
                   icon: Icon(isMarked ? Icons.bookmark : Icons.bookmark_border,
                       color: theme.colorScheme.primary),
@@ -1265,6 +1378,46 @@ class _VerseListState extends State<_VerseList> {
                     if (parsedRef != null) {
                       showCrossReferencesSheet(context, widget.ref, parsedRef);
                     }
+                  },
+                ),
+                // ── Original language (Strong's) ──
+                // The single highest-ROI discovery surface — the moment a
+                // user taps a verse is the moment they're curious about it.
+                // Auto-flips Scholar Mode on so the next tap on a word
+                // reveals Greek/Hebrew without a Settings detour. Shows a
+                // toast pointing at the now-underlined words.
+                TextButton.icon(
+                  icon: Icon(Icons.translate,
+                      color: theme.colorScheme.secondary),
+                  label: const Text('Original language'),
+                  onPressed: () {
+                    final wasOn =
+                        widget.ref.read(settingsProvider).scholarMode;
+                    if (!wasOn) {
+                      widget.ref
+                          .read(settingsProvider.notifier)
+                          .setScholarMode(true);
+                    }
+                    Navigator.pop(sheetContext);
+                    HapticFeedback.lightImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(wasOn
+                            ? 'Tap any underlined word for Greek/Hebrew'
+                            : 'Word study turned on — tap any underlined word'),
+                        duration: const Duration(seconds: 3),
+                        action: SnackBarAction(
+                          label: 'My Lexicon',
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const MyLexiconScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    );
                   },
                 ),
               ],
@@ -1337,6 +1490,8 @@ class _ChapterBar extends StatelessWidget {
     required this.onPrev,
     required this.onNext,
     required this.onListen,
+    required this.scholarMode,
+    required this.onToggleScholar,
   });
 
   final String book;
@@ -1346,6 +1501,14 @@ class _ChapterBar extends StatelessWidget {
   final VoidCallback onPrev;
   final VoidCallback onNext;
   final VoidCallback onListen;
+  /// Current Scholar-Mode (Strong's) state — drives the toggled appearance
+  /// of the translate icon so the user can tell at a glance whether word-
+  /// tapping is active.
+  final bool scholarMode;
+  /// Flips Scholar Mode and shows a one-line snackbar so first-time users
+  /// learn what just happened. Persistent on-screen affordance => the most
+  /// important discoverability fix from the UX review.
+  final VoidCallback onToggleScholar;
 
   @override
   Widget build(BuildContext context) {
@@ -1436,7 +1599,25 @@ class _ChapterBar extends StatelessWidget {
             tooltip: 'Next chapter',
             onPressed: chapter < max ? onNext : null,
           ),
-          const SizedBox(width: 4),
+          // ── Word-study toggle (always visible discovery affordance) ──
+          // Even users who never open Settings will see this icon while
+          // reading. Tooltip + snackbar do the explaining; the toggled
+          // gold pill confirms the state. Replaces "Scholar Mode" jargon
+          // with an icon pattern users already recognise (Google
+          // Translate, etc.).
+          IconButton(
+            icon: Icon(
+              Icons.translate,
+              color: scholarMode
+                  ? BrandColors.goldDark
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
+            tooltip: scholarMode
+                ? 'Word study (on) — tap a word for Greek/Hebrew'
+                : 'Word study — turn on to see Greek/Hebrew',
+            onPressed: onToggleScholar,
+          ),
+          const SizedBox(width: 2),
           GestureDetector(
             onTap: onListen,
             child: Container(

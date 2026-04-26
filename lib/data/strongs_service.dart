@@ -41,6 +41,24 @@ class StrongsWord {
       );
 }
 
+/// One verse reference paired with the surface English word that carries
+/// the matching Strong's id — what the occurrences list shows per row.
+class VerseRefWithWord {
+  final String book;
+  final int chapter;
+  final int verse;
+  /// The visible English token (e.g. "Word"). Used so the occurrences list
+  /// can bold the matching word inside the verse preview.
+  final String word;
+  const VerseRefWithWord({
+    required this.book,
+    required this.chapter,
+    required this.verse,
+    required this.word,
+  });
+  String get refId => '$book $chapter:$verse';
+}
+
 /// One Strong's lexicon entry — the payload shown in the lexicon bottom sheet.
 class StrongsEntry {
   final String strongs;
@@ -70,6 +88,10 @@ class StrongsService {
   Map<String, List<StrongsWord>>? _verses;
   Map<String, StrongsEntry>? _lex;
   Map<String, int>? _occurrences; // Strong's # → count across NT+OT
+  /// Inverse index: Strong's # → list of verse refs that contain that word.
+  /// Built lazily on first call to [versesContaining] to avoid paying the
+  /// cost upfront if the user never browses occurrences.
+  Map<String, List<VerseRefWithWord>>? _occurrenceIndex;
 
   Future<void>? _loading;
 
@@ -162,6 +184,49 @@ class StrongsService {
       if (fb != null) return fb;
     }
     return null;
+  }
+
+  /// All verse refs that contain the given Strong's id, in canonical reading
+  /// order (the order the verses live in `_verses`). Built once on first call
+  /// and cached. Returns empty until [init] resolves.
+  List<VerseRefWithWord> versesContaining(String? id) {
+    if (id == null || id.isEmpty) return const [];
+    final norm = _normalizeId(id);
+    if (norm == null) return const [];
+    final v = _verses;
+    if (v == null) return const [];
+    final cached = _occurrenceIndex;
+    if (cached != null) return cached[norm] ?? const [];
+
+    // Build the inverse index lazily — one pass over the entire verses map.
+    // Cost: ~1 second on first browse for the 56 MB corpus, then free.
+    final index = <String, List<VerseRefWithWord>>{};
+    final keyRe = RegExp(r'^(.+?)\s+(\d+):(\d+)$');
+    v.forEach((verseKey, words) {
+      final m = keyRe.firstMatch(verseKey);
+      if (m == null) return;
+      final book = m.group(1)!;
+      final chapter = int.tryParse(m.group(2)!) ?? 0;
+      final verse = int.tryParse(m.group(3)!) ?? 0;
+      // De-dup per verse: the same Strong's id can appear multiple times in
+      // one verse (compound phrase) but we only want one row per verse.
+      final seen = <String>{};
+      for (final w in words) {
+        final s = w.strongs;
+        if (s == null) continue;
+        final canonical = _normalizeId(s);
+        if (canonical == null) continue;
+        if (!seen.add(canonical)) continue;
+        index.putIfAbsent(canonical, () => []).add(VerseRefWithWord(
+              book: book,
+              chapter: chapter,
+              verse: verse,
+              word: w.word,
+            ));
+      }
+    });
+    _occurrenceIndex = index;
+    return index[norm] ?? const [];
   }
 
   /// Total occurrences of a Strong's number across the tagged corpus.

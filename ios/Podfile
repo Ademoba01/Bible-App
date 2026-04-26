@@ -43,6 +43,114 @@ post_install do |installer|
       if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 13.0
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
       end
+      # Disable codesigning for Pod frameworks on simulator builds. The
+      # simulator has no code-signing requirement, and disabling it side-
+      # steps the recurring "resource fork, Finder information, or
+      # similar detritus not allowed" failure caused by macOS file
+      # providers (iCloud, Dropbox) attaching `com.apple.FinderInfo`
+      # xattrs to *_Privacy.bundle resources mid-build. The Runner app
+      # itself still gets signed normally for device builds.
+      # Only disable signing on simulator builds — device/release builds
+      # still need real signing for distribution. Detect via SDKROOT
+      # which Xcode populates from the active scheme's SDK selection,
+      # falling back to xcconfig defaults when running CLI builds.
+      sim_sdk = (config.build_settings['SDKROOT'].to_s.include?('iphonesimulator') ||
+                 config.name == 'Debug' ||
+                 config.name == 'Profile')
+      if sim_sdk
+        config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+        config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
+        config.build_settings['CODE_SIGN_IDENTITY'] = ''
+        config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ''
+      end
+    end
+  end
+
+  # ── Strip extended attributes from Privacy bundles ──
+  # macOS attaches `com.apple.FinderInfo` xattrs to files copied between
+  # volumes / iCloud / Dropbox. CocoaPods source files inherit them, and
+  # Xcode preserves (or re-introduces) them when building *_Privacy.bundle
+  # resources. `codesign --generate-entitlement-der` then refuses with
+  # "resource fork, Finder information, or similar detritus not allowed".
+  #
+  # Two-pronged fix:
+  #   1) Strip xattrs from source Pods/ tree right after install.
+  #   2) Inject a Run Script Build Phase into every Pod target that runs
+  #      BEFORE the CodeSign step on each Xcode build, so xattrs that
+  #      sneak back in during the build (via filesystem providers) are
+  #      removed before signing happens.
+  pods_dir = File.dirname(installer.pods_project.path)
+  Dir.glob(File.join(pods_dir, '**', '*_Privacy.bundle'), File::FNM_DOTMATCH).each do |path|
+    system("xattr -cr \"#{path}\" 2>/dev/null")
+  end
+  Dir.glob(File.join(pods_dir, '**', 'PrivacyInfo.xcprivacy'), File::FNM_DOTMATCH).each do |path|
+    system("xattr -c \"#{path}\" 2>/dev/null")
+  end
+  Dir.glob(File.join(pods_dir, '**', 'Privacy', '**', '*'), File::FNM_DOTMATCH).each do |path|
+    system("xattr -c \"#{path}\" 2>/dev/null")
+  end
+
+  # ── Inject xattr-strip Build Phase into the Runner target ──
+  # This is the right level: the Runner target's "Embed Pods Frameworks"
+  # step copies each Pod framework into Runner.app/Frameworks/ and then
+  # codesigns it. Adding a script phase BEFORE that step strips any
+  # FinderInfo xattrs the file providers reattached, so codesign works.
+  runner_proj_path = File.join(__dir__, 'Runner.xcodeproj')
+  if File.exist?(runner_proj_path)
+    runner_proj = Xcodeproj::Project.open(runner_proj_path)
+    runner_target = runner_proj.targets.find { |t| t.name == 'Runner' }
+    if runner_target
+      phase_name = '[Rhema] Strip xattr before Embed Frameworks'
+      existing = runner_target.shell_script_build_phases.find { |p| p.name == phase_name }
+      existing&.remove_from_project
+      phase = runner_target.new_shell_script_build_phase(phase_name)
+      phase.shell_script = <<~SH
+        # Strips com.apple.FinderInfo / resource forks from every
+        # framework + privacy bundle in the build output BEFORE Xcode's
+        # "Embed Pods Frameworks" phase rsyncs them into Runner.app and
+        # codesigns each one. macOS file providers (iCloud Drive,
+        # Dropbox, etc.) re-attach the xattr mid-build, which makes
+        # `codesign --generate-entitlement-der` refuse with "resource
+        # fork, Finder information, or similar detritus not allowed".
+        #
+        # This phase is positioned BEFORE the Embed Pods Frameworks
+        # phase by the Podfile post_install Ruby below, so cleanup
+        # happens at the right moment. Idempotent + safe.
+        BUILD_DIR_ROOT="${BUILD_DIR:-${TARGET_BUILD_DIR}}"
+        find "${BUILD_DIR_ROOT}" -name "*.framework" -exec xattr -cr {} \\; 2>/dev/null || true
+        find "${BUILD_DIR_ROOT}" -name "*_Privacy.bundle" -exec xattr -cr {} \\; 2>/dev/null || true
+        find "${TARGET_BUILD_DIR}" -name "*.framework" -exec xattr -cr {} \\; 2>/dev/null || true
+        find "${TARGET_BUILD_DIR}" -name "*_Privacy.bundle" -exec xattr -cr {} \\; 2>/dev/null || true
+        # Also clean any *.framework dir that already exists inside the
+        # in-progress Runner.app, in case Xcode re-uses partial outputs.
+        APP_PATH="${TARGET_BUILD_DIR}/${WRAPPER_NAME:-${PRODUCT_NAME}.app}"
+        if [ -d "${APP_PATH}" ]; then
+          find "${APP_PATH}" -name "*.framework" -exec xattr -cr {} \\; 2>/dev/null || true
+          find "${APP_PATH}" -name "*_Privacy.bundle" -exec xattr -cr {} \\; 2>/dev/null || true
+          xattr -cr "${APP_PATH}" 2>/dev/null || true
+        fi
+        exit 0
+      SH
+      phase.always_out_of_date = '1'
+
+      # Move our phase to fire BEFORE the "Embed Pods Frameworks" phase.
+      # That phase rsyncs each pod framework into Runner.app/Frameworks
+      # and codesigns each one in-place — that's where the FinderInfo
+      # codesign error happens. Xcode phases are an ordered array; find
+      # the embed phase index and insert ours just before it.
+      embed_idx = runner_target.build_phases.index do |p|
+        next false unless p.respond_to?(:name) && !p.name.nil?
+        n = p.name.to_s
+        n.include?('Embed') && n.include?('Frameworks') && n != phase_name
+      end
+      runner_target.build_phases.delete(phase)
+      if embed_idx
+        runner_target.build_phases.insert(embed_idx, phase)
+      else
+        # Fallback — if no embed phase found, run last as a safety net.
+        runner_target.build_phases.push(phase)
+      end
+      runner_proj.save
     end
   end
 end

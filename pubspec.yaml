@@ -29,12 +29,20 @@ dependencies:
   url_launcher: ^6.2.0
   lottie: ^3.1.2                # JSON-driven micro-animations (celebrations, transitions)
   image: ^4.1.7                 # PNG/GIF encode for animated 9:16 story export
+  # Promoted from dev_dependencies because newer Flutter releases (3.41+)
+  # generate Android plugin registrant entries for ANY plugin with an
+  # Android pluginClass — including dev_dependencies. The registrant
+  # references `net.jonhanson.flutter_native_splash` but Flutter excludes
+  # dev_dependency plugins from gradle's classpath, breaking the AAB
+  # build with "package does not exist". Promoting to dependencies puts
+  # the plugin on the classpath so the registrant compiles. Cost: a few
+  # KB in the release APK; benefit: AAB builds work again.
+  flutter_native_splash: ^2.4.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: ^0.14.1
-  flutter_native_splash: ^2.4.1
 
 flutter_launcher_icons:
   android: "launcher_icon"

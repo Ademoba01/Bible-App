@@ -13,6 +13,8 @@ import '../../state/providers.dart';
 import '../../theme.dart';
 import '../auth/auth_screen.dart';
 import '../auth/profile_screen.dart';
+import '../study/my_lexicon_screen.dart';
+import '../study/sermon_collections_screen.dart';
 import 'help_screen.dart';
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -152,14 +154,47 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           SwitchListTile(
-            secondary: Icon(Icons.auto_stories, color: BrandColors.gold),
-            title: Text("Scholar Mode (Strong's)",
+            secondary: Icon(Icons.translate, color: BrandColors.gold),
+            // Renamed from "Scholar Mode (Strong's)" — user-research showed
+            // "Strong's" is jargon that gates discovery to seminary-trained
+            // users only. The new label leads with the noun every reader
+            // recognises (Greek/Hebrew) and uses "word study" instead of
+            // "scholar" to broaden appeal.
+            title: Text('Greek & Hebrew (word study)',
                 style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
             subtitle: Text(
-                'Tap any English word in the verse to see the original Hebrew/Greek',
+                'Tap any English word in a verse to see the original Hebrew or Greek and its lexicon entry',
                 style: GoogleFonts.lora(fontSize: 12)),
             value: s.scholarMode,
             onChanged: (v) => n.setScholarMode(v),
+          ),
+          ListTile(
+            leading: Icon(Icons.menu_book_rounded, color: BrandColors.gold),
+            title: Text('My Lexicon',
+                style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
+            subtitle: Text(
+                'Wall of every word you’ve explored, with your word streak',
+                style: GoogleFonts.lora(fontSize: 12)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const MyLexiconScreen(),
+              ),
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.note_alt_outlined, color: BrandColors.gold),
+            title: Text('Sermon Notes',
+                style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
+            subtitle: Text(
+                'Collect Strong’s insights into named sermon series',
+                style: GoogleFonts.lora(fontSize: 12)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const SermonCollectionsScreen(),
+              ),
+            ),
           ),
           ListTile(
             title: const Text('Font size'),

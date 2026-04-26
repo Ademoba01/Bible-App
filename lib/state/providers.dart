@@ -611,6 +611,344 @@ final streakProvider =
 /// and highlight it with an animated gold background.
 final highlightVerseProvider = StateProvider<int?>((ref) => null);
 
+// ---------- Strong's: Saved Words + History (Personal Lexicon) ----------
+
+/// One entry in the user's personal lexicon — every Greek/Hebrew word they
+/// have ever opened in the Strong's sheet. Frequency-of-lookup powers the
+/// "wall of words" sized tiles in MyLexiconScreen.
+class StrongsHistoryEntry {
+  /// Strong's id (canonical, e.g. "G3056" or "H0430").
+  final String strongsId;
+  /// Number of times the user opened the Strong's sheet for this word.
+  final int count;
+  /// Last opened timestamp.
+  final DateTime lastSeen;
+  /// First opened timestamp (used for "explored since" copy).
+  final DateTime firstSeen;
+  /// Verse refs the word was opened from, newest first, capped at 20.
+  final List<String> verseRefs;
+
+  const StrongsHistoryEntry({
+    required this.strongsId,
+    required this.count,
+    required this.lastSeen,
+    required this.firstSeen,
+    required this.verseRefs,
+  });
+
+  factory StrongsHistoryEntry.fromJson(Map<String, dynamic> j) =>
+      StrongsHistoryEntry(
+        strongsId: j['s'] as String,
+        count: j['c'] as int? ?? 1,
+        lastSeen:
+            DateTime.fromMillisecondsSinceEpoch((j['l'] as int?) ?? 0),
+        firstSeen:
+            DateTime.fromMillisecondsSinceEpoch((j['f'] as int?) ?? 0),
+        verseRefs:
+            (j['v'] as List?)?.map((e) => e as String).toList() ?? const [],
+      );
+
+  Map<String, dynamic> toJson() => {
+        's': strongsId,
+        'c': count,
+        'l': lastSeen.millisecondsSinceEpoch,
+        'f': firstSeen.millisecondsSinceEpoch,
+        'v': verseRefs,
+      };
+}
+
+/// Persistent log of every Strong's word the user has explored, keyed by
+/// canonical Strong's id. Backs MyLexiconScreen + the "explored N times"
+/// chip inside the Strong's sheet + the word-streak counter.
+class StrongsHistoryNotifier
+    extends StateNotifier<Map<String, StrongsHistoryEntry>> {
+  StrongsHistoryNotifier(this._prefs) : super(_load(_prefs));
+
+  static const _key = 'strongs_history';
+  final SharedPreferences? _prefs;
+
+  static Map<String, StrongsHistoryEntry> _load(SharedPreferences? prefs) {
+    final raw = prefs?.getString(_key);
+    if (raw == null) return {};
+    try {
+      final decoded = json.decode(raw) as Map<String, dynamic>;
+      return decoded.map((k, v) => MapEntry(
+            k,
+            StrongsHistoryEntry.fromJson(Map<String, dynamic>.from(v as Map)),
+          ));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  /// Record one lookup: bump count, push verseRef to top of list, update
+  /// lastSeen. Called from ReadingScreen._openStrongs.
+  Future<void> record(String strongsId, String verseRef) async {
+    if (strongsId.isEmpty) return;
+    final now = DateTime.now();
+    final existing = state[strongsId];
+    final refs = <String>[
+      verseRef,
+      ...?existing?.verseRefs.where((r) => r != verseRef),
+    ];
+    final entry = StrongsHistoryEntry(
+      strongsId: strongsId,
+      count: (existing?.count ?? 0) + 1,
+      firstSeen: existing?.firstSeen ?? now,
+      lastSeen: now,
+      verseRefs: refs.length > 20 ? refs.sublist(0, 20) : refs,
+    );
+    state = {...state, strongsId: entry};
+    await _persist();
+    // Side-effect: word streak picks up new lookups.
+    // (UI reads strongsHistoryProvider for both lexicon + streak.)
+  }
+
+  /// Wipe the lexicon — used by a "Reset" affordance in MyLexiconScreen.
+  Future<void> clear() async {
+    state = {};
+    await _prefs?.remove(_key);
+  }
+
+  Future<void> _persist() async {
+    final encoded = json.encode(
+      state.map((k, v) => MapEntry(k, v.toJson())),
+    );
+    await _prefs?.setString(_key, encoded);
+  }
+}
+
+final strongsHistoryProvider = StateNotifierProvider<StrongsHistoryNotifier,
+    Map<String, StrongsHistoryEntry>>((ref) {
+  final prefs = ref.watch(sharedPrefsProvider).asData?.value;
+  return StrongsHistoryNotifier(prefs);
+});
+
+/// Word streak — number of consecutive days the user has explored at least
+/// one Strong's word. Computed from `strongsHistoryProvider` so it stays in
+/// sync without a separate persisted store.
+final wordStreakProvider = Provider<int>((ref) {
+  final history = ref.watch(strongsHistoryProvider);
+  if (history.isEmpty) return 0;
+  final dates = <String>{};
+  for (final e in history.values) {
+    dates.add(_dayKey(e.lastSeen));
+    // history doesn't track per-day intermediate lookups — count only first
+    // and last seen days. Good-enough heuristic for a lightweight streak.
+    dates.add(_dayKey(e.firstSeen));
+  }
+  // Walk backwards from today.
+  var streak = 0;
+  var cursor = DateTime.now();
+  while (dates.contains(_dayKey(cursor))) {
+    streak += 1;
+    cursor = cursor.subtract(const Duration(days: 1));
+  }
+  return streak;
+});
+
+String _dayKey(DateTime dt) =>
+    '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+
+/// Words the user has explicitly tapped "Save" on — a curated subset of the
+/// full history. Surfaced as the top section of MyLexiconScreen.
+class SavedStrongsNotifier extends StateNotifier<Set<String>> {
+  SavedStrongsNotifier(this._prefs)
+      : super((_prefs?.getStringList('saved_strongs') ?? const [])
+            .toSet());
+  final SharedPreferences? _prefs;
+
+  bool isSaved(String id) => state.contains(id);
+
+  Future<void> toggle(String strongsId) async {
+    final next = Set<String>.from(state);
+    if (next.contains(strongsId)) {
+      next.remove(strongsId);
+    } else {
+      next.add(strongsId);
+    }
+    state = next;
+    await _prefs?.setStringList('saved_strongs', next.toList());
+  }
+}
+
+final savedStrongsProvider =
+    StateNotifierProvider<SavedStrongsNotifier, Set<String>>((ref) {
+  final prefs = ref.watch(sharedPrefsProvider).asData?.value;
+  return SavedStrongsNotifier(prefs);
+});
+
+// ---------- Sermon Insights / Collections ----------
+
+/// One sermon-prep insight: a Strong's word + verse + pastor's note. Lives
+/// inside a [SermonCollection] and serializes cleanly to JSON for backup.
+class SermonInsight {
+  final String strongsId;
+  final String verseRef;        // e.g. "John 1:1"
+  final String word;            // surface English word the user tapped
+  final String note;            // pastor's free-text annotation
+  final DateTime createdAt;
+
+  const SermonInsight({
+    required this.strongsId,
+    required this.verseRef,
+    required this.word,
+    required this.note,
+    required this.createdAt,
+  });
+
+  SermonInsight copyWith({String? note}) => SermonInsight(
+        strongsId: strongsId,
+        verseRef: verseRef,
+        word: word,
+        note: note ?? this.note,
+        createdAt: createdAt,
+      );
+
+  factory SermonInsight.fromJson(Map<String, dynamic> j) => SermonInsight(
+        strongsId: j['s'] as String? ?? '',
+        verseRef: j['r'] as String? ?? '',
+        word: j['w'] as String? ?? '',
+        note: j['n'] as String? ?? '',
+        createdAt:
+            DateTime.fromMillisecondsSinceEpoch((j['t'] as int?) ?? 0),
+      );
+
+  Map<String, dynamic> toJson() => {
+        's': strongsId,
+        'r': verseRef,
+        'w': word,
+        'n': note,
+        't': createdAt.millisecondsSinceEpoch,
+      };
+}
+
+/// A named collection of insights — typically one per sermon series ("Easter
+/// 2026", "Series on Love"). Pastor's primary unit of work in the sermon
+/// flow; export emits one PDF per collection.
+class SermonCollection {
+  final String id;          // uuid-ish — DateTime.now().micros
+  final String title;
+  final List<SermonInsight> insights;
+  final DateTime createdAt;
+
+  const SermonCollection({
+    required this.id,
+    required this.title,
+    required this.insights,
+    required this.createdAt,
+  });
+
+  SermonCollection copyWith({
+    String? title,
+    List<SermonInsight>? insights,
+  }) =>
+      SermonCollection(
+        id: id,
+        title: title ?? this.title,
+        insights: insights ?? this.insights,
+        createdAt: createdAt,
+      );
+
+  factory SermonCollection.fromJson(Map<String, dynamic> j) =>
+      SermonCollection(
+        id: j['id'] as String,
+        title: j['title'] as String? ?? 'Untitled',
+        createdAt:
+            DateTime.fromMillisecondsSinceEpoch((j['t'] as int?) ?? 0),
+        insights: ((j['i'] as List?) ?? const [])
+            .map((e) => SermonInsight.fromJson(Map<String, dynamic>.from(e)))
+            .toList(),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        't': createdAt.millisecondsSinceEpoch,
+        'i': insights.map((e) => e.toJson()).toList(),
+      };
+}
+
+class SermonCollectionsNotifier extends StateNotifier<List<SermonCollection>> {
+  SermonCollectionsNotifier(this._prefs) : super(_load(_prefs));
+
+  static const _key = 'sermon_collections';
+  final SharedPreferences? _prefs;
+
+  static List<SermonCollection> _load(SharedPreferences? prefs) {
+    final raw = prefs?.getString(_key);
+    if (raw == null) return const [];
+    try {
+      final decoded = json.decode(raw) as List;
+      return decoded
+          .map((e) => SermonCollection.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  Future<SermonCollection> createCollection(String title) async {
+    final c = SermonCollection(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      title: title.isEmpty ? 'Untitled sermon' : title,
+      insights: const [],
+      createdAt: DateTime.now(),
+    );
+    state = [c, ...state];
+    await _persist();
+    return c;
+  }
+
+  Future<void> renameCollection(String id, String title) async {
+    state = [
+      for (final c in state) c.id == id ? c.copyWith(title: title) : c,
+    ];
+    await _persist();
+  }
+
+  Future<void> deleteCollection(String id) async {
+    state = state.where((c) => c.id != id).toList();
+    await _persist();
+  }
+
+  Future<void> addInsight(String collectionId, SermonInsight insight) async {
+    state = [
+      for (final c in state)
+        if (c.id == collectionId)
+          c.copyWith(insights: [...c.insights, insight])
+        else
+          c,
+    ];
+    await _persist();
+  }
+
+  Future<void> removeInsight(String collectionId, int index) async {
+    state = [
+      for (final c in state)
+        if (c.id == collectionId)
+          c.copyWith(insights: [
+            for (var i = 0; i < c.insights.length; i++)
+              if (i != index) c.insights[i],
+          ])
+        else
+          c,
+    ];
+    await _persist();
+  }
+
+  Future<void> _persist() async {
+    final encoded = json.encode(state.map((c) => c.toJson()).toList());
+    await _prefs?.setString(_key, encoded);
+  }
+}
+
+final sermonCollectionsProvider = StateNotifierProvider<
+    SermonCollectionsNotifier, List<SermonCollection>>((ref) {
+  final prefs = ref.watch(sharedPrefsProvider).asData?.value;
+  return SermonCollectionsNotifier(prefs);
+});
+
 /// When set, the ReadingScreen shows a floating "Back to ..." chip.
 /// Values: 'similar_verses', 'map', etc.
 final returnContextProvider = StateProvider<String?>((ref) => null);
