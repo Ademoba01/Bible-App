@@ -304,10 +304,17 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
           Duration(milliseconds: (basePause * speedScale).round()));
     }
 
-    if (mounted) {
+    // Natural chapter-end: only stop the pulse if WE were the live session.
+    // If the loop exited because pause/stop/jump bumped the session, those
+    // handlers already stopped the pulse — don't stomp on a fresh session
+    // started by Resume / jump.
+    if (mounted && session == _playSession) {
+      _pulseController.stop();
+      _pulseController.value = 0;
       setState(() {
         _playing = false;
         _paused = false;
+        _spokenWordIndex = -1;
       });
     }
   }
