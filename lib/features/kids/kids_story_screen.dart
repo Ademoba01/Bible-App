@@ -49,6 +49,8 @@ class _KidsStoryScreenState extends ConsumerState<KidsStoryScreen>
     // Make _tts.speak() actually await — fixes the verse-1-only stop bug
     // also seen on the adult Listen screen (see listen_screen.dart:initState).
     _tts.awaitSpeakCompletion(true);
+    // Max TTS volume so kid stories aren't quiet even at full system volume.
+    _tts.setVolume(1.0);
     // 1) Bouncing emoji — gentle continuous bounce
     _emojiBounceController = AnimationController(
       vsync: this,

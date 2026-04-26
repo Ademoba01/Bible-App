@@ -51,6 +51,8 @@ class _KidsAnimatedStoryScreenState extends State<KidsAnimatedStoryScreen>
     // 0.55 ≈ 1.1× — natural lively pace for kids; 0.4 was sluggish.
     await _tts.setSpeechRate(0.55);
     await _tts.setPitch(1.15);
+    // Max TTS volume — some Android TTS engines start below system volume.
+    await _tts.setVolume(1.0);
     _tts.setCompletionHandler(() {
       if (mounted) setState(() => _isSpeaking = false);
     });

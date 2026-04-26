@@ -85,6 +85,14 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
     // the synthesizer is truly done — verse-by-verse playback works on web,
     // iOS, and Android consistently.
     _tts.awaitSpeakCompletion(true);
+    // Force TTS volume to max so the engine doesn't ship below-system-volume
+    // by default (some Android TTS engines start at ~0.7). System volume
+    // controls still work — this just ensures we use all of what's available.
+    _tts.setVolume(1.0);
+    // Explicit English locale as the safety default — on devices whose TTS
+    // engine defaults to a non-English locale, English Scripture would
+    // mispronounce. setVoice() in _play() may override per user choice.
+    _tts.setLanguage('en-US');
 
     // Word-level karaoke. flutter_tts' progress handler fires once per
     // spoken word on iOS/Android/Web. We just count — the display side
