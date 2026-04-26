@@ -196,13 +196,19 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
         loading: () => const ReadingShimmer(),
         error: (e, _) => Center(child: Text('Failed to load: $e')),
         data: (chapters) {
-          // Record streak when chapter data loads
-          ref.read(streakProvider.notifier).recordToday();
-          // Mark this chapter read in the Codex (chapter milestones, book
-          // completion seals). markChapterRead is idempotent per chapter.
-          ref
-              .read(codexProvider.notifier)
-              .markChapterRead(loc.book, loc.chapter);
+          // Record streak + codex AFTER the build completes — modifying
+          // providers synchronously during build throws a Riverpod
+          // "Tried to modify a provider while the widget tree was
+          // building" exception (this caused the iOS Read-tab red screen).
+          // Post-frame defer makes it safe and the writes still happen
+          // on the same frame the chapter data resolved.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!context.mounted) return;
+            ref.read(streakProvider.notifier).recordToday();
+            ref
+                .read(codexProvider.notifier)
+                .markChapterRead(loc.book, loc.chapter);
+          });
 
           if (chapters.isEmpty) {
             return const Center(child: Text('No chapters found.'));

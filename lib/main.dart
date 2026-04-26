@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -13,7 +14,11 @@ import 'theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
+  // Initialize Firebase. Web has explicit options. iOS/macOS expect a
+  // GoogleService-Info.plist in the Runner bundle which we ship — but if
+  // it's missing (fresh checkouts before adding the file), fall back to
+  // explicit options so the app still boots. Android uses google-services
+  // .json which the Gradle plugin reads automatically when present.
   try {
     await Firebase.initializeApp(
       options: kIsWeb
@@ -25,10 +30,25 @@ void main() async {
               authDomain: 'rhema-study-bible.firebaseapp.com',
               storageBucket: 'rhema-study-bible.firebasestorage.app',
             )
-          : null,
+          : (defaultTargetPlatform == TargetPlatform.iOS ||
+                  defaultTargetPlatform == TargetPlatform.macOS)
+              ? const FirebaseOptions(
+                  apiKey: 'AIzaSyCnKmWA-OOhlbHDwpXXdZrIsrJvMWljMDU',
+                  appId: '1:351142574491:ios:d680e02d89756051d6493e',
+                  messagingSenderId: '351142574491',
+                  projectId: 'rhema-study-bible',
+                  storageBucket:
+                      'rhema-study-bible.firebasestorage.app',
+                  iosBundleId: 'com.ademoba.bible_app',
+                )
+              : null, // Android: Gradle plugin reads google-services.json
     );
   } catch (e) {
-    debugPrint('Firebase init error: $e');
+    // Non-fatal. Firebase-dependent features (auth, prayer-feed cloud
+    // sync) will gracefully degrade; everything else (reading, listen,
+    // codex, cross-references, AI, maps, kids) is local-first and works
+    // without Firebase.
+    debugPrint('Firebase init error (continuing without): $e');
   }
 
   // Local notifications are not supported on web
