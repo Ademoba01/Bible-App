@@ -30,26 +30,35 @@ class BrandColors {
 
   /// Typography helpers — call these instead of inline GoogleFonts so the
   /// app's verse rendering is consistent and easy to retune in one place.
+  ///
+  /// To honor iOS Dynamic Type / Android font scaling (WCAG 1.4.4), pass
+  /// the active textScaler from MediaQuery via [scale]. Default 1.0 means
+  /// "ignore system scaling" — use only when the caller already wraps
+  /// the text in a MediaQuery override.
   static TextStyle verseStyle({
     double size = 19.5,
     Color? color,
+    double scale = 1.0,
   }) {
     // Literata: a serif designed for long-form digital reading. Slightly
     // taller line height + tight letter spacing produces the calm cadence
     // that distinguishes Scripture from UI text.
     return GoogleFonts.literata(
-      fontSize: size,
+      fontSize: size * scale,
       height: 1.75,
       letterSpacing: -0.2,
       color: color,
     );
   }
 
-  static TextStyle verseNumberStyle({Color? color}) {
+  /// Verse number style. Defaults to [goldDark] which passes WCAG AA on
+  /// the cream background (~4.7:1 contrast). The plain [gold] hex sits
+  /// at ~2.1:1 which is below the 4.5:1 requirement for body text.
+  static TextStyle verseNumberStyle({Color? color, double scale = 1.0}) {
     return GoogleFonts.literata(
-      fontSize: 13,
+      fontSize: 13 * scale,
       fontWeight: FontWeight.w700,
-      color: color,
+      color: color ?? goldDark,
       height: 1.0,
     );
   }
@@ -60,6 +69,15 @@ class BrandColors {
   static const kidsGreen = Color(0xFF66BB6A);
   static const kidsPink = Color(0xFFEC407A);
   static const kidsPurple = Color(0xFFAB47BC);
+
+  // Modern theme — clean sans-serif aesthetic, blue accent (no gold).
+  // Used by `buildModernTheme` when the user opts out of the classic
+  // parchment/gold look in Settings → Theme style.
+  static const modernBlue = Color(0xFF6CA0FF);          // dark-mode accent
+  static const modernBlueDeep = Color(0xFF2563EB);      // light-mode accent
+  static const modernScaffoldDark = Color(0xFF0F1115);  // near-black scaffold
+  static const modernSurfaceDark = Color(0xFF181B22);   // card / surface
+  static const modernScaffoldLight = Color(0xFFFAFAFA); // clean white
 }
 
 ThemeData buildAdultTheme({required Brightness brightness}) {
@@ -190,6 +208,182 @@ ThemeData buildAdultTheme({required Brightness brightness}) {
     dividerTheme: DividerThemeData(
       color: BrandColors.gold.withValues(alpha: 0.15),
       thickness: 0.8,
+    ),
+  );
+}
+
+/// Modern theme — the alternative aesthetic for users who find the classic
+/// parchment/Cormorant/gold look too churchy. Mirrors [buildAdultTheme]'s
+/// structure (so existing screens rebuild cleanly under either) but swaps:
+///   - Body type: Lora → Inter (clean, neutral sans)
+///   - Display type: Playfair → Space Grotesk (distinctive, not devotional)
+///   - Surfaces: parchment/cream → near-black or clean white
+///   - Accent: gold → blue
+///   - Card radius: 20 → 12 (less ornate)
+///   - Button radius: 24 (pill) → 8 (sharp)
+///   - AppBar: solid brownDeep → transparent flat
+ThemeData buildModernTheme({required Brightness brightness}) {
+  final isDark = brightness == Brightness.dark;
+  final seed = isDark ? BrandColors.modernBlue : BrandColors.modernBlueDeep;
+  final scheme = ColorScheme.fromSeed(
+    seedColor: seed,
+    brightness: brightness,
+  );
+  // Inter for body, Space Grotesk for display headings — both load via
+  // google_fonts. Inter is the de-facto modern UI sans; Space Grotesk
+  // adds a tiny bit of character without the spiritual weight of Playfair.
+  final baseTextTheme = isDark
+      ? ThemeData.dark().textTheme
+      : ThemeData.light().textTheme;
+  final textTheme = GoogleFonts.interTextTheme(baseTextTheme).copyWith(
+    displayLarge: GoogleFonts.spaceGrotesk(textStyle: baseTextTheme.displayLarge),
+    displayMedium: GoogleFonts.spaceGrotesk(textStyle: baseTextTheme.displayMedium),
+    displaySmall: GoogleFonts.spaceGrotesk(textStyle: baseTextTheme.displaySmall),
+    headlineLarge: GoogleFonts.spaceGrotesk(textStyle: baseTextTheme.headlineLarge),
+    headlineMedium: GoogleFonts.spaceGrotesk(textStyle: baseTextTheme.headlineMedium),
+    headlineSmall: GoogleFonts.spaceGrotesk(textStyle: baseTextTheme.headlineSmall),
+    titleLarge: GoogleFonts.spaceGrotesk(textStyle: baseTextTheme.titleLarge),
+  );
+  final scaffoldBg = isDark
+      ? BrandColors.modernScaffoldDark
+      : BrandColors.modernScaffoldLight;
+  final surfaceColor = isDark
+      ? BrandColors.modernSurfaceDark
+      : Colors.white;
+  final accent = isDark ? BrandColors.modernBlue : BrandColors.modernBlueDeep;
+  final onAccent = Colors.white;
+  return ThemeData(
+    useMaterial3: true,
+    colorScheme: scheme,
+    scaffoldBackgroundColor: scaffoldBg,
+    textTheme: textTheme,
+    appBarTheme: AppBarTheme(
+      // Modern flat: transparent + 0 elevation. The scaffold's bg shows
+      // through, no chunky brown bar.
+      backgroundColor: Colors.transparent,
+      foregroundColor: isDark ? Colors.white : Colors.black87,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      centerTitle: false,
+      titleTextStyle: GoogleFonts.spaceGrotesk(
+        fontSize: 19,
+        fontWeight: FontWeight.w700,
+        color: isDark ? Colors.white : Colors.black87,
+        letterSpacing: -0.2,
+      ),
+      iconTheme: IconThemeData(
+        color: isDark ? Colors.white : Colors.black87,
+      ),
+    ),
+    cardTheme: CardThemeData(
+      // Lower elevation + tighter radius than classic — modern UI standard.
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.06)
+              : Colors.black.withValues(alpha: 0.06),
+        ),
+      ),
+      color: surfaceColor,
+      margin: EdgeInsets.zero,
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        // Sharp 8 radius — definitively NOT pill. Reads as utility, not
+        // marketing-CTA flourish.
+        backgroundColor: accent,
+        foregroundColor: onAccent,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        textStyle: GoogleFonts.inter(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.1,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: 0,
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: accent,
+        foregroundColor: onAccent,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        textStyle: GoogleFonts.inter(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: 0,
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: accent,
+        side: BorderSide(color: accent.withValues(alpha: 0.6), width: 1.2),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        textStyle: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: accent,
+      foregroundColor: onAccent,
+      elevation: 2,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: surfaceColor,
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.08),
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.08),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: accent, width: 1.5),
+      ),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      height: 64,
+      backgroundColor: surfaceColor,
+      indicatorColor: accent.withValues(alpha: 0.18),
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      labelTextStyle: WidgetStatePropertyAll(
+        GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
+      ),
+    ),
+    dividerTheme: DividerThemeData(
+      color: isDark
+          ? Colors.white.withValues(alpha: 0.08)
+          : Colors.black.withValues(alpha: 0.08),
+      thickness: 0.6,
     ),
   );
 }

@@ -69,9 +69,17 @@ class BibleApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     final brightness = settings.darkMode ? Brightness.dark : Brightness.light;
-    final theme = settings.kidsMode
-        ? buildKidsTheme(brightness: brightness)
-        : buildAdultTheme(brightness: brightness);
+    // Kids takes precedence (it's its own world). Otherwise the user's
+    // chosen ThemeStyle picks between the classic parchment/gold look and
+    // the modern sans/blue alternative. Both honour darkMode.
+    final ThemeData theme;
+    if (settings.kidsMode) {
+      theme = buildKidsTheme(brightness: brightness);
+    } else if (settings.themeStyle == ThemeStyle.modern) {
+      theme = buildModernTheme(brightness: brightness);
+    } else {
+      theme = buildAdultTheme(brightness: brightness);
+    }
 
     final Widget home;
     if (!settings.onboarded) {

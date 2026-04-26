@@ -11,6 +11,13 @@ import '../services/ai_service.dart';
 /// Controls whether AI features use online (Gemini) or offline (local) mode.
 enum AiMode { online, offline, auto }
 
+/// Visual theme aesthetic. The "classic" theme is the original parchment +
+/// Cormorant/Lora + gold look — warm, devotional, churchy. The "modern" theme
+/// is the alternative for users who find that aesthetic too narrow: clean
+/// sans-serif (Inter/Space Grotesk), darker neutral palette, blue accent,
+/// flat surfaces. Both still respect [AppSettings.darkMode].
+enum ThemeStyle { classic, modern }
+
 final bibleRepositoryProvider = Provider<BibleRepository>((ref) => BibleRepository());
 
 final sharedPrefsProvider = FutureProvider<SharedPreferences>((ref) async {
@@ -166,6 +173,13 @@ class AppSettings {
   final double speechRate; // flutter_tts 0.0-1.0 scale; 0.69 ≈ 1.4× speed
   final AiMode aiMode;
   final String geminiApiKey;
+  /// Scholar Mode — when on, individual words in the verse RichText become
+  /// tappable and reveal the Hebrew/Greek lexicon entry (Strong's tagging).
+  /// Off by default — most readers don't want word-level taps.
+  final bool scholarMode;
+  /// Visual aesthetic — see [ThemeStyle]. Defaults to classic parchment/gold;
+  /// users can opt into the modern sans/blue theme from Settings.
+  final ThemeStyle themeStyle;
   const AppSettings({
     this.fontSize = 18,
     this.darkMode = false,
@@ -176,6 +190,8 @@ class AppSettings {
     this.speechRate = 0.38,
     this.aiMode = AiMode.auto,
     this.geminiApiKey = '',
+    this.scholarMode = false,
+    this.themeStyle = ThemeStyle.classic,
   });
 
   /// Whether AI online features should be used right now.
@@ -201,6 +217,8 @@ class AppSettings {
     double? speechRate,
     AiMode? aiMode,
     String? geminiApiKey,
+    bool? scholarMode,
+    ThemeStyle? themeStyle,
   }) =>
       AppSettings(
         fontSize: fontSize ?? this.fontSize,
@@ -212,6 +230,8 @@ class AppSettings {
         speechRate: speechRate ?? this.speechRate,
         aiMode: aiMode ?? this.aiMode,
         geminiApiKey: geminiApiKey ?? this.geminiApiKey,
+        scholarMode: scholarMode ?? this.scholarMode,
+        themeStyle: themeStyle ?? this.themeStyle,
       );
 }
 
@@ -230,6 +250,11 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
             orElse: () => AiMode.auto,
           ),
           geminiApiKey: _prefs?.getString('geminiApiKey') ?? '',
+          scholarMode: _prefs?.getBool('scholarMode') ?? false,
+          themeStyle: ThemeStyle.values.firstWhere(
+            (e) => e.name == (_prefs?.getString('themeStyle') ?? ''),
+            orElse: () => ThemeStyle.classic,
+          ),
         )) {
     // Initialize AiService if we have a saved key.
     final savedKey = _prefs?.getString('geminiApiKey') ?? '';
@@ -249,6 +274,11 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     await _prefs?.setBool('darkMode', v);
   }
 
+  Future<void> setThemeStyle(ThemeStyle v) async {
+    state = state.copyWith(themeStyle: v);
+    await _prefs?.setString('themeStyle', v.name);
+  }
+
   Future<void> setTranslation(String v) async {
     state = state.copyWith(translation: v);
     await _prefs?.setString('translation', v);
@@ -257,6 +287,11 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setKidsMode(bool v) async {
     state = state.copyWith(kidsMode: v);
     await _prefs?.setBool('kidsMode', v);
+  }
+
+  Future<void> setScholarMode(bool v) async {
+    state = state.copyWith(scholarMode: v);
+    await _prefs?.setBool('scholarMode', v);
   }
 
   Future<void> setVoiceName(String v) async {

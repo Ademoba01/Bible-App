@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import '../../data/bible_maps_data.dart';
 import '../../theme.dart';
 import '../../widgets/rhema_title.dart';
+import '../share/animated_story_share.dart';
 
 /// "Bible Timeline" — a chronological walk through biblical history.
 ///
@@ -138,6 +139,19 @@ class _ChronologyScreenState extends State<ChronologyScreen> {
     super.dispose();
   }
 
+  /// Launch the 9:16 animated-story sheet for this era. The era's center
+  /// LatLng becomes the Bible-Maps mini-map background; era color drives
+  /// the accent rule and confetti hue.
+  void _shareEraAsStory(_TimelineEra entry) {
+    showAnimatedStorySheet(
+      context,
+      reference: entry.title,
+      verseText: entry.description,
+      center: entry.center,
+      accentColor: Color(entry.era.color),
+    );
+  }
+
   Future<void> _toggleSpeak(_TimelineEra entry) async {
     if (_speakingEra == entry.title) {
       await _tts.stop();
@@ -172,6 +186,7 @@ class _ChronologyScreenState extends State<ChronologyScreen> {
             isSpeaking: isSpeaking,
             isLast: i == _entries.length,
             onSpeakTap: () => _toggleSpeak(entry),
+            onStoryTap: () => _shareEraAsStory(entry),
           );
         },
       ),
@@ -220,11 +235,13 @@ class _EraCard extends StatelessWidget {
     required this.isSpeaking,
     required this.isLast,
     required this.onSpeakTap,
+    required this.onStoryTap,
   });
   final _TimelineEra entry;
   final bool isSpeaking;
   final bool isLast;
   final VoidCallback onSpeakTap;
+  final VoidCallback onStoryTap;
 
   @override
   Widget build(BuildContext context) {
@@ -378,7 +395,9 @@ class _EraCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Row(
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 8,
                         children: [
                           // Speak / Stop button
                           OutlinedButton.icon(
@@ -402,6 +421,33 @@ class _EraCard extends StatelessWidget {
                             style: OutlinedButton.styleFrom(
                               backgroundColor:
                                   isSpeaking ? color : Colors.transparent,
+                              side: BorderSide(color: color, width: 1.4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                          // Share as 9:16 story — exports the era's
+                          // mini-map + descriptive narration as an
+                          // animated GIF for IG/TikTok/WhatsApp.
+                          OutlinedButton.icon(
+                            onPressed: onStoryTap,
+                            icon: Icon(
+                              Icons.movie_filter,
+                              size: 18,
+                              color: color,
+                            ),
+                            label: Text(
+                              'Share story',
+                              style: GoogleFonts.lora(
+                                fontWeight: FontWeight.w600,
+                                color: color,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
                               side: BorderSide(color: color, width: 1.4),
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 8),

@@ -1,17 +1,21 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../data/models.dart';
+import '../../../data/strongs_service.dart';
 import '../../../data/translations.dart';
 import '../../../state/codex_provider.dart';
 import '../../../state/providers.dart';
 import '../../../theme.dart';
 import '../../cross_references/cross_references_sheet.dart';
+import '../../study/strongs_sheet.dart';
 import '../../listen/listen_screen.dart';
 import '../../search/similar_verses_screen.dart';
 import '../../share/verse_card_renderer.dart';
+import '../../share/animated_story_share.dart';
 import '../../../utils/page_transitions.dart';
 import '../../../utils/sub_route_navigation.dart';
 import '../../../widgets/rhema_title.dart';
@@ -426,6 +430,146 @@ class _VerseListState extends State<_VerseList> {
   final Set<int> _selectedVerses = {}; // verse numbers currently selected
   bool _selectionMode = false;
 
+  /// Verse # the long-press drag started on. Used for "drag down to select
+  /// multiple verses" — Claude/iOS-style extend-by-drag. While the user
+  /// keeps their finger down after long-press, sliding to another verse
+  /// extends the selection range from this anchor to wherever the finger
+  /// currently is.
+  int? _dragSelectionAnchor;
+
+  /// Tap-recognisers we hand out to RichText. We hold them on the State so
+  /// they can be disposed when the chapter/verse list rebuilds.
+  final List<TapGestureRecognizer> _tapRecognizers = [];
+
+  @override
+  void dispose() {
+    for (final r in _tapRecognizers) {
+      r.dispose();
+    }
+    _tapRecognizers.clear();
+    super.dispose();
+  }
+
+  /// Reset and re-allocate recognisers. Called every build so the recogniser
+  /// pool exactly matches the rendered taps. Cheap — there are only ever a
+  /// few hundred per chapter.
+  void _resetTapRecognizers() {
+    for (final r in _tapRecognizers) {
+      r.dispose();
+    }
+    _tapRecognizers.clear();
+  }
+
+  TapGestureRecognizer _newRecognizer(VoidCallback onTap) {
+    final r = TapGestureRecognizer()..onTap = onTap;
+    _tapRecognizers.add(r);
+    return r;
+  }
+
+  /// Build the inline text spans for a verse. When [scholarMode] is on and
+  /// Strong's data is available for this verse, each English word becomes
+  /// individually tappable and reveals the lexicon sheet on tap.
+  ///
+  /// When Scholar Mode is off (or data isn't loaded), we fall back to a
+  /// single plain TextSpan — exactly the previous behaviour.
+  List<InlineSpan> _buildVerseSpans({
+    required Verse verse,
+    required String book,
+    required int chapterNum,
+    required ThemeData theme,
+    required double fontSize,
+    required bool scholarMode,
+    required List<StrongsWord> strongs,
+    TextStyle? baseStyle,
+    String? skipFirstLetter, // e.g. "I" — already rendered as the drop-cap
+  }) {
+    if (!scholarMode || strongs.isEmpty) {
+      // Fast path — single span exactly like the old code.
+      final text = skipFirstLetter == null
+          ? verse.text
+          : (verse.text.length > 1 ? verse.text.substring(1) : '');
+      return [TextSpan(text: text, style: baseStyle)];
+    }
+
+    // Index Strong's words by surface form so we can match them as we walk
+    // the visible verse text. Multiple words can share a Strong's number; we
+    // pop from the queue per surface form to honour reading order.
+    final queues = <String, List<StrongsWord>>{};
+    for (final w in strongs) {
+      final key = _surfaceKey(w.word);
+      if (key.isEmpty) continue;
+      queues.putIfAbsent(key, () => []).add(w);
+    }
+
+    // Tokenise the verse, preserving whitespace and punctuation as separate
+    // non-tappable spans. We use a regex that captures runs of letters and
+    // apostrophes as one token; everything else (whitespace + punctuation)
+    // is interleaved as plain text.
+    final raw = skipFirstLetter == null
+        ? verse.text
+        : (verse.text.length > 1 ? verse.text.substring(1) : '');
+    final spans = <InlineSpan>[];
+    final tokenRe = RegExp(r"[A-Za-z][A-Za-z'’]*");
+
+    int cursor = 0;
+    for (final m in tokenRe.allMatches(raw)) {
+      if (m.start > cursor) {
+        spans.add(TextSpan(text: raw.substring(cursor, m.start), style: baseStyle));
+      }
+      final tok = m.group(0)!;
+      final key = _surfaceKey(tok);
+      final queue = queues[key];
+      StrongsWord? hit;
+      if (queue != null && queue.isNotEmpty) {
+        hit = queue.removeAt(0);
+      }
+
+      if (hit != null && hit.strongs != null) {
+        spans.add(TextSpan(
+          text: tok,
+          style: (baseStyle ?? const TextStyle()).copyWith(
+            decoration: TextDecoration.underline,
+            decorationColor: BrandColors.gold.withValues(alpha: 0.45),
+            decorationThickness: 1.2,
+          ),
+          recognizer: _newRecognizer(() {
+            HapticFeedback.selectionClick();
+            _openStrongs(hit!);
+          }),
+        ));
+      } else {
+        spans.add(TextSpan(text: tok, style: baseStyle));
+      }
+      cursor = m.end;
+    }
+    if (cursor < raw.length) {
+      spans.add(TextSpan(text: raw.substring(cursor), style: baseStyle));
+    }
+    return spans;
+  }
+
+  /// Strip punctuation and lowercase a token to match the build-time word
+  /// keys (which preserved trailing commas and case). The Strong's tagging
+  /// keeps trailing punctuation on the word — we tolerate that here.
+  String _surfaceKey(String s) {
+    return s
+        .toLowerCase()
+        .replaceAll(RegExp(r"[^a-z']"), '')
+        .trim();
+  }
+
+  void _openStrongs(StrongsWord w) {
+    final svc = widget.ref.read(strongsServiceProvider);
+    final entry = svc.lookupStrong(w.strongs);
+    final occ = svc.occurrencesOf(w.strongs);
+    showStrongsSheet(
+      context,
+      word: w,
+      entry: entry,
+      occurrences: occ,
+    );
+  }
+
   void _toggleVerse(int verseNumber) {
     setState(() {
       if (_selectedVerses.contains(verseNumber)) {
@@ -442,7 +586,46 @@ class _VerseListState extends State<_VerseList> {
       _selectionMode = true;
       _selectedVerses.clear();
       _selectedVerses.add(verseNumber);
+      _dragSelectionAnchor = verseNumber;
     });
+  }
+
+  /// Extend the selection range from the long-press anchor to the verse
+  /// currently under the user's finger. Used by the drag-to-select flow:
+  /// long-press a verse → keep your finger down → slide DOWN over more
+  /// verses → all verses between the anchor and your finger are selected.
+  /// Like iOS Mail multi-select or text selection in Claude/Notes.
+  void _extendDragSelectionTo(Offset globalPosition) {
+    final anchor = _dragSelectionAnchor;
+    if (anchor == null) return;
+    final hitVerse = _verseAtGlobalY(globalPosition.dy);
+    if (hitVerse == null) return;
+    final lo = anchor < hitVerse ? anchor : hitVerse;
+    final hi = anchor > hitVerse ? anchor : hitVerse;
+    setState(() {
+      _selectedVerses
+        ..clear()
+        ..addAll([for (int v = lo; v <= hi; v++) v]);
+    });
+  }
+
+  /// Hit-test verse keys vs a global Y coordinate.
+  /// Returns the verse number whose render-box vertically contains [y],
+  /// or null if no verse is at that position (gap between verses, etc.).
+  int? _verseAtGlobalY(double y) {
+    final keys = widget.verseKeys;
+    if (keys == null) return null;
+    for (final entry in keys.entries) {
+      final ctx = entry.value.currentContext;
+      if (ctx == null) continue;
+      final box = ctx.findRenderObject();
+      if (box is! RenderBox) continue;
+      final topLeft = box.localToGlobal(Offset.zero);
+      if (y >= topLeft.dy && y <= topLeft.dy + box.size.height) {
+        return entry.key;
+      }
+    }
+    return null;
   }
 
   void _clearSelection() {
@@ -508,6 +691,20 @@ class _VerseListState extends State<_VerseList> {
     _clearSelection();
   }
 
+  /// Animated 9:16 export — same selection rules as [_shareSelected],
+  /// but routes through the animated-story sheet instead of the static
+  /// verse-card flow.
+  void _shareSelectedAsStory() {
+    final rangeRef = _buildRangeRef();
+    final text = _buildSelectedText();
+    showAnimatedStorySheet(
+      context,
+      reference: rangeRef,
+      verseText: text,
+    );
+    _clearSelection();
+  }
+
   void _openCrossRefs() {
     if (_selectedVerses.isEmpty) return;
     final firstVerse = (_selectedVerses.toList()..sort()).first;
@@ -532,6 +729,14 @@ class _VerseListState extends State<_VerseList> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final highlights = ref.watch(highlightsProvider);
+    final scholarMode = ref.watch(settingsProvider.select((s) => s.scholarMode));
+    // Trigger Strong's load in the background as soon as Scholar Mode is on.
+    if (scholarMode) {
+      ref.watch(strongsServiceProvider);
+    }
+    // Tap recognisers are owned by State; rebuild allocates fresh ones to
+    // match the new spans. (Cheap — recognisers are tiny.)
+    _resetTapRecognizers();
     // Lazy GlobalKey cache — only create keys for new verse numbers
     if (verseKeys != null) {
       for (final v in chapter.verses) {
@@ -631,7 +836,6 @@ class _VerseListState extends State<_VerseList> {
         // Drop cap for the first verse — with watermark chapter number
         if (i == 0 && v.text.isNotEmpty) {
           final firstLetter = v.text[0];
-          final restOfText = v.text.length > 1 ? v.text.substring(1) : '';
           Widget dropCapWidget = Padding(
             key: verseKey,
             padding: const EdgeInsets.only(bottom: 6),
@@ -701,13 +905,24 @@ class _VerseListState extends State<_VerseList> {
                           height: 0.85,
                         ),
                       ),
-                      TextSpan(
-                        text: restOfText,
-                        style: GoogleFonts.lora(
+                      ..._buildVerseSpans(
+                        verse: v,
+                        book: book,
+                        chapterNum: chapterNum,
+                        theme: theme,
+                        fontSize: fontSize,
+                        scholarMode: scholarMode,
+                        strongs: scholarMode
+                            ? ref
+                                .read(strongsServiceProvider)
+                                .wordsForVerse(book, chapterNum, v.number)
+                            : const [],
+                        baseStyle: GoogleFonts.lora(
                           fontSize: fontSize,
                           height: 1.7,
                           color: theme.colorScheme.onSurface,
                         ),
+                        skipFirstLetter: firstLetter,
                       ),
                       if (isMarked)
                         WidgetSpan(
@@ -760,7 +975,25 @@ class _VerseListState extends State<_VerseList> {
             padding: (isSelected || highlightColorIndex != null)
                 ? const EdgeInsets.symmetric(horizontal: 6, vertical: 2)
                 : EdgeInsets.zero,
-            child: InkWell(
+            child: GestureDetector(
+              // Long-press LIFECYCLE so we can track drag-to-extend.
+              // onLongPressStart: enter selection mode + capture anchor.
+              // onLongPressMoveUpdate: as user slides finger, extend
+              //   selection to whichever verse is currently under the
+              //   pointer (Claude/iOS Mail-style multi-select).
+              // onLongPressEnd: keep the selection but stop tracking.
+              behavior: HitTestBehavior.translucent,
+              onLongPressStart: (details) {
+                HapticFeedback.mediumImpact();
+                _startSelection(v.number);
+              },
+              onLongPressMoveUpdate: (details) {
+                _extendDragSelectionTo(details.globalPosition);
+              },
+              onLongPressEnd: (_) {
+                _dragSelectionAnchor = null;
+              },
+              child: InkWell(
               onTap: () {
                 if (_selectionMode) {
                   _toggleVerse(v.number);
@@ -769,11 +1002,12 @@ class _VerseListState extends State<_VerseList> {
                   _showVerseSheet(context, ref0, v, theme);
                 }
               },
-              onLongPress: () {
-                HapticFeedback.mediumImpact();
-                _startSelection(v.number);
-              },
               child: RichText(
+                // Honour iOS Dynamic Type + Android font scaling (WCAG
+                // 1.4.4) by reading the system text-scale and passing it
+                // through to verseStyle. Without this, low-vision users
+                // see no change when they bump system text size up.
+                textScaler: MediaQuery.textScalerOf(context),
                 text: TextSpan(
                   // Literata for Bible verses — designed for long-form
                   // devotional reading. Tighter letter spacing, taller
@@ -785,11 +1019,29 @@ class _VerseListState extends State<_VerseList> {
                   children: [
                     TextSpan(
                       text: '${v.number}  ',
+                      // goldDark passes WCAG AA contrast on cream
+                      // (~4.7:1); the plain `gold` would fail.
                       style: BrandColors.verseNumberStyle(
-                        color: BrandColors.brownMid,
+                        color: BrandColors.goldDark,
                       ).copyWith(fontSize: fontSize - 4),
                     ),
-                    TextSpan(text: v.text),
+                    ..._buildVerseSpans(
+                      verse: v,
+                      book: book,
+                      chapterNum: chapterNum,
+                      theme: theme,
+                      fontSize: fontSize,
+                      scholarMode: scholarMode,
+                      strongs: scholarMode
+                          ? ref
+                              .read(strongsServiceProvider)
+                              .wordsForVerse(book, chapterNum, v.number)
+                          : const [],
+                      baseStyle: BrandColors.verseStyle(
+                        size: fontSize,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
                     if (isMarked)
                       WidgetSpan(
                         child: Padding(
@@ -800,6 +1052,7 @@ class _VerseListState extends State<_VerseList> {
                   ],
                 ),
               ),
+              ), // closes inner InkWell
             ),
           ),
         );
@@ -875,6 +1128,12 @@ class _VerseListState extends State<_VerseList> {
                     icon: const Icon(Icons.share, size: 20, color: Colors.white),
                     tooltip: 'Share',
                     onPressed: _shareSelected,
+                  ),
+                  // Animated 9:16 story
+                  IconButton(
+                    icon: const Icon(Icons.movie_filter, size: 20, color: Colors.white),
+                    tooltip: 'Share as story',
+                    onPressed: _shareSelectedAsStory,
                   ),
                   // Close
                   IconButton(
@@ -954,6 +1213,20 @@ class _VerseListState extends State<_VerseList> {
                       context: context,
                       verseText: v.text,
                       reference: '$refId ($versionName)',
+                    );
+                  },
+                ),
+                TextButton.icon(
+                  icon: Icon(Icons.movie_filter, color: theme.colorScheme.secondary),
+                  label: const Text('Animated story (9:16)'),
+                  onPressed: () {
+                    final translation = widget.ref.read(settingsProvider).translation;
+                    final versionName = translationById(translation).name;
+                    Navigator.pop(sheetContext);
+                    showAnimatedStorySheet(
+                      context,
+                      reference: '$refId ($versionName)',
+                      verseText: v.text,
                     );
                   },
                 ),

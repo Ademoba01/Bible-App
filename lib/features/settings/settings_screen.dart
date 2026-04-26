@@ -92,6 +92,75 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             value: s.darkMode,
             onChanged: n.setDarkMode,
           ),
+          // ── Theme style picker ─────────────────────────────────
+          // Two side-by-side cards. Tap to switch between the classic
+          // parchment/gold devotional aesthetic and the modern clean
+          // sans/blue alternative. Persists via setThemeStyle.
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 8, bottom: 4),
+            child: Text(
+              'Theme style',
+              style: GoogleFonts.lora(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _ThemeStyleCard(
+                    label: 'Classic',
+                    blurb: 'Parchment & gold',
+                    selected: s.themeStyle == ThemeStyle.classic,
+                    backgroundColor: BrandColors.parchment,
+                    foregroundColor: BrandColors.dark,
+                    ringColor: BrandColors.goldDeep,
+                    previewText: 'In the beginning',
+                    previewStyle: GoogleFonts.cormorantGaramond(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: BrandColors.dark,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    onTap: () => n.setThemeStyle(ThemeStyle.classic),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _ThemeStyleCard(
+                    label: 'Modern',
+                    blurb: 'Clean & dark',
+                    selected: s.themeStyle == ThemeStyle.modern,
+                    backgroundColor: BrandColors.modernScaffoldDark,
+                    foregroundColor: Colors.white,
+                    ringColor: BrandColors.modernBlue,
+                    previewText: 'In the beginning',
+                    previewStyle: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                      letterSpacing: -0.2,
+                    ),
+                    onTap: () => n.setThemeStyle(ThemeStyle.modern),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SwitchListTile(
+            secondary: Icon(Icons.auto_stories, color: BrandColors.gold),
+            title: Text("Scholar Mode (Strong's)",
+                style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
+            subtitle: Text(
+                'Tap any English word in the verse to see the original Hebrew/Greek',
+                style: GoogleFonts.lora(fontSize: 12)),
+            value: s.scholarMode,
+            onChanged: (v) => n.setScholarMode(v),
+          ),
           ListTile(
             title: const Text('Font size'),
             subtitle: Slider(
@@ -532,6 +601,104 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: Text('Rhema Study Bible — The Bible that listens and speaks your language.'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Visual swatch card for picking a theme style. Shows the theme's bg
+/// colour, a font preview in that theme's display face, and a coloured
+/// ring when selected (gold for classic, blue for modern).
+class _ThemeStyleCard extends StatelessWidget {
+  const _ThemeStyleCard({
+    required this.label,
+    required this.blurb,
+    required this.selected,
+    required this.backgroundColor,
+    required this.foregroundColor,
+    required this.ringColor,
+    required this.previewText,
+    required this.previewStyle,
+    required this.onTap,
+  });
+
+  final String label;
+  final String blurb;
+  final bool selected;
+  final Color backgroundColor;
+  final Color foregroundColor;
+  final Color ringColor;
+  final String previewText;
+  final TextStyle previewStyle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected
+                  ? ringColor
+                  : Colors.black.withValues(alpha: 0.08),
+              width: selected ? 2.5 : 1,
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: ringColor.withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: GoogleFonts.lora(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: foregroundColor,
+                      ),
+                    ),
+                  ),
+                  if (selected)
+                    Icon(Icons.check_circle, size: 18, color: ringColor),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                previewText,
+                style: previewStyle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                blurb,
+                style: GoogleFonts.lora(
+                  fontSize: 11,
+                  color: foregroundColor.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

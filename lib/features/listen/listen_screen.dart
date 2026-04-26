@@ -659,11 +659,22 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
               // 160px circle with radial gold→brown gradient. While playing,
               // a pulsing outer glow + scale tween conveys the rhythm of
               // narration. Tap to play/pause as a primary affordance.
-              GestureDetector(
-                onTap: _playing
-                    ? _pause
-                    : (_paused ? _resume : _play),
-                child: AnimatedBuilder(
+              // Semantics: the WCAG audit flagged this disc as the
+              // primary play affordance with no screen-reader label —
+              // a blind user opening Listen heard nothing actionable.
+              Semantics(
+                button: true,
+                label: _playing
+                    ? 'Pause narration, currently on verse ${_currentVerseIndex + 1} of ${_verses.length}'
+                    : (_paused
+                        ? 'Resume narration from verse ${_resumeFromVerse + 1}'
+                        : 'Play this chapter aloud'),
+                hint: 'Double tap to ${_playing ? "pause" : "play"}',
+                child: GestureDetector(
+                  onTap: _playing
+                      ? _pause
+                      : (_paused ? _resume : _play),
+                  child: AnimatedBuilder(
                   animation: _pulseController,
                   builder: (context, _) {
                     final pulse = _pulseController.value; // 0 → 1 reverse-tween
@@ -717,6 +728,7 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
                       ),
                     );
                   },
+                ),
                 ),
               ),
               const SizedBox(height: 24),

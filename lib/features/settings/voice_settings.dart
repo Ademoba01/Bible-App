@@ -400,8 +400,11 @@ class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
                               ),
                             ),
                             trailing: SizedBox(
-                              width: 36,
-                              height: 36,
+                              // Tap target bumped 36 -> 44 (Apple HIG /
+                              // WCAG 2.5.8 minimum). Was failing motor-
+                              // accessibility audit.
+                              width: 44,
+                              height: 44,
                               child: IconButton(
                                 padding: EdgeInsets.zero,
                                 icon: Icon(
@@ -409,7 +412,7 @@ class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
                                       ? Icons.stop_circle
                                       : Icons.play_circle_outline,
                                   color: BrandColors.brown,
-                                  size: 24,
+                                  size: 28,
                                 ),
                                 tooltip: 'Preview',
                                 onPressed: isPreviewing
