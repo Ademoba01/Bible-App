@@ -185,10 +185,17 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
     int activeWordIndex,
     ThemeData theme,
   ) {
-    // Split on whitespace AND punctuation boundaries while keeping the
-    // delimiters as separate tokens. RegExp lookarounds let us preserve
-    // every character — concatenating tokens reconstructs the verse.
-    final tokens = verseText.split(RegExp(r'(\s+|(?<=\w)(?=[^\w\s])|(?<=[^\w\s])(?=\w))'));
+    // Tokenize using allMatches so whitespace AND non-whitespace runs are
+    // BOTH captured as tokens — concatenating them reconstructs the verse
+    // exactly. (The previous String.split() approach silently dropped the
+    // matched whitespace, jamming every word together.)
+    //
+    // Pattern matches one of:
+    //   - one or more letters/digits/apostrophes/hyphens   (a word)
+    //   - one or more whitespace chars                     (gap)
+    //   - any single non-letter/non-whitespace char        (punctuation)
+    final pattern = RegExp(r"[A-Za-z\u00C0-\u024F0-9'\-]+|\s+|[^A-Za-z\u00C0-\u024F0-9'\-\s]");
+    final tokens = pattern.allMatches(verseText).map((m) => m.group(0)!).toList();
 
     final spans = <TextSpan>[];
     int wordCounter = 0;
@@ -407,10 +414,22 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
     // Persist across sessions so users don't re-set it every time (WCAG 2.2.1).
     await ref.read(settingsProvider.notifier).setSpeechRate(rate);
     if (_playing) {
-      // Remember current position, stop, and resume from same verse
+      // Mirror _jumpToVerse: bump the session so the in-flight loop exits,
+      // stop TTS, brief delay so the awaited speak() future resolves, then
+      // start a NEW _play() loop at the current verse. Without the session
+      // bump the old loop hung waiting for awaitSpeakCompletion(true) and
+      // narration appeared to "stop" — this is the same race that broke
+      // pause/resume before commit 235a2c8.
       final resumeAt = _currentVerseIndex;
+      _playSession++;
       await _tts.stop();
-      setState(() => _playing = false);
+      _pulseController.stop();
+      _pulseController.value = 0;
+      setState(() {
+        _playing = false;
+        _spokenWordIndex = -1;
+      });
+      await Future.delayed(const Duration(milliseconds: 50));
       _play(startFromVerse: resumeAt);
     }
   }
