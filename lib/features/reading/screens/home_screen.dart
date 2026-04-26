@@ -1245,7 +1245,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                     onChanged: _onSearchChanged,
                     onSubmitted: (_) => _runSearch(),
                     decoration: InputDecoration(
-                      hintText: 'Search or speak a verse\u2026',
+                      hintText: 'Search or speak a verse, chapter, or topic\u2026',
                       hintStyle: GoogleFonts.lora(fontSize: 14),
                       prefixIcon: Icon(Icons.search, color: theme.colorScheme.onSurfaceVariant),
                       suffixIcon: Row(
@@ -1399,15 +1399,12 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
             ),
             const SizedBox(height: 16),
 
-            // Quick actions — adjustable tiles (moved ABOVE verse of the day)
-            _AdjustableQuickTiles(ref: ref, onBookPicker: () => _showBookPicker(context, ref)),
-            const SizedBox(height: 16),
-
             // ── Mood chips — feeds the adaptive Verse of the Day ──
             _buildMoodRow(theme),
             const SizedBox(height: 12),
 
-            // ── Verse of the Day — prominent card ──
+            // ── Verse of the Day — prominent card (moved up — daily
+            //    word is the highlight on mobile, ahead of Quick Actions) ──
             GestureDetector(
               onTap: () {
                 // Navigate to the verse in context
@@ -1574,6 +1571,15 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 20),
+
+            // Quick actions — adjustable tiles. Moved BELOW the Verse
+            // of the Day so the daily word leads the home feed (mobile-
+            // first highlight). Quick Actions are still one scroll away.
+            _AdjustableQuickTiles(
+              ref: ref,
+              onBookPicker: () => _showBookPicker(context, ref),
             ),
             const SizedBox(height: 24),
 
