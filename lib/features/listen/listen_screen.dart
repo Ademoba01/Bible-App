@@ -384,6 +384,39 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
     });
   }
 
+  /// Manual chapter skip (next/prev arrows). Unlike _stop, this preserves
+  /// playback continuity — if narration was active, it continues from
+  /// verse 1 of the new chapter; if idle, just navigates without auto-play.
+  /// Mirrors the auto-continue flow used at natural chapter end.
+  Future<void> _skipChapter({required bool forward}) async {
+    final wasPlaying = _playing;
+    _playSession++;
+    await _tts.stop();
+    _pulseController.stop();
+    _pulseController.value = 0;
+    setState(() {
+      _playing = false;
+      _paused = false;
+      _spokenWordIndex = -1;
+    });
+
+    // Navigate
+    final notifier = ref.read(readingLocationProvider.notifier);
+    if (forward) {
+      // Use a high cap; the underlying provider clamps to actual book length.
+      notifier.next(150);
+    } else {
+      notifier.prev();
+    }
+
+    if (wasPlaying) {
+      // Brief delay so currentBookChaptersProvider reloads the new chapter.
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (!mounted) return;
+      _play(startFromVerse: 0);
+    }
+  }
+
   /// Jump to a specific verse during playback. If currently playing, the
   /// running loop terminates and a new one starts at the requested verse.
   /// If paused, just updates the resume marker so Resume picks up there.
@@ -821,12 +854,9 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
                 children: [
                   IconButton(
                     icon: const Icon(Icons.skip_previous, size: 32),
-                    tooltip: 'Previous chapter',
+                    tooltip: 'Previous chapter (continues if playing)',
                     onPressed: loc.chapter > 1
-                        ? () {
-                            _stop();
-                            ref.read(readingLocationProvider.notifier).prev();
-                          }
+                        ? () => _skipChapter(forward: false)
                         : null,
                   ),
                   const SizedBox(width: 16),
@@ -849,11 +879,8 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
                   const SizedBox(width: 16),
                   IconButton(
                     icon: const Icon(Icons.skip_next, size: 32),
-                    tooltip: 'Next chapter',
-                    onPressed: () {
-                      _stop();
-                      ref.read(readingLocationProvider.notifier).next(150);
-                    },
+                    tooltip: 'Next chapter (continues if playing)',
+                    onPressed: () => _skipChapter(forward: true),
                   ),
                 ],
               ),

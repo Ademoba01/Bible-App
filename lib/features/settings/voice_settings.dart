@@ -169,8 +169,12 @@ class _VoiceSettingsSheetState extends ConsumerState<_VoiceSettingsSheet> {
     setState(() => _previewingVoice = voiceName);
     await _tts.stop();
     await _tts.setVoice({'name': voiceName, 'locale': locale});
-    await _tts.setSpeechRate(0.45);
+    // Always preview at NORMAL 1.0x speed (flutter_tts 0.50) regardless of
+    // user's saved listen speed — gives a fair voice-quality comparison.
+    // The user's preferred speed kicks in only on the actual Listen screen.
+    await _tts.setSpeechRate(0.50);
     await _tts.setPitch(1.0);
+    await _tts.setVolume(1.0);
     _tts.setCompletionHandler(() {
       if (mounted) setState(() => _previewingVoice = null);
     });
