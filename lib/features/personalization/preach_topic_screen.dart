@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/ai_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/rhema_title.dart';
 
 /// Streams a 60-90s mini-sermon on a user-supplied topic.
 class PreachTopicScreen extends ConsumerStatefulWidget {
@@ -137,8 +138,8 @@ class _PreachTopicScreenState extends ConsumerState<PreachTopicScreen>
           ? theme.scaffoldBackgroundColor
           : BrandColors.parchment,
       appBar: AppBar(
-        title: Text('Preach to Me',
-            style: GoogleFonts.lora(fontWeight: FontWeight.w700)),
+        centerTitle: true,
+        title: const RhemaTitle(),
       ),
       body: SafeArea(
         child: Padding(

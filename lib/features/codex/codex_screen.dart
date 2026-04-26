@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../data/books.dart';
 import '../../state/codex_provider.dart';
 import '../../widgets/lottie_or_fallback.dart';
+import '../../widgets/rhema_title.dart';
 import '../../widgets/wax_seal.dart';
 
 /// "Your Codex" — gamified milestone screen rendered on parchment with
@@ -73,15 +74,11 @@ class _CodexScreenState extends ConsumerState<CodexScreen> {
         backgroundColor: _parchment,
         foregroundColor: _ink,
         elevation: 0,
-        title: Text(
-          'Your Codex',
-          style: GoogleFonts.cormorantGaramond(
-            fontSize: 26,
-            fontWeight: FontWeight.w700,
-            color: _ink,
-            letterSpacing: 0.5,
-          ),
-        ),
+        centerTitle: true,
+        // Centered RhemaTitle — tap to return home. Codex is the screen
+        // that lives below the brand mark; users orient via the page's
+        // own content (the seal grid + book index).
+        title: RhemaTitle(color: _ink),
       ),
       body: SafeArea(
         child: ListView(

@@ -9,6 +9,7 @@ import '../../data/books.dart';
 import '../../data/models.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/rhema_title.dart';
 import '../settings/voice_settings.dart';
 
 class ListenScreen extends ConsumerStatefulWidget {
@@ -629,7 +630,8 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Listen'),
+        centerTitle: true,
+        title: const RhemaTitle(),
         actions: [
           IconButton(
             icon: const Icon(Icons.record_voice_over),

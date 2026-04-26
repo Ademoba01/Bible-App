@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../services/ai_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/rhema_title.dart';
 import 'models/reading_plan.dart';
 import 'personalization_service.dart';
 
@@ -153,7 +154,8 @@ class _ReadingPlanScreenState extends ConsumerState<ReadingPlanScreen> {
           ? theme.scaffoldBackgroundColor
           : BrandColors.parchment,
       appBar: AppBar(
-        title: Text('Reading Plan', style: GoogleFonts.lora(fontWeight: FontWeight.w700)),
+        centerTitle: true,
+        title: const RhemaTitle(),
       ),
       body: planAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

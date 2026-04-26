@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../data/bible_maps_data.dart';
 import '../../state/providers.dart';
+import '../../widgets/rhema_title.dart';
 
 // ---------------------------------------------------------------------------
 // Bible Maps Screen
@@ -360,15 +361,13 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
 
   // ── AppBar ─────────────────────────────────────────────────────────
   PreferredSizeWidget _buildAppBar() {
+    // Centered RhemaTitle (logo + wordmark) is the consistent brand mark
+    // across all sub-screens AND a tap-to-home affordance — same pattern
+    // as Prayer Wall, Reading screen, etc. Screen identity is preserved
+    // by the era chips below + the Quick Action tile that opened this.
     return AppBar(
-      title: Text(
-        'Bible Maps',
-        style: GoogleFonts.playfairDisplay(
-          fontWeight: FontWeight.w700,
-          color: _parchment,
-          fontSize: 22,
-        ),
-      ),
+      centerTitle: true,
+      title: const RhemaTitle(),
       backgroundColor: _darkBrown,
       foregroundColor: _parchment,
       elevation: 0,
