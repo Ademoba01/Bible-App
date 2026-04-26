@@ -174,10 +174,31 @@ class _MoodVersesSheetState extends ConsumerState<_MoodVersesSheet> {
       maxChildSize: 0.92,
       expand: false,
       builder: (_, scrollController) => Container(
-        decoration: const BoxDecoration(
+        // Float it: lift off all four edges, round all corners (not just
+        // the top), and add a soft drop shadow so the sheet reads as a
+        // floating card layered above the page rather than welded to
+        // the bottom edge.
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+        decoration: BoxDecoration(
           color: BrandColors.parchment,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: BrandColors.brown.withValues(alpha: 0.18),
+              blurRadius: 32,
+              offset: const Offset(0, 12),
+            ),
+            BoxShadow(
+              color: BrandColors.brown.withValues(alpha: 0.10),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+          border: Border.all(
+            color: BrandColors.gold.withValues(alpha: 0.25),
+          ),
         ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           children: [
             // Drag handle
