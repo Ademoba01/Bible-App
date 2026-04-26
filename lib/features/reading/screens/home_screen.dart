@@ -62,9 +62,17 @@ class HomeScreen extends ConsumerWidget {
     restoreSubRouteIfAny(context, ref);
     return Scaffold(
       body: Stack(
+        // CRITICAL: fit:expand passes the Scaffold's full body height as
+        // a TIGHT constraint to non-Positioned children. Default StackFit
+        // .loose passes UNBOUNDED constraints, which makes nested
+        // SingleChildScrollView render at its full intrinsic height with
+        // no viewport — touch events arrive but there's literally
+        // nothing to scroll because every child is fully visible. This
+        // was the iOS scroll bug.
+        fit: StackFit.expand,
         children: [
           _buildTab(index),
-          // Inline chat overlay
+          // Inline chat overlay (Positioned, so unaffected by fit).
           const _InlineChatOverlay(),
         ],
       ),
@@ -426,6 +434,7 @@ class _ChatMsg {
   final bool isUser;
   const _ChatMsg(this.text, this.isUser);
 }
+
 
 class _DashboardTab extends ConsumerStatefulWidget {
   const _DashboardTab();
