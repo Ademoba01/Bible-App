@@ -939,6 +939,9 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
                 Expanded(
                   child: ListView.builder(
                     controller: _scrollController,
+                    physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(),
+                    ),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     itemCount: _verses.length,
                     itemBuilder: (context, i) {

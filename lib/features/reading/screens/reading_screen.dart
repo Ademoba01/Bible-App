@@ -544,6 +544,12 @@ class _VerseListState extends State<_VerseList> {
       color: isDark ? const Color(0xFF2B1E19) : BrandColors.parchment,
       child: ListView.builder(
       controller: scrollController,
+      // BouncingScrollPhysics: iOS-style fling + edge bounce on swipe.
+      // AlwaysScrollableScrollPhysics keeps the surface interactive
+      // when the chapter is short (e.g. 3 John has 14 verses).
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
       padding: EdgeInsets.fromLTRB(
         MediaQuery.of(context).size.width < 400 ? 14 : 20,
         20,

@@ -211,6 +211,9 @@ class _PrayerList extends StatelessWidget {
       data: (items) {
         if (items.isEmpty) return _EmptyState(text: empty);
         return ListView.separated(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 96),
           itemCount: items.length,
           separatorBuilder: (_, __) => const SizedBox(height: 10),

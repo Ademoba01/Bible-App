@@ -1091,6 +1091,14 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
 
     return SafeArea(
       child: SingleChildScrollView(
+        // BouncingScrollPhysics gives iOS-style fling: a quick swipe
+        // releases into momentum scroll + edge bounce. Wrap with
+        // AlwaysScrollableScrollPhysics so the surface is interactive
+        // even on screens where content fits — keeps the bounce feel
+        // consistent on tall iPads / desktop windows.
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
         padding: EdgeInsets.fromLTRB(hPad, 16, hPad, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
