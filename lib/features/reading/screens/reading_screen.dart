@@ -136,18 +136,22 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        // Centered Rhema mark — taps to home. Replaces the book/chapter label
-        // that was awkwardly left-aligned. Book picker still accessible via
-        // the chapter bar below the AppBar.
-        title: const RhemaTitle(),
-        // Book/chapter pill on the leading side keeps quick book switching.
-        leadingWidth: 140,
+        // Compact RhemaTitle on the reading screen — the chapter bar below
+        // already shows "BookName / Chapter / N" prominently, so the
+        // wordmark would just compete for space and overflow on narrow
+        // phones (which the user reported as the "OVERFLOWED BY" yellow
+        // tape on iOS). Compact mode = icon only, still taps to home.
+        title: const RhemaTitle(compact: true),
+        // Compact leading — just the book name (no chapter; the chapter
+        // is huge in the bar below). Halves the width budget so the
+        // RhemaTitle icon stays cleanly centered.
+        leadingWidth: 96,
         leading: Padding(
           padding: const EdgeInsets.only(left: 4),
           child: TextButton(
             style: TextButton.styleFrom(
               foregroundColor: theme.colorScheme.onPrimary,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 6),
             ),
             onPressed: () async {
               final picked = await Navigator.push<String>(
@@ -163,13 +167,13 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
               children: [
                 Flexible(
                   child: Text(
-                    '${loc.book} ${loc.chapter}',
+                    loc.book,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w700),
+                        fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                 ),
-                const Icon(Icons.arrow_drop_down, size: 18),
+                const Icon(Icons.arrow_drop_down, size: 16),
               ],
             ),
           ),
