@@ -319,11 +319,31 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
           Duration(milliseconds: (basePause * speedScale).round()));
     }
 
-    // Natural chapter-end: only stop the pulse if WE were the live session.
-    // If the loop exited because pause/stop/jump bumped the session, those
-    // handlers already stopped the pulse — don't stomp on a fresh session
-    // started by Resume / jump.
+    // Natural chapter-end: only handle if WE were the live session. If the
+    // loop exited because pause/stop/jump bumped the session, those handlers
+    // already cleaned up — don't stomp on a fresh session.
     if (mounted && session == _playSession) {
+      // Auto-continue: if there's another chapter in this book, advance
+      // and start playing it. The user can pause to stop the auto-flow.
+      // Skips for last chapter — natural pause point.
+      final loc = ref.read(readingLocationProvider);
+      final allChapters =
+          await ref.read(currentBookChaptersProvider.future);
+      final isLastChapter = loc.chapter >= allChapters.length;
+
+      if (!isLastChapter && session == _playSession && mounted) {
+        // Brief pause between chapters — feels intentional, not abrupt.
+        await Future.delayed(const Duration(milliseconds: 1200));
+        if (session != _playSession || !mounted) return;
+        ref.read(readingLocationProvider.notifier).next(allChapters.length);
+        // Small delay so the chapter provider reloads, then play from v1.
+        await Future.delayed(const Duration(milliseconds: 200));
+        if (session != _playSession || !mounted) return;
+        _play(startFromVerse: 0);
+        return; // don't fall through to "stop" cleanup
+      }
+
+      // Truly the end of the book — stop cleanly.
       _pulseController.stop();
       _pulseController.value = 0;
       setState(() {
@@ -634,15 +654,21 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
                             width: 2,
                           ),
                         ),
-                        child: Icon(
-                          _playing
-                              ? Icons.graphic_eq
-                              : (_paused
-                                  ? Icons.play_arrow_rounded
-                                  : Icons.headphones_rounded),
-                          size: 72,
-                          color: Colors.white,
-                        ),
+                        child: _playing
+                            ? CustomPaint(
+                                size: const Size(96, 64),
+                                painter: _WaveformPainter(
+                                  phase: pulse,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Icon(
+                                _paused
+                                    ? Icons.play_arrow_rounded
+                                    : Icons.headphones_rounded,
+                                size: 72,
+                                color: Colors.white,
+                              ),
                       ),
                     );
                   },
@@ -1082,5 +1108,77 @@ class _ListenBookPickerState extends State<_ListenBookPicker> {
         ),
       ],
     );
+  }
+}
+
+/// Five-bar audio waveform driven by [phase] (0..1, typically the value of
+/// the same AnimationController that drives the disc's pulse). Each bar
+/// modulates with a sine, phase-offset slightly so they move at organic-
+/// looking different rhythms — never in lock-step. Pure CustomPainter, no
+/// Lottie / no asset / no extra package.
+class _WaveformPainter extends CustomPainter {
+  _WaveformPainter({required this.phase, required this.color});
+
+  /// Animation value 0..1. Caller passes [_pulseController.value].
+  final double phase;
+  final Color color;
+
+  static const _barCount = 5;
+  static const _barWidthFraction = 0.10; // each bar ~10% of width
+  static const _gapFraction = 0.085; // gap between bars
+  static const _minBar = 0.18; // min height as fraction of canvas h
+  static const _maxBar = 0.95;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final barW = size.width * _barWidthFraction;
+    final gap = size.width * _gapFraction;
+    final totalW = (_barCount * barW) + ((_barCount - 1) * gap);
+    final startX = (size.width - totalW) / 2;
+    final centerY = size.height / 2;
+
+    for (var i = 0; i < _barCount; i++) {
+      // Phase-offset each bar so they don't pulse together. Multiply phase
+      // by 2π so the bar height visits both extremes per cycle.
+      final wavePhase = (phase * 2 * 3.1415926) + (i * 0.8);
+      // sin gives -1..1; map to 0..1 then to _minBar.._maxBar
+      final wave = (1 + _safeSin(wavePhase)) / 2;
+      final hFrac = _minBar + (_maxBar - _minBar) * wave;
+      final barH = size.height * hFrac;
+
+      final left = startX + i * (barW + gap);
+      final top = centerY - (barH / 2);
+      final rect = RRect.fromLTRBR(
+        left,
+        top,
+        left + barW,
+        top + barH,
+        Radius.circular(barW / 2),
+      );
+      canvas.drawRRect(rect, paint);
+    }
+  }
+
+  // Tiny sine implementation to avoid an extra import — Dart's math.sin is
+  // fine to use, but keeping this self-contained makes the painter easier
+  // to read and skip if grepping. Falls through to dart:math.sin via
+  // Taylor expansion approximation accurate to <1% in [-π, π].
+  double _safeSin(double x) {
+    // Reduce to [-π, π]
+    const twoPi = 6.283185307179586;
+    final reduced = x - twoPi * (x / twoPi).floor();
+    final r = reduced > 3.141592653589793 ? reduced - twoPi : reduced;
+    // Bhaskara I's approximation — good enough for visual animation
+    return 16 * r * (3.141592653589793 - r.abs()) /
+        (49.34802200544679 - 4 * r * (3.141592653589793 - r.abs()));
+  }
+
+  @override
+  bool shouldRepaint(covariant _WaveformPainter oldDelegate) {
+    return oldDelegate.phase != phase || oldDelegate.color != color;
   }
 }
