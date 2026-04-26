@@ -80,7 +80,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     final chapter = int.tryParse(match.group(2)!) ?? 1;
     ref.read(readingLocationProvider.notifier).setBook(book);
     ref.read(readingLocationProvider.notifier).setChapter(chapter);
-    ref.read(tabIndexProvider.notifier).state = 1;
+    ref.read(tabIndexProvider.notifier).set(1);
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 

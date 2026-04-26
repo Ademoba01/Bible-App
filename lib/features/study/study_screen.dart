@@ -102,7 +102,7 @@ class StudyScreen extends ConsumerWidget {
                   ref
                       .read(readingLocationProvider.notifier)
                       .setChapter(todayReading.chapter);
-                  ref.read(tabIndexProvider.notifier).state = 1;
+                  ref.read(tabIndexProvider.notifier).set(1);
                 },
                 onViewPlan: () {
                   Navigator.of(context).push(MaterialPageRoute(

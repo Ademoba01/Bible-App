@@ -199,7 +199,7 @@ class _PathCard extends StatelessWidget {
               ref
                   .read(readingLocationProvider.notifier)
                   .setChapter(r.chapter);
-              ref.read(tabIndexProvider.notifier).state = 1;
+              ref.read(tabIndexProvider.notifier).set(1);
               Navigator.of(context).pop(); // close StartHereScreen
             },
             child: Padding(

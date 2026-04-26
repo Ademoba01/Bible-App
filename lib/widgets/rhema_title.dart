@@ -30,7 +30,7 @@ class RhemaTitle extends ConsumerWidget {
   final bool compact;
 
   void _goHome(BuildContext context, WidgetRef ref) {
-    ref.read(tabIndexProvider.notifier).state = 0;
+    ref.read(tabIndexProvider.notifier).set(0);
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).popUntil((r) => r.isFirst);
     }

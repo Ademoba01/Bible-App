@@ -30,6 +30,7 @@ import '../../study/bible_maps_screen.dart';
 import '../../study/study_screen.dart';
 import '../../../utils/kids_portal_transition.dart';
 import '../../../utils/page_transitions.dart';
+import '../../../utils/sub_route_navigation.dart';
 import '../../../utils/voice_text_normalizer.dart';
 import 'reading_screen.dart';
 
@@ -55,6 +56,10 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final index = ref.watch(tabIndexProvider);
+    // After-refresh sub-route restore: if the user was on (e.g.) Bible Maps
+    // when they reloaded the page, re-push that screen now. Idempotent —
+    // only fires once per session via internal _restoredOnce flag.
+    restoreSubRouteIfAny(context, ref);
     return Scaffold(
       body: Stack(
         children: [
@@ -65,7 +70,7 @@ class HomeScreen extends ConsumerWidget {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: index,
-        onDestinationSelected: (i) => ref.read(tabIndexProvider.notifier).state = i,
+        onDestinationSelected: (i) => ref.read(tabIndexProvider.notifier).set(i),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.cottage_outlined), selectedIcon: Icon(Icons.cottage), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.auto_stories_outlined), selectedIcon: Icon(Icons.auto_stories), label: 'Read'),
@@ -923,7 +928,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                         ref.read(readingLocationProvider.notifier).setBook(verseRef.book);
                         ref.read(readingLocationProvider.notifier).setChapter(verseRef.chapter);
                         ref.read(highlightVerseProvider.notifier).state = verseRef.verse;
-                        ref.read(tabIndexProvider.notifier).state = 1;
+                        ref.read(tabIndexProvider.notifier).set(1);
                         _clearSearch();
                       },
                     ),
@@ -1123,7 +1128,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                 borderRadius: BorderRadius.circular(20),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(20),
-                  onTap: () => ref.read(tabIndexProvider.notifier).state = 1,
+                  onTap: () => ref.read(tabIndexProvider.notifier).set(1),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                     child: Row(
@@ -1320,7 +1325,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                                     this.ref.read(readingLocationProvider.notifier).setBook(parsed.book);
                                     this.ref.read(readingLocationProvider.notifier).setChapter(parsed.chapter);
                                     this.ref.read(highlightVerseProvider.notifier).state = parsed.verse;
-                                    this.ref.read(tabIndexProvider.notifier).state = 1;
+                                    this.ref.read(tabIndexProvider.notifier).set(1);
                                     _clearSearch();
                                   }
                                 },
@@ -1412,7 +1417,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                 if (verseRef != null) {
                   ref.read(readingLocationProvider.notifier).setBook(verseRef.book);
                   ref.read(readingLocationProvider.notifier).setChapter(verseRef.chapter);
-                  ref.read(tabIndexProvider.notifier).state = 1;
+                  ref.read(tabIndexProvider.notifier).set(1);
                   // Tell the personalization service we read this ref.
                   ref
                       .read(personalizationServiceProvider)
@@ -1620,7 +1625,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                         leading: Icon(Icons.bookmark, color: theme.colorScheme.primary),
                         title: Text(id, style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
                         trailing: const Icon(Icons.chevron_right),
-                        onTap: () => ref.read(tabIndexProvider.notifier).state = 3,
+                        onTap: () => ref.read(tabIndexProvider.notifier).set(3),
                       ),
                     ),
                   ),
@@ -2166,7 +2171,7 @@ class _BookPickerSheetState extends State<_BookPickerSheet> with SingleTickerPro
                     onTap: () {
                       widget.ref.read(readingLocationProvider.notifier).setBook(_selectedBook!);
                       widget.ref.read(readingLocationProvider.notifier).setChapter(ch);
-                      widget.ref.read(tabIndexProvider.notifier).state = 1;
+                      widget.ref.read(tabIndexProvider.notifier).set(1);
                       Navigator.pop(context);
                     },
                     child: Center(
@@ -2232,31 +2237,40 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
       // contemplative not volunteerish), Codex uses auto_stories (open book
       // with mark), Reading Plan uses fact_check (checkable list).
       _TileData(Icons.local_library_rounded, 'Study', const Color(0xFF5D4037),
-          () => widget.ref.read(tabIndexProvider.notifier).state = 2),
+          () => widget.ref.read(tabIndexProvider.notifier).set(2)),
       _TileData(Icons.headphones_rounded, 'Listen', Colors.teal,
-          () => Navigator.push(context,
-              FadeSlideRoute(page: const ListenScreen()))),
+          () => pushSubRoute(context, widget.ref,
+              route: SubRoute.listen,
+              builder: (_) => const ListenScreen())),
       _TileData(Icons.collections_bookmark_rounded, 'All Books', Colors.indigo,
           widget.onBookPicker),
       _TileData(Icons.travel_explore_rounded, 'Maps', const Color(0xFF2E7D32),
-          () => Navigator.push(context,
-              FadeSlideRoute(page: const BibleMapsScreen()))),
+          () => pushSubRoute(context, widget.ref,
+              route: SubRoute.maps,
+              builder: (_) => const BibleMapsScreen())),
       _TileData(Icons.face_3_rounded, 'Kids', Colors.pink,
           () => showKidsPortal(context, () {
             widget.ref.read(settingsProvider.notifier).setKidsMode(true);
           })),
       _TileData(Icons.spa_rounded, 'Prayer Wall', Colors.deepPurple,
-          () => Navigator.push(context,
-              FadeSlideRoute(page: const PrayerWallScreen()))),
+          () => pushSubRoute(context, widget.ref,
+              route: SubRoute.prayer,
+              builder: (_) => const PrayerWallScreen())),
       _TileData(Icons.auto_stories_rounded, 'Codex', const Color(0xFF7A2E2E),
-          () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const CodexScreen()))),
-      _TileData(Icons.fact_check_rounded, 'Reading Plan', const Color(0xFF6B5B95),
-          () => Navigator.push(context,
-              FadeSlideRoute(page: const ReadingPlanScreen()))),
-      _TileData(Icons.record_voice_over, 'Preach to Me', const Color(0xFFD4A843),
-          () => Navigator.push(context,
-              FadeSlideRoute(page: const PreachTopicScreen()))),
+          () => pushSubRoute(context, widget.ref,
+              route: SubRoute.codex,
+              fadeSlide: false,
+              builder: (_) => const CodexScreen())),
+      _TileData(Icons.fact_check_rounded, 'Reading Plan',
+          const Color(0xFF6B5B95),
+          () => pushSubRoute(context, widget.ref,
+              route: SubRoute.readingPlan,
+              builder: (_) => const ReadingPlanScreen())),
+      _TileData(Icons.record_voice_over, 'Preach to Me',
+          const Color(0xFFD4A843),
+          () => pushSubRoute(context, widget.ref,
+              route: SubRoute.preachTopic,
+              builder: (_) => const PreachTopicScreen())),
     ];
 
     return Column(

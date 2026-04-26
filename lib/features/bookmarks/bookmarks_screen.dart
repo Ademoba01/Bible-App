@@ -46,7 +46,7 @@ class BookmarksScreen extends ConsumerWidget {
                     FilledButton.icon(
                       icon: const Icon(Icons.menu_book),
                       label: const Text('Start reading'),
-                      onPressed: () => ref.read(tabIndexProvider.notifier).state = 1,
+                      onPressed: () => ref.read(tabIndexProvider.notifier).set(1),
                     ),
                   ],
                 ),
@@ -70,7 +70,7 @@ class BookmarksScreen extends ConsumerWidget {
                       : () {
                           ref.read(readingLocationProvider.notifier).setBook(parsed.book);
                           ref.read(readingLocationProvider.notifier).setChapter(parsed.chapter);
-                          ref.read(tabIndexProvider.notifier).state = 1;
+                          ref.read(tabIndexProvider.notifier).set(1);
                         },
                 );
               },

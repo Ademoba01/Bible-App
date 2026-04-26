@@ -159,7 +159,7 @@ class _SimilarVersesScreenState extends ConsumerState<SimilarVersesScreen> {
                   ref.read(returnContextProvider.notifier).state = 'similar_verses';
                   ref.read(readingLocationProvider.notifier).setBook(verseRef.book);
                   ref.read(readingLocationProvider.notifier).setChapter(verseRef.chapter);
-                  ref.read(tabIndexProvider.notifier).state = 1;
+                  ref.read(tabIndexProvider.notifier).set(1);
                   Navigator.popUntil(context, (route) => route.isFirst);
                 },
               ),

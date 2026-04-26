@@ -143,7 +143,7 @@ class _StudyNotesScreenState extends ConsumerState<StudyNotesScreen> {
     final chapter = int.tryParse(match.group(2)!) ?? 1;
     ref.read(readingLocationProvider.notifier).setBook(book);
     ref.read(readingLocationProvider.notifier).setChapter(chapter);
-    ref.read(tabIndexProvider.notifier).state = 1; // switch to Read tab
+    ref.read(tabIndexProvider.notifier).set(1); // switch to Read tab
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 

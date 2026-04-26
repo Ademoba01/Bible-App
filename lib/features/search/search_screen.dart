@@ -195,7 +195,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               ref
                                   .read(highlightVerseProvider.notifier)
                                   .state = r.ref.verse;
-                              ref.read(tabIndexProvider.notifier).state = 1;
+                              ref.read(tabIndexProvider.notifier).set(1);
                               Navigator.pop(context);
                             },
                             onSimilar: () => Navigator.push(

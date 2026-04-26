@@ -314,7 +314,72 @@ final settingsProvider =
 });
 
 /// Bottom-nav tab index for the main shell.
-final tabIndexProvider = StateProvider<int>((ref) => 0);
+///
+/// Persists to SharedPreferences so a web page refresh — or an app
+/// cold-start on mobile — restores the user to the tab they were on.
+/// Without this, refreshing on Read/Study/Saved bounces back to Home,
+/// which feels like the app forgot what you were doing.
+class TabIndexNotifier extends StateNotifier<int> {
+  TabIndexNotifier(this._prefs) : super(_prefs?.getInt('tab_index') ?? 0);
+  final SharedPreferences? _prefs;
+
+  void set(int v) {
+    final clamped = v.clamp(0, 3);
+    state = clamped;
+    _prefs?.setInt('tab_index', clamped);
+  }
+}
+
+final tabIndexProvider =
+    StateNotifierProvider<TabIndexNotifier, int>((ref) {
+  final prefs = ref.watch(sharedPrefsProvider).asData?.value;
+  return TabIndexNotifier(prefs);
+});
+
+/// Sub-route names that get pushed on top of the bottom-nav shell.
+/// Persisted so a refresh while on (e.g.) Bible Maps reopens that screen
+/// after the home shell mounts. Add new routes here as they ship.
+enum SubRoute {
+  none,
+  maps,
+  codex,
+  prayer,
+  readingPlan,
+  preachTopic,
+  listen,
+}
+
+class LastSubRouteNotifier extends StateNotifier<SubRoute> {
+  LastSubRouteNotifier(this._prefs) : super(_load(_prefs));
+  final SharedPreferences? _prefs;
+
+  static SubRoute _load(SharedPreferences? prefs) {
+    final name = prefs?.getString('last_sub_route');
+    if (name == null) return SubRoute.none;
+    return SubRoute.values.firstWhere(
+      (r) => r.name == name,
+      orElse: () => SubRoute.none,
+    );
+  }
+
+  /// Mark this sub-route as the current one (call when navigating IN).
+  void enter(SubRoute r) {
+    state = r;
+    _prefs?.setString('last_sub_route', r.name);
+  }
+
+  /// Mark "no sub-route active" (call when popping back to the shell).
+  void clear() {
+    state = SubRoute.none;
+    _prefs?.remove('last_sub_route');
+  }
+}
+
+final lastSubRouteProvider =
+    StateNotifierProvider<LastSubRouteNotifier, SubRoute>((ref) {
+  final prefs = ref.watch(sharedPrefsProvider).asData?.value;
+  return LastSubRouteNotifier(prefs);
+});
 
 /// Convenience: current ThemeMode derived from settings.
 final themeModeProvider = Provider<ThemeMode>((ref) {

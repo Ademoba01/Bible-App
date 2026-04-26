@@ -156,7 +156,7 @@ class _MoodVersesSheetState extends ConsumerState<_MoodVersesSheet> {
         .read(readingLocationProvider.notifier)
         .setChapter(chapter);
     widget.parentRef.read(highlightVerseProvider.notifier).state = verse;
-    widget.parentRef.read(tabIndexProvider.notifier).state = 1;
+    widget.parentRef.read(tabIndexProvider.notifier).set(1);
     // Record this verse so future adaptive picks don't repeat it
     final svc = widget.parentRef.read(personalizationServiceProvider);
     svc.recordReadVerse(refId);

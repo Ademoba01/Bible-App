@@ -222,7 +222,7 @@ class _CrossReferencesSheet extends ConsumerWidget {
     ref.read(readingLocationProvider.notifier).setBook(target.book);
     ref.read(readingLocationProvider.notifier).setChapter(target.chapter);
     ref.read(highlightVerseProvider.notifier).state = target.verse;
-    ref.read(tabIndexProvider.notifier).state = 1; // Read tab
+    ref.read(tabIndexProvider.notifier).set(1); // Read tab
   }
 }
 

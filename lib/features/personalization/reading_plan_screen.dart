@@ -140,7 +140,7 @@ class _ReadingPlanScreenState extends ConsumerState<ReadingPlanScreen> {
     ref.read(readingLocationProvider.notifier).setBook(vref.book);
     ref.read(readingLocationProvider.notifier).setChapter(vref.chapter);
     ref.read(highlightVerseProvider.notifier).state = vref.verse;
-    ref.read(tabIndexProvider.notifier).state = 1;
+    ref.read(tabIndexProvider.notifier).set(1);
     if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
   }
 

@@ -307,7 +307,7 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
 
     ref.read(readingLocationProvider.notifier).setBook(book);
     ref.read(readingLocationProvider.notifier).setChapter(chapter);
-    ref.read(tabIndexProvider.notifier).state = 1;
+    ref.read(tabIndexProvider.notifier).set(1);
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 

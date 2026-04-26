@@ -66,7 +66,7 @@ class PlanDetailScreen extends ConsumerWidget {
                     // Navigate to the reading in the Read tab
                     ref.read(readingLocationProvider.notifier).setBook(reading.book);
                     ref.read(readingLocationProvider.notifier).setChapter(reading.chapter);
-                    ref.read(tabIndexProvider.notifier).state = 1;
+                    ref.read(tabIndexProvider.notifier).set(1);
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                 );
