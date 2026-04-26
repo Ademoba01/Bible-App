@@ -689,15 +689,16 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
             minZoom: 2,
             maxZoom: 18,
             interactionOptions: const InteractionOptions(
-              // InteractiveFlag.all already includes pinchZoom + pinchMove
-              // + drag + flingAnimation + doubleTapZoom + scrollWheelZoom.
-              // We add multi-finger gesture race so pinch is recognized
-              // unambiguously even when a finger lands a fraction of a
-              // millisecond before the other (common on tablets).
-              flags: InteractiveFlag.all,
+              // Disable rotation entirely. Bible maps don't benefit from
+              // rotated geography, and rotation gestures fight pinch
+              // even with `enableMultiFingerGestureRace`. With rotate
+              // off, pinch wins every two-finger gesture cleanly.
+              flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
               enableMultiFingerGestureRace: true,
-              pinchZoomThreshold: 0.4, // more responsive pinch detection
-              rotationThreshold: 20.0, // require deliberate rotation
+              // Very low threshold = recognize pinch as soon as the
+              // user pinches even a few percent. Default is 0.5 which
+              // is too high for users with non-touchscreen sims.
+              pinchZoomThreshold: 0.1,
             ),
           ),
           children: [
