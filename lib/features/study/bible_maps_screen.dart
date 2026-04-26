@@ -30,6 +30,26 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
   /// null => show all eras; otherwise filter to selected era.
   BiblicalEra? _selectedEra;
 
+  /// Testament filter: null => Both, true => OT only, false => NT only.
+  /// Cuts horizontally across all eras for a coarser/clearer first cut.
+  bool? _onlyOldTestament;
+
+  /// OT eras: any era from creation through the prophetic books.
+  /// NT eras: Jesus + early church + Revelation.
+  static const _otEras = {
+    BiblicalEra.patriarchs,
+    BiblicalEra.exodus,
+    BiblicalEra.conquest,
+    BiblicalEra.kingdom,
+    BiblicalEra.exile,
+    BiblicalEra.prophets,
+  };
+  static const _ntEras = {
+    BiblicalEra.jesus,
+    BiblicalEra.earlyChurch,
+    BiblicalEra.revelation,
+  };
+
   bool _satelliteView = false;
 
   // ── Journey playback ──────────────────────────────────────────
@@ -74,12 +94,20 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
 
   List<BiblicalPlace> get _visiblePlaces {
     if (_selectedJourney != null) return _selectedJourney!.stops;
+    Iterable<BiblicalPlace> base = kBiblicalPlaces;
+    // Era filter (more specific) takes precedence over the testament
+    // toggle when both are set — selecting a specific era implies you
+    // already chose its testament.
     if (_selectedEra != null) {
-      return kBiblicalPlaces
-          .where((p) => p.eras.contains(_selectedEra))
-          .toList();
+      base = base.where((p) => p.eras.contains(_selectedEra));
+    } else if (_onlyOldTestament != null) {
+      // Testament filter: include a place if ANY of its eras belongs to
+      // the chosen testament. Locations like Jerusalem (which span both)
+      // appear under both filters — no false exclusions.
+      final filterSet = _onlyOldTestament! ? _otEras : _ntEras;
+      base = base.where((p) => p.eras.any(filterSet.contains));
     }
-    return kBiblicalPlaces;
+    return base.toList();
   }
 
   void _selectJourney(BiblicalJourney? journey) {
@@ -362,21 +390,95 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
     return Container(
       width: double.infinity,
       color: _darkBrown,
-      padding: const EdgeInsets.only(top: 4, bottom: 4),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(
-          children: [
-            _buildEraChip(null, 'All Eras', '📖'),
-            const SizedBox(width: 6),
-            ...BiblicalEra.values.map((era) => Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child:
-                      _buildEraChip(era, era.label, era.emoji),
-                )),
-          ],
+      padding: const EdgeInsets.only(top: 6, bottom: 6),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Testament toggle — coarser cut above the per-era chips. Choosing
+          // OT or NT auto-clears any selected era. Picking a specific era
+          // below takes precedence (era filter is more specific).
+          _buildTestamentToggle(),
+          const SizedBox(height: 6),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                _buildEraChip(null, 'All Eras', '📖'),
+                const SizedBox(width: 6),
+                ...BiblicalEra.values.map((era) => Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: _buildEraChip(era, era.label, era.emoji),
+                    )),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Three-way toggle: Both | Old Testament | New Testament.
+  /// Filters places horizontally (any place whose era set intersects
+  /// the chosen testament shows up). Tapping any segment clears the
+  /// selectedEra so the testament filter is what's actually active.
+  Widget _buildTestamentToggle() {
+    Widget seg(String label, bool? value, String emoji) {
+      final selected = _onlyOldTestament == value;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              _onlyOldTestament = value;
+              _selectedEra = null;
+              _selectedJourney = null;
+            });
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+            padding: const EdgeInsets.symmetric(vertical: 7),
+            decoration: BoxDecoration(
+              color: selected
+                  ? _goldAccent.withValues(alpha: 0.85)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: selected
+                    ? _goldAccent
+                    : _goldAccent.withValues(alpha: 0.25),
+                width: selected ? 1.4 : 0.6,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 14)),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: selected ? _darkBrown : _parchment,
+                    fontSize: 12,
+                    fontWeight:
+                        selected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          seg('Both', null, '📚'),
+          seg('Old Testament', true, '📜'),
+          seg('New Testament', false, '✝️'),
+        ],
       ),
     );
   }
@@ -536,10 +638,18 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
           options: MapOptions(
             initialCenter: LatLng(31.7683, 35.2137),
             initialZoom: 6,
-            minZoom: 3,
+            minZoom: 2,
             maxZoom: 18,
             interactionOptions: const InteractionOptions(
+              // InteractiveFlag.all already includes pinchZoom + pinchMove
+              // + drag + flingAnimation + doubleTapZoom + scrollWheelZoom.
+              // We add multi-finger gesture race so pinch is recognized
+              // unambiguously even when a finger lands a fraction of a
+              // millisecond before the other (common on tablets).
               flags: InteractiveFlag.all,
+              enableMultiFingerGestureRace: true,
+              pinchZoomThreshold: 0.4, // more responsive pinch detection
+              rotationThreshold: 20.0, // require deliberate rotation
             ),
           ),
           children: [
