@@ -173,7 +173,7 @@ class AppSettings {
     this.kidsMode = false,
     this.onboarded = false,
     this.voiceName = '',
-    this.speechRate = 0.69,
+    this.speechRate = 0.38,
     this.aiMode = AiMode.auto,
     this.geminiApiKey = '',
   });
@@ -224,7 +224,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
           kidsMode: _prefs?.getBool('kidsMode') ?? false,
           onboarded: _prefs?.getBool('onboarded') ?? false,
           voiceName: _prefs?.getString('voiceName') ?? '',
-          speechRate: _prefs?.getDouble('speechRate') ?? 0.69,
+          speechRate: _prefs?.getDouble('speechRate') ?? 0.38,
           aiMode: AiMode.values.firstWhere(
             (e) => e.name == (_prefs?.getString('aiMode') ?? ''),
             orElse: () => AiMode.auto,

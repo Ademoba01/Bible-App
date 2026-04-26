@@ -28,9 +28,11 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
   final FlutterTts _tts = FlutterTts();
   bool _playing = false;
   bool _paused = false;
-  // 0.0–1.0 flutter_tts range. 0.69 ≈ 1.4× narration speed (default).
-  // Loaded from settings on initState; persisted via settingsProvider.setSpeechRate.
-  double _speechRate = 0.69;
+  // 0.0–1.0 flutter_tts range. 0.38 ≈ 0.75× narration speed (default).
+  // Slow, contemplative pace ideal for Scripture comprehension. Users
+  // can bump it up via the speed picker; their choice persists across
+  // sessions via settingsProvider.setSpeechRate.
+  double _speechRate = 0.38;
   List<Verse> _verses = [];
   int _currentVerseIndex = 0;
   int _resumeFromVerse = 0; // track where to resume after pause or speed change
@@ -113,7 +115,15 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
 
   @override
   void dispose() {
-    _tts.stop();
+    // Background narration: do NOT stop TTS on screen pop. The user can
+    // navigate to Read / Codex / Maps / etc. and the audio keeps flowing.
+    // To actually halt narration, the user uses the Stop button or
+    // skip-prev/next which all explicitly call _tts.stop().
+    //
+    // Caveat: the play loop's session counter and pulse animation are
+    // tied to THIS State instance, so when the user revisits the Listen
+    // screen the controls won't reflect the in-flight playback. The mini-
+    // player overlay (next iteration) will surface controls globally.
     _scrollController.dispose();
     _pulseController.dispose();
     super.dispose();

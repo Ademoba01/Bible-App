@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -85,10 +86,31 @@ class BibleApp extends ConsumerWidget {
       title: 'Rhema Study Bible',
       debugShowCheckedModeBanner: false,
       theme: theme,
+      // Accept drag scrolls from ALL pointer devices: touch (default),
+      // trackpad, mouse, stylus, invertedStylus. Without this, the iOS
+      // simulator + macOS web only accept touch — so a mouse click-drag
+      // does nothing and "scroll doesn't work" on iOS sim.
+      scrollBehavior: const _AllPointersScrollBehavior(),
       home: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         child: home,
       ),
     );
   }
+}
+
+/// Allows scroll-by-drag from every pointer device, not just touch.
+/// This is the standard fix for "scroll doesn't work" on macOS desktop
+/// + iOS Simulator with a mouse.
+class _AllPointersScrollBehavior extends MaterialScrollBehavior {
+  const _AllPointersScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => const {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.invertedStylus,
+      };
 }
