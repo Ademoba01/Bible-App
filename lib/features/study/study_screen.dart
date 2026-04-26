@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../data/reading_plans.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import 'chronology_screen.dart';
 import 'create_plan_screen.dart';
 import 'plan_detail_screen.dart';
 import 'bible_maps_screen.dart';
@@ -191,6 +192,29 @@ class StudyScreen extends ConsumerWidget {
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (_) => const BibleMapsScreen(),
+                  ));
+                },
+              ),
+            ),
+          ),
+
+          // Bible Timeline — chronological tour from Creation to Revelation.
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                MediaQuery.of(context).size.width < 400 ? 12 : 20,
+                16,
+                MediaQuery.of(context).size.width < 400 ? 12 : 20,
+                0,
+              ),
+              child: _StudyToolCard(
+                isDark: isDark,
+                emoji: '\u{1F4DC}', // 📜
+                title: 'Bible Timeline',
+                subtitle: 'Walk through Scripture in order',
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const ChronologyScreen(),
                   ));
                 },
               ),
