@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -96,6 +98,32 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
     // engine defaults to a non-English locale, English Scripture would
     // mispronounce. setVoice() in _play() may override per user choice.
     _tts.setLanguage('en-US');
+
+    // ── iOS audio session config — much better narration quality ──
+    // By default flutter_tts on iOS uses the `ambient` audio category, which
+    // is meant for non-essential UI sound effects. iOS down-samples and
+    // applies aggressive DSP to ambient audio so it doesn't compete with the
+    // user's media. For Bible narration that means muffled, low-bitrate
+    // output — what users perceive as "low quality."
+    //
+    // The fix: opt into the `playback` category + `spokenAudio` mode. iOS
+    // then routes through the higher-quality audio path (full 48kHz, no
+    // aggressive compression). `mixWithOthers` + `duckOthers` plays nicely
+    // with podcasts/music — those duck while we narrate, restore on pause.
+    // `setSharedInstance(true)` is required for any AVAudioSession changes
+    // to take effect; otherwise flutter_tts uses a private session that
+    // ignores category requests.
+    if (!kIsWeb && Platform.isIOS) {
+      _tts.setSharedInstance(true);
+      _tts.setIosAudioCategory(
+        IosTextToSpeechAudioCategory.playback,
+        [
+          IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+          IosTextToSpeechAudioCategoryOptions.duckOthers,
+        ],
+        IosTextToSpeechAudioMode.spokenAudio,
+      );
+    }
 
     // Word-level karaoke. flutter_tts' progress handler fires once per
     // spoken word on iOS/Android/Web. We just count — the display side
@@ -253,7 +281,23 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
     final verses = ch.verses;
 
     final settings = ref.read(settingsProvider);
-    final voiceName = settings.voiceName;
+    var voiceName = settings.voiceName;
+    // ── Auto-prefer Premium voices on first ever play ──
+    // When voiceName is empty, the OS picks the default voice — on iOS that
+    // tends to be `Samantha` (compact), which sounds robotic compared to
+    // `Ava` / `Zoe` / `Daniel` (Premium neural voices, ~100MB each, must
+    // be downloaded by the user via Settings → Accessibility → Spoken
+    // Content → Voices). If a Premium voice is already on the device, use
+    // it. Persists the choice so users see the picked voice in Settings.
+    if (voiceName.isEmpty) {
+      final picked = await _autoPickPremiumVoice();
+      if (picked != null) {
+        voiceName = picked;
+        await ref
+            .read(settingsProvider.notifier)
+            .setVoiceName(picked);
+      }
+    }
     if (voiceName.isNotEmpty) {
       await _tts.setVoice({"name": voiceName, "locale": "en-US"});
     }
@@ -362,6 +406,62 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
         _paused = false;
         _spokenWordIndex = -1;
       });
+    }
+  }
+
+  /// On first play, scan the OS-installed voices and pick the highest-
+  /// quality English voice available — strongly preferring Apple's Premium
+  /// neural voices (Ava, Zoe, Daniel, Karen) over the default compact
+  /// `Samantha`. Returns the voice name to persist, or null if no upgrade
+  /// is available (user keeps the OS default).
+  ///
+  /// Quality ranking (best → worst):
+  ///   1. premium.* (Apple neural ~100MB, must be user-downloaded)
+  ///   2. enhanced.* (Apple HQ ~50MB, often pre-installed on newer iOS)
+  ///   3. Google's Network voices on Android
+  ///   4. compact (default, robotic)
+  Future<String?> _autoPickPremiumVoice() async {
+    try {
+      final raw = await _tts.getVoices;
+      if (raw is! List) return null;
+      // Each voice is {"name": "...", "locale": "en-US", "quality": "..."}
+      // on Android; iOS just gives name + locale, but the quality tier is
+      // encoded in the name (com.apple.voice.premium.* / .enhanced.*).
+      final voices = raw
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .where((v) {
+        final loc = (v['locale'] ?? '').toString().toLowerCase();
+        return loc.startsWith('en');
+      }).toList();
+
+      String? bestMatch;
+      int bestRank = -1;
+      for (final v in voices) {
+        final name = (v['name'] ?? '').toString();
+        final low = name.toLowerCase();
+        int rank;
+        if (low.contains('premium')) {
+          rank = 4;
+        } else if (low.contains('enhanced') || low.contains('siri')) {
+          rank = 3;
+        } else if (low.contains('network') || low.contains('neural')) {
+          rank = 2;
+        } else if (low.contains('compact')) {
+          rank = 0;
+        } else {
+          rank = 1;
+        }
+        if (rank > bestRank) {
+          bestRank = rank;
+          bestMatch = name;
+        }
+      }
+      // Only return if we found something better than compact (rank ≥ 2).
+      // Otherwise keeping the OS default is fine — no point persisting
+      // "Samantha" which would just match the implicit default anyway.
+      return bestRank >= 2 ? bestMatch : null;
+    } catch (e) {
+      return null;
     }
   }
 
