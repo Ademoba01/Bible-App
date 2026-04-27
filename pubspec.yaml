@@ -29,6 +29,7 @@ dependencies:
   url_launcher: ^6.2.0
   lottie: ^3.1.2                # JSON-driven micro-animations (celebrations, transitions)
   image: ^4.1.7                 # PNG/GIF encode for animated 9:16 story export
+  android_intent_plus: ^5.0.0   # Deep-link to Android TTS_SETTINGS for free voice upgrade
   # Promoted from dev_dependencies because newer Flutter releases (3.41+)
   # generate Android plugin registrant entries for ANY plugin with an
   # Android pluginClass — including dev_dependencies. The registrant

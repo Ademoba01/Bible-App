@@ -199,7 +199,7 @@
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
-				9E7DD725EFEE708CB6522F7A /* [Rhema] Strip xattr before Embed Frameworks */,
+				3F630437B72FE83CA5889E74 /* [Rhema] Strip xattr before Embed Frameworks */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				2C7EFFE60519623032535887 /* [CP] Embed Pods Frameworks */,
@@ -329,6 +329,25 @@
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
 		};
+		3F630437B72FE83CA5889E74 /* [Rhema] Strip xattr before Embed Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Rhema] Strip xattr before Embed Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Strips com.apple.FinderInfo / resource forks from every\n# framework + privacy bundle in the build output BEFORE Xcode's\n# \"Embed Pods Frameworks\" phase rsyncs them into Runner.app and\n# codesigns each one. macOS file providers (iCloud Drive,\n# Dropbox, etc.) re-attach the xattr mid-build, which makes\n# `codesign --generate-entitlement-der` refuse with \"resource\n# fork, Finder information, or similar detritus not allowed\".\n#\n# This phase is positioned BEFORE the Embed Pods Frameworks\n# phase by the Podfile post_install Ruby below, so cleanup\n# happens at the right moment. Idempotent + safe.\nBUILD_DIR_ROOT=\"${BUILD_DIR:-${TARGET_BUILD_DIR}}\"\nfind \"${BUILD_DIR_ROOT}\" -name \"*.framework\" -exec xattr -cr {} \\; 2>/dev/null || true\nfind \"${BUILD_DIR_ROOT}\" -name \"*_Privacy.bundle\" -exec xattr -cr {} \\; 2>/dev/null || true\nfind \"${TARGET_BUILD_DIR}\" -name \"*.framework\" -exec xattr -cr {} \\; 2>/dev/null || true\nfind \"${TARGET_BUILD_DIR}\" -name \"*_Privacy.bundle\" -exec xattr -cr {} \\; 2>/dev/null || true\n# Also clean any *.framework dir that already exists inside the\n# in-progress Runner.app, in case Xcode re-uses partial outputs.\nAPP_PATH=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME:-${PRODUCT_NAME}.app}\"\nif [ -d \"${APP_PATH}\" ]; then\n  find \"${APP_PATH}\" -name \"*.framework\" -exec xattr -cr {} \\; 2>/dev/null || true\n  find \"${APP_PATH}\" -name \"*_Privacy.bundle\" -exec xattr -cr {} \\; 2>/dev/null || true\n  xattr -cr \"${APP_PATH}\" 2>/dev/null || true\nfi\nexit 0\n";
+		};
 		7D0ACC0CB12C72AEA0AB2C32 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -365,25 +384,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
-		};
-		9E7DD725EFEE708CB6522F7A /* [Rhema] Strip xattr before Embed Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "[Rhema] Strip xattr before Embed Frameworks";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Strips com.apple.FinderInfo / resource forks from every\n# framework + privacy bundle in the build output BEFORE Xcode's\n# \"Embed Pods Frameworks\" phase rsyncs them into Runner.app and\n# codesigns each one. macOS file providers (iCloud Drive,\n# Dropbox, etc.) re-attach the xattr mid-build, which makes\n# `codesign --generate-entitlement-der` refuse with \"resource\n# fork, Finder information, or similar detritus not allowed\".\n#\n# This phase is positioned BEFORE the Embed Pods Frameworks\n# phase by the Podfile post_install Ruby below, so cleanup\n# happens at the right moment. Idempotent + safe.\nBUILD_DIR_ROOT=\"${BUILD_DIR:-${TARGET_BUILD_DIR}}\"\nfind \"${BUILD_DIR_ROOT}\" -name \"*.framework\" -exec xattr -cr {} \\; 2>/dev/null || true\nfind \"${BUILD_DIR_ROOT}\" -name \"*_Privacy.bundle\" -exec xattr -cr {} \\; 2>/dev/null || true\nfind \"${TARGET_BUILD_DIR}\" -name \"*.framework\" -exec xattr -cr {} \\; 2>/dev/null || true\nfind \"${TARGET_BUILD_DIR}\" -name \"*_Privacy.bundle\" -exec xattr -cr {} \\; 2>/dev/null || true\n# Also clean any *.framework dir that already exists inside the\n# in-progress Runner.app, in case Xcode re-uses partial outputs.\nAPP_PATH=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME:-${PRODUCT_NAME}.app}\"\nif [ -d \"${APP_PATH}\" ]; then\n  find \"${APP_PATH}\" -name \"*.framework\" -exec xattr -cr {} \\; 2>/dev/null || true\n  find \"${APP_PATH}\" -name \"*_Privacy.bundle\" -exec xattr -cr {} \\; 2>/dev/null || true\n  xattr -cr \"${APP_PATH}\" 2>/dev/null || true\nfi\nexit 0\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
