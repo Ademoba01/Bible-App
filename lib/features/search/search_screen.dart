@@ -51,7 +51,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final repo = ref.read(bibleRepositoryProvider);
     final tid = ref.read(settingsProvider).translation;
 
-    // 1) Local token-based search first (fast)
+    // 1) Local token-based search first (fast). Repo.search() now has a
+    //    reference-detection fast path — for queries like "2 Thess 2:11"
+    //    it returns the exact verse instantly without scanning all 66
+    //    books × every verse × 3 translations like before.
     final localHits = await repo.search(q, translationId: tid);
     final combined = localHits
         .map((r) => (
@@ -68,9 +71,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _results = combined;
     });
 
-    // 2) Always ask AI for its interpretation + additional matches (runs in parallel).
-    //    For strong local hits (>=5), AI only adds overview + backfills any missing verses.
-    //    For weak/no hits, AI becomes the primary source.
+    // Reference-detection: skip AI entirely for explicit verse-reference
+    // queries. The user typed "Rom 8:28" because they want THAT verse —
+    // not AI commentary or related verses. Round-tripping to AI for an
+    // exact reference makes the search feel slow for no benefit. If they
+    // want context they can tap the verse → "Find similar" / "Cross-
+    // references" / "Original language" actions. Pattern matches
+    // "Book Ch:Vs" loosely (allows "1 John 3:16", "Rom 8:28", "Ps 23:1").
+    final refRe =
+        RegExp(r'^\s*(?:[1-3]\s+)?[A-Za-z. ]+?\s+\d+:\d+\s*$');
+    if (refRe.hasMatch(q)) return;
+
+    // 2) Otherwise ask AI for its interpretation + additional matches.
+    //    For strong local hits (>=5), AI only adds overview + backfills
+    //    any missing verses. For weak/no hits, AI becomes the primary
+    //    source.
     if (!AiService.isAvailable) return;
     setState(() => _aiLoading = true);
     final aiResult = await AiService.searchWithAI(q);

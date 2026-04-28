@@ -303,22 +303,46 @@ class BibleRepository {
     final q = query.trim().toLowerCase();
     if (q.isEmpty) return const [];
 
+    // ── Fast path: reference lookup ──
+    // If the query parses as a verse reference (e.g. "2 Thessalonians
+    // 2:11", "Rom 8:28", "Ps 23:1"), return that verse immediately.
+    // Without this, the search did a token scan that returned greetings
+    // mentioning "Thessalonians" instead of the actual verse, AND took
+    // 30+ seconds because it walks every book × every verse × 3
+    // translations before giving up. The lookup uses the cached book
+    // load — typical response time <50ms even on the first query of
+    // the session.
+    final refHit =
+        await lookupReference(query, translationId: translationId);
+    if (refHit != null) {
+      return [(ref: refHit.ref, text: refHit.text)];
+    }
+
     final queryTokens = _tokenize(q);
     final searchTerms = _expandQuery(q);
 
     final ranked = <({VerseRef ref, String text, int rank, double score})>[];
     final seenIds = <String>{};
 
-    // Search primary translation first, then fall back to KJV + WEB for broader coverage
-    final translationsToSearch = <String>{translationId};
-    if (translationId != 'web') translationsToSearch.add('web');
-    if (translationId != 'kjv') translationsToSearch.add('kjv');
+    // Primary translation first. Only fall back to WEB/KJV when the
+    // primary returns zero hits — previously we always scanned all
+    // three translations even when the user's chosen translation had
+    // strong matches, ~tripling cold-search latency for no benefit.
+    await _searchTranslationRanked(
+      translationId, q, queryTokens, searchTerms, ranked, seenIds, limit,
+    );
 
-    for (final tid in translationsToSearch) {
-      if (ranked.length >= limit) break;
-      await _searchTranslationRanked(
-        tid, q, queryTokens, searchTerms, ranked, seenIds, limit,
-      );
+    if (ranked.isEmpty) {
+      // No hits in user's translation — broaden to common fallbacks.
+      final fallbacks = <String>{};
+      if (translationId != 'web') fallbacks.add('web');
+      if (translationId != 'kjv') fallbacks.add('kjv');
+      for (final tid in fallbacks) {
+        if (ranked.length >= limit) break;
+        await _searchTranslationRanked(
+          tid, q, queryTokens, searchTerms, ranked, seenIds, limit,
+        );
+      }
     }
 
     // Sort: lower rank (better) first, higher score (better) second

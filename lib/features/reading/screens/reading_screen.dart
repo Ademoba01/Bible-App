@@ -108,6 +108,169 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
     setState(() => _backChipVisible = true);
   }
 
+  /// In-read translation picker. Opens a tidy bottom sheet listing every
+  /// available translation grouped by Local (offline) vs Online. Tapping
+  /// a row updates settingsProvider.translation, which causes the
+  /// `currentBookChaptersProvider` watcher in [build] to re-fetch the
+  /// chapters in the chosen translation — same flow as Settings →
+  /// Translation, just one tap away from the read screen.
+  Future<void> _showTranslationPicker(BuildContext context) async {
+    final theme = Theme.of(context);
+    final current = ref.read(settingsProvider).translation;
+    final available = kTranslations.where((t) => t.available).toList();
+    final local = available.where((t) => t.isLocal).toList();
+    final online = available.where((t) => !t.isLocal).toList();
+
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) {
+        Widget tile(Translation t) {
+          final isCurrent = t.id == current;
+          return ListTile(
+            leading: Icon(
+              isCurrent ? Icons.check_circle : Icons.menu_book_rounded,
+              color:
+                  isCurrent ? BrandColors.gold : BrandColors.brownMid,
+            ),
+            title: Text(
+              t.name,
+              style: GoogleFonts.lora(
+                fontWeight:
+                    isCurrent ? FontWeight.w700 : FontWeight.w500,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+            subtitle: Text(
+              t.description,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.lora(
+                fontSize: 12,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: t.isLocal
+                ? Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color:
+                          BrandColors.gold.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Offline',
+                      style: GoogleFonts.lora(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: BrandColors.brownDeep,
+                      ),
+                    ),
+                  )
+                : null,
+            onTap: () => Navigator.pop(sheetCtx, t.id),
+          );
+        }
+
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.7,
+          minChildSize: 0.4,
+          maxChildSize: 0.92,
+          builder: (_, scrollController) => ListView(
+            controller: scrollController,
+            padding: const EdgeInsets.only(bottom: 24),
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 10, bottom: 4),
+                child: Center(
+                  child: Container(
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: BrandColors.brownMid.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                child: Text(
+                  'Switch translation',
+                  style: GoogleFonts.cormorantGaramond(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                child: Text(
+                  'Local translations work offline. Online ones need a connection but cover more languages.',
+                  style: GoogleFonts.lora(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              if (local.isNotEmpty) ...[
+                Padding(
+                  padding:
+                      const EdgeInsets.fromLTRB(20, 8, 20, 4),
+                  child: Text('Offline',
+                      style: GoogleFonts.lora(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: BrandColors.brownMid,
+                      )),
+                ),
+                ...local.map(tile),
+              ],
+              if (online.isNotEmpty) ...[
+                Padding(
+                  padding:
+                      const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                  child: Text('Online',
+                      style: GoogleFonts.lora(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: BrandColors.brownMid,
+                      )),
+                ),
+                ...online.map(tile),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+
+    if (picked != null && picked != current && mounted) {
+      await ref
+          .read(settingsProvider.notifier)
+          .setTranslation(picked);
+      HapticFeedback.lightImpact();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('Switched to ${translationById(picked).name}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
   void _dismissBackChip() {
     setState(() => _backChipVisible = false);
     ref.read(returnContextProvider.notifier).state = null;
@@ -238,6 +401,9 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                   context,
                   FadeSlideRoute(page: const ListenScreen()),
                 ),
+                translationId: ref.watch(
+                    settingsProvider.select((s) => s.translation)),
+                onPickTranslation: () => _showTranslationPicker(context),
                 scholarMode: ref.watch(
                     settingsProvider.select((s) => s.scholarMode)),
                 onToggleScholar: () {
@@ -1492,6 +1658,8 @@ class _ChapterBar extends StatelessWidget {
     required this.onListen,
     required this.scholarMode,
     required this.onToggleScholar,
+    required this.translationId,
+    required this.onPickTranslation,
   });
 
   final String book;
@@ -1509,6 +1677,14 @@ class _ChapterBar extends StatelessWidget {
   /// learn what just happened. Persistent on-screen affordance => the most
   /// important discoverability fix from the UX review.
   final VoidCallback onToggleScholar;
+  /// Currently selected Bible translation id (e.g. "kjv", "web", "BSB").
+  /// Drives the label on the translation chip in the bar.
+  final String translationId;
+  /// Opens the translation picker. The user could already do this via
+  /// Settings → Translation, but that's 3 taps from the read screen and
+  /// most users want quick A/B comparison while reading. This shortcut
+  /// lands them on the picker in one tap.
+  final VoidCallback onPickTranslation;
 
   @override
   Widget build(BuildContext context) {
@@ -1594,6 +1770,50 @@ class _ChapterBar extends StatelessWidget {
               ),
             ),
           ),
+          // ── Translation switcher ──
+          // Prominent chip that shows the current translation (KJV, WEB,
+          // NIV, etc.) and opens the picker on tap. Previously users had
+          // to dive into Settings → Translation to switch — now it's a
+          // one-tap action while reading. Useful for A/B comparing
+          // translations on the same verse, which preachers and study-
+          // group leaders do constantly.
+          InkWell(
+            onTap: onPickTranslation,
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: BrandColors.gold.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: BrandColors.gold.withValues(alpha: 0.45),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.menu_book_rounded,
+                      size: 13, color: BrandColors.brownDeep),
+                  const SizedBox(width: 4),
+                  Text(
+                    translationById(translationId).name,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.3,
+                      color: BrandColors.brownDeep,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(Icons.unfold_more,
+                      size: 14, color: BrandColors.brownDeep),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
           IconButton(
             icon: const Icon(Icons.chevron_right),
             tooltip: 'Next chapter',
