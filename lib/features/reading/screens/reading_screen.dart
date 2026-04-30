@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../data/models.dart';
+import '../../../data/redletter_service.dart';
 import '../../../data/strongs_service.dart';
 import '../../../data/translations.dart';
 import '../../../state/codex_provider.dart';
@@ -709,10 +710,17 @@ class _VerseListState extends State<_VerseList> {
     required double fontSize,
     required bool scholarMode,
     required List<StrongsWord> strongs,
+    required RedLetterEntry redLetter,
+    required bool redLetterMode,
+    required bool blueLetterMode,
     TextStyle? baseStyle,
     String? skipFirstLetter, // e.g. "I" — already rendered as the drop-cap
   }) {
-    if (!scholarMode || strongs.isEmpty) {
+    final hasRedLetters = redLetterMode && redLetter.red.isNotEmpty;
+    final hasBlueLetters = blueLetterMode && redLetter.blue.isNotEmpty;
+    final hasColor = hasRedLetters || hasBlueLetters;
+
+    if (!scholarMode && !hasColor) {
       // Fast path — single span exactly like the old code.
       final text = skipFirstLetter == null
           ? verse.text
@@ -724,28 +732,73 @@ class _VerseListState extends State<_VerseList> {
     // the visible verse text. Multiple words can share a Strong's number; we
     // pop from the queue per surface form to honour reading order.
     final queues = <String, List<StrongsWord>>{};
-    for (final w in strongs) {
-      final key = _surfaceKey(w.word);
-      if (key.isEmpty) continue;
-      queues.putIfAbsent(key, () => []).add(w);
+    if (scholarMode) {
+      for (final w in strongs) {
+        final key = _surfaceKey(w.word);
+        if (key.isEmpty) continue;
+        queues.putIfAbsent(key, () => []).add(w);
+      }
     }
 
-    // Tokenise the verse, preserving whitespace and punctuation as separate
-    // non-tappable spans. We use a regex that captures runs of letters and
-    // apostrophes as one token; everything else (whitespace + punctuation)
-    // is interleaved as plain text.
+    // Walk the verse as whitespace-delimited words to match the build-time
+    // tokenization in scripts/build_redletter.py. Word indices are 0-based
+    // and ALWAYS counted from the start of verse.text, not the skipped-
+    // drop-cap variant — so the lookup table aligns regardless of whether
+    // the drop cap is omitted from this render.
+    final fullText = verse.text;
     final raw = skipFirstLetter == null
-        ? verse.text
-        : (verse.text.length > 1 ? verse.text.substring(1) : '');
+        ? fullText
+        : (fullText.length > 1 ? fullText.substring(1) : '');
+    // Offset between full and rendered text (1 char if drop cap skipped).
+    final renderOffset = skipFirstLetter == null ? 0 : 1;
+
+    // Pre-compute word index at each character of fullText. Whitespace runs
+    // share the index of the previous word; this matches the build script.
+    final wordIdxAtChar = List<int>.filled(fullText.length + 1, 0);
+    int wIdx = -1;
+    bool inWord = false;
+    for (int i = 0; i < fullText.length; i++) {
+      final isSpace = fullText[i] == ' ' || fullText[i] == '\n' || fullText[i] == '\t';
+      if (!isSpace && !inWord) {
+        wIdx += 1;
+        inWord = true;
+      } else if (isSpace) {
+        inWord = false;
+      }
+      wordIdxAtChar[i] = wIdx < 0 ? 0 : wIdx;
+    }
+    wordIdxAtChar[fullText.length] = wIdx < 0 ? 0 : wIdx;
+
+    Color? colorFor(int charInRaw) {
+      if (!hasColor) return null;
+      final fullChar = charInRaw + renderOffset;
+      if (fullChar < 0 || fullChar >= wordIdxAtChar.length) return null;
+      final w = wordIdxAtChar[fullChar];
+      if (hasRedLetters && redLetter.isRed(w)) return BrandColors.redLetter;
+      if (hasBlueLetters && redLetter.isBlue(w)) return BrandColors.blueLetter;
+      return null;
+    }
+
     final spans = <InlineSpan>[];
     final tokenRe = RegExp(r"[A-Za-z][A-Za-z'’]*");
 
     int cursor = 0;
     for (final m in tokenRe.allMatches(raw)) {
       if (m.start > cursor) {
-        spans.add(TextSpan(text: raw.substring(cursor, m.start), style: baseStyle));
+        // Punctuation/whitespace between tokens — split character-by-
+        // character so each char picks up the color of its own word.
+        for (int c = cursor; c < m.start; c++) {
+          final color = colorFor(c);
+          spans.add(TextSpan(
+            text: raw.substring(c, c + 1),
+            style: color == null
+                ? baseStyle
+                : (baseStyle ?? const TextStyle()).copyWith(color: color),
+          ));
+        }
       }
       final tok = m.group(0)!;
+      final tokColor = colorFor(m.start);
       final key = _surfaceKey(tok);
       final queue = queues[key];
       StrongsWord? hit;
@@ -753,10 +806,13 @@ class _VerseListState extends State<_VerseList> {
         hit = queue.removeAt(0);
       }
 
+      var tokStyle = baseStyle ?? const TextStyle();
+      if (tokColor != null) tokStyle = tokStyle.copyWith(color: tokColor);
+
       if (hit != null && hit.strongs != null) {
         spans.add(TextSpan(
           text: tok,
-          style: (baseStyle ?? const TextStyle()).copyWith(
+          style: tokStyle.copyWith(
             decoration: TextDecoration.underline,
             decorationColor: BrandColors.gold.withValues(alpha: 0.45),
             decorationThickness: 1.2,
@@ -767,12 +823,21 @@ class _VerseListState extends State<_VerseList> {
           }),
         ));
       } else {
-        spans.add(TextSpan(text: tok, style: baseStyle));
+        spans.add(TextSpan(text: tok, style: tokStyle));
       }
       cursor = m.end;
     }
     if (cursor < raw.length) {
-      spans.add(TextSpan(text: raw.substring(cursor), style: baseStyle));
+      // Trailing punctuation/whitespace.
+      for (int c = cursor; c < raw.length; c++) {
+        final color = colorFor(c);
+        spans.add(TextSpan(
+          text: raw.substring(c, c + 1),
+          style: color == null
+              ? baseStyle
+              : (baseStyle ?? const TextStyle()).copyWith(color: color),
+        ));
+      }
     }
     return spans;
   }
@@ -997,10 +1062,18 @@ class _VerseListState extends State<_VerseList> {
     final isDark = theme.brightness == Brightness.dark;
     final highlights = ref.watch(highlightsProvider);
     final scholarMode = ref.watch(settingsProvider.select((s) => s.scholarMode));
+    final redLetterMode =
+        ref.watch(settingsProvider.select((s) => s.redLetterMode));
+    final blueLetterMode =
+        ref.watch(settingsProvider.select((s) => s.blueLetterMode));
     // Trigger Strong's load in the background as soon as Scholar Mode is on.
     if (scholarMode) {
       ref.watch(strongsServiceProvider);
     }
+    // Trigger red-letter dataset load if either color mode is on.
+    final redLetterSvc = (redLetterMode || blueLetterMode)
+        ? ref.watch(redLetterServiceProvider)
+        : null;
     // Tap recognisers are owned by State; rebuild allocates fresh ones to
     // match the new spans. (Cheap — recognisers are tiny.)
     _resetTapRecognizers();
@@ -1202,7 +1275,26 @@ class _VerseListState extends State<_VerseList> {
                         style: GoogleFonts.playfairDisplay(
                           fontSize: fontSize * 2.5,
                           fontWeight: FontWeight.w700,
-                          color: isDark ? BrandColors.gold : BrandColors.goldDark,
+                          // Drop cap inherits red/blue color when the
+                          // first word of the verse is colored — keeps
+                          // the visual consistency of red-letter Bibles
+                          // (the drop cap is part of the spoken word).
+                          // Otherwise falls back to the gold accent.
+                          color: () {
+                            if (redLetterSvc != null) {
+                              final entry = redLetterSvc.forVerse(
+                                  book, chapterNum, v.number);
+                              if (redLetterMode && entry.isRed(0)) {
+                                return BrandColors.redLetter;
+                              }
+                              if (blueLetterMode && entry.isBlue(0)) {
+                                return BrandColors.blueLetter;
+                              }
+                            }
+                            return isDark
+                                ? BrandColors.gold
+                                : BrandColors.goldDark;
+                          }(),
                           height: 0.85,
                         ),
                         recognizer: dropCapHit == null
@@ -1228,6 +1320,11 @@ class _VerseListState extends State<_VerseList> {
                                 .read(strongsServiceProvider)
                                 .wordsForVerse(book, chapterNum, v.number)
                             : const [],
+                        redLetter: redLetterSvc?.forVerse(
+                                book, chapterNum, v.number) ??
+                            const RedLetterEntry(),
+                        redLetterMode: redLetterMode,
+                        blueLetterMode: blueLetterMode,
                         baseStyle: GoogleFonts.lora(
                           fontSize: fontSize,
                           height: 1.7,
@@ -1348,6 +1445,11 @@ class _VerseListState extends State<_VerseList> {
                               .read(strongsServiceProvider)
                               .wordsForVerse(book, chapterNum, v.number)
                           : const [],
+                      redLetter: redLetterSvc?.forVerse(
+                              book, chapterNum, v.number) ??
+                          const RedLetterEntry(),
+                      redLetterMode: redLetterMode,
+                      blueLetterMode: blueLetterMode,
                       baseStyle: BrandColors.verseStyle(
                         size: fontSize,
                         color: theme.colorScheme.onSurface,

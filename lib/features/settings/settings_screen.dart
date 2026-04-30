@@ -168,6 +168,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             value: s.scholarMode,
             onChanged: (v) => n.setScholarMode(v),
           ),
+          // ── Red Letter / Blue Letter toggles ──
+          SwitchListTile(
+            secondary: Icon(Icons.format_color_text,
+                color: BrandColors.redLetter),
+            title: Text('Words of Christ in red',
+                style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
+            subtitle: Text(
+                'Color Christ’s spoken words in the New Testament. 2,058 verses tagged from the public-domain OSIS-tagged KJV.',
+                style: GoogleFonts.lora(fontSize: 12)),
+            value: s.redLetterMode,
+            onChanged: (v) => n.setRedLetterMode(v),
+          ),
+          SwitchListTile(
+            secondary: Icon(Icons.format_color_text,
+                color: BrandColors.blueLetter),
+            title: Text('God’s direct speech in blue',
+                style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
+            subtitle: Text(
+                'Color the Decalogue, prophetic oracles (“Thus saith the LORD”), and other direct divine speech.',
+                style: GoogleFonts.lora(fontSize: 12)),
+            value: s.blueLetterMode,
+            onChanged: (v) => n.setBlueLetterMode(v),
+          ),
           ListTile(
             leading: Icon(Icons.menu_book_rounded, color: BrandColors.gold),
             title: Text('My Lexicon',

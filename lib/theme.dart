@@ -28,6 +28,17 @@ class BrandColors {
   static const warmWhite = Color(0xFFFFFBF5);   // card background
   static const verseBeige = Color(0xFFEDE4D5);  // highlighted verse bg
 
+  // ── Red Letter / Blue Letter ──
+  // Christ's spoken words are colored `redLetter`. The classic Cambridge
+  // KJV "rubric red" (#C8222B) reads as authoritative without the
+  // garishness of pure red — passes WCAG AA contrast on cream + dark
+  // brown backgrounds. God's direct speech (Decalogue, oracles) uses
+  // `blueLetter` — a deep oxford blue distinguishable from any other
+  // accent in the app. Both colors are subtly desaturated so multi-color
+  // verse text doesn't fatigue the eye in long reading sessions.
+  static const redLetter = Color(0xFFC8222B);
+  static const blueLetter = Color(0xFF1E40AF);
+
   /// Typography helpers — call these instead of inline GoogleFonts so the
   /// app's verse rendering is consistent and easy to retune in one place.
   ///

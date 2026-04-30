@@ -180,6 +180,16 @@ class AppSettings {
   /// Visual aesthetic — see [ThemeStyle]. Defaults to classic parchment/gold;
   /// users can opt into the modern sans/blue theme from Settings.
   final ThemeStyle themeStyle;
+  /// Red Letter Mode — color Christ's spoken words in red (the classic
+  /// "Red Letter Bible" convention). Default ON since the vast majority
+  /// of Christian Bible apps ship this enabled. Source: 2,058 verses
+  /// tagged via OSIS `<q who="Jesus">` markup from public-domain KJV.
+  final bool redLetterMode;
+  /// Blue Letter Mode — color God's direct speech (Decalogue, Thus
+  /// saith the LORD oracles, etc.) in blue. Default OFF — opt-in
+  /// because the heuristic detection is conservative and some users
+  /// find dual-color text busy. ~2,510 verses tagged.
+  final bool blueLetterMode;
   const AppSettings({
     this.fontSize = 18,
     this.darkMode = false,
@@ -192,6 +202,8 @@ class AppSettings {
     this.geminiApiKey = '',
     this.scholarMode = false,
     this.themeStyle = ThemeStyle.classic,
+    this.redLetterMode = true,
+    this.blueLetterMode = false,
   });
 
   /// Whether AI online features should be used right now.
@@ -219,6 +231,8 @@ class AppSettings {
     String? geminiApiKey,
     bool? scholarMode,
     ThemeStyle? themeStyle,
+    bool? redLetterMode,
+    bool? blueLetterMode,
   }) =>
       AppSettings(
         fontSize: fontSize ?? this.fontSize,
@@ -232,6 +246,8 @@ class AppSettings {
         geminiApiKey: geminiApiKey ?? this.geminiApiKey,
         scholarMode: scholarMode ?? this.scholarMode,
         themeStyle: themeStyle ?? this.themeStyle,
+        redLetterMode: redLetterMode ?? this.redLetterMode,
+        blueLetterMode: blueLetterMode ?? this.blueLetterMode,
       );
 }
 
@@ -255,6 +271,8 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
             (e) => e.name == (_prefs?.getString('themeStyle') ?? ''),
             orElse: () => ThemeStyle.classic,
           ),
+          redLetterMode: _prefs?.getBool('redLetterMode') ?? true,
+          blueLetterMode: _prefs?.getBool('blueLetterMode') ?? false,
         )) {
     // Initialize AiService if we have a saved key.
     final savedKey = _prefs?.getString('geminiApiKey') ?? '';
@@ -292,6 +310,16 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setScholarMode(bool v) async {
     state = state.copyWith(scholarMode: v);
     await _prefs?.setBool('scholarMode', v);
+  }
+
+  Future<void> setRedLetterMode(bool v) async {
+    state = state.copyWith(redLetterMode: v);
+    await _prefs?.setBool('redLetterMode', v);
+  }
+
+  Future<void> setBlueLetterMode(bool v) async {
+    state = state.copyWith(blueLetterMode: v);
+    await _prefs?.setBool('blueLetterMode', v);
   }
 
   Future<void> setVoiceName(String v) async {
