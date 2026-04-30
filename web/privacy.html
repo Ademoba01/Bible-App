@@ -65,52 +65,71 @@
     <p>Your privacy is important to us. This Privacy Policy explains how the Rhema Study Bible app ("App") collects, uses, and protects your information.</p>
 
     <h2>1. Information We Collect</h2>
-    <p><strong>Account Information:</strong> If you create an account, we collect your email address and display name through Firebase Authentication. This is optional — the app works fully without an account.</p>
-    <p><strong>Reading Preferences:</strong> Your chosen translation, font size, dark mode setting, and bookmarks are stored locally on your device using shared preferences.</p>
-    <p><strong>Usage Data:</strong> We do not collect analytics, tracking data, or usage statistics.</p>
+    <p><strong>Account Information (optional):</strong> If you choose to sign in with email or Google, we collect your email address and a unique account ID through Firebase Authentication. The app works fully without an account.</p>
+    <p><strong>Personal Study Data (only if signed in):</strong> bookmarks, verse highlights, your personal Strong's lexicon, sermon collection notes, and reading streak are stored in Cloud Firestore under your account ID so they sync across your devices. Without sign-in, this data stays only on your device.</p>
+    <p><strong>App Preferences:</strong> chosen translation, font size, theme style (classic/modern), dark mode, voice selection, and similar settings are stored locally on your device only.</p>
+    <p><strong>AI Feature Inputs (only when actively used):</strong> when you tap Search with AI mode, ask the Codex, or use Find Similar / Cross-references, the verse text or query is sent to Google's Gemini API to generate the response. We do not retain these queries; Google's API terms apply to that round-trip.</p>
+    <p><strong>Usage Data:</strong> We do not collect analytics, do not track which verses you read, and do not log how long you use the app.</p>
 
     <h2>2. Information We Do Not Collect</h2>
     <ul>
-      <li>We do not collect your location data</li>
-      <li>We do not collect your contacts or phone number</li>
-      <li>We do not collect device identifiers for advertising</li>
-      <li>We do not use cookies or tracking pixels</li>
-      <li>We do not sell or share any personal data with third parties</li>
+      <li>No location data</li>
+      <li>No contacts, calendar, photos, or other device data</li>
+      <li>No advertising identifiers (the app contains no ads)</li>
+      <li>No cookies or tracking pixels on the website</li>
+      <li>No microphone access except when you actively tap voice search (handled on-device by the OS speech recognizer)</li>
+      <li>No data sold or shared with third parties for marketing</li>
     </ul>
 
     <h2>3. How We Use Your Information</h2>
     <ul>
-      <li><strong>Account data</strong> is used solely for authentication and syncing your profile across devices</li>
-      <li><strong>Preferences</strong> are stored locally to personalize your reading experience</li>
-      <li><strong>AI features</strong> (when enabled) send verse text to Google Gemini API for study insights — no personal data is included in these requests</li>
+      <li><strong>Account data</strong> — authenticate you and sync your study data across devices</li>
+      <li><strong>Preferences</strong> — personalize your reading experience locally</li>
+      <li><strong>AI feature inputs</strong> — generate the AI response only; nothing is stored on our side</li>
     </ul>
 
-    <h2>4. Data Storage & Security</h2>
-    <p>Account data is stored securely using Google Firebase with industry-standard encryption. Local preferences remain on your device and are never transmitted to our servers.</p>
+    <h2>4. Data Storage &amp; Security</h2>
+    <p>Account and study data is stored on Google Cloud Firestore with TLS 1.2+ encryption in transit and AES-256 at rest. Per-user Firestore security rules ensure only you can read or write your own bookmarks, highlights, lexicon, and sermon notes. Local preferences never leave your device.</p>
 
     <h2>5. Third-Party Services</h2>
-    <p>The App uses the following third-party services:</p>
     <ul>
-      <li><strong>Firebase Authentication</strong> — for optional user accounts (<a href="https://firebase.google.com/support/privacy">Firebase Privacy Policy</a>)</li>
-      <li><strong>Cloud Firestore</strong> — for optional community features (<a href="https://firebase.google.com/support/privacy">Firebase Privacy Policy</a>)</li>
-      <li><strong>Google Gemini API</strong> — for optional AI study features, only when user provides their own API key (<a href="https://ai.google.dev/terms">Google AI Terms</a>)</li>
+      <li><strong>Firebase Authentication</strong> (Google) — sign-in only. <a href="https://firebase.google.com/support/privacy">Firebase Privacy</a></li>
+      <li><strong>Cloud Firestore</strong> (Google) — sync of your study data. <a href="https://firebase.google.com/support/privacy">Firebase Privacy</a></li>
+      <li><strong>Google Gemini API</strong> — AI search, codex, and cross-reference responses. <a href="https://policies.google.com/privacy">Google Privacy</a></li>
+      <li><strong>STEPBible Tagged Texts</strong> (TAGNT, TAHOT, TBESG, TBESH — CC BY 4.0) — Strong's concordance and lexicon, downloaded with the app. No network calls at runtime.</li>
+      <li><strong>API.Bible</strong> — fetches translations not bundled offline (only when you select an online translation).</li>
+      <li><strong>OpenStreetMap</strong> — map tiles for the Bible Maps feature, served by the OSM tile server.</li>
+      <li><strong>Apple Text-to-Speech / Google Speech Services</strong> — narrator audio. Synthesis happens on-device once a voice is downloaded; no audio leaves your device.</li>
     </ul>
 
     <h2>6. Children's Privacy</h2>
-    <p>The App includes a Kids Mode designed for young readers. We do not knowingly collect personal information from children under 13. Kids Mode operates entirely with locally stored content and does not require an account.</p>
+    <p>Rhema is rated for ages 13+ on Google Play and App Store. The app includes a Kids Mode (Settings → Kids Mode) designed for young readers, which disables AI features and external links and operates entirely from locally stored content. We do not knowingly collect personal information from children under 13. If you believe a child under 13 has signed in, contact us and we will delete the account immediately.</p>
 
-    <h2>7. Data Deletion</h2>
-    <p>You can delete your account and all associated data at any time from the Profile screen within the App. Local preferences can be cleared by uninstalling the App.</p>
+    <h2>7. Data Retention &amp; Deletion</h2>
+    <p>If you sign in, your bookmarks, highlights, lexicon, and sermon notes are retained until you sign out or delete the account. To delete your account and all associated data:</p>
+    <ul>
+      <li>In the app: <strong>Settings → Account → Delete account</strong></li>
+      <li>On the web: <a href="/delete-account.html">rhemabibles.com/delete-account.html</a></li>
+    </ul>
+    <p>Account deletion is immediate and irreversible. Local preferences can be cleared by uninstalling the app.</p>
 
-    <h2>8. Changes to This Policy</h2>
-    <p>We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated effective date.</p>
+    <h2>8. Your Rights</h2>
+    <ul>
+      <li>Use the entire app fully offline without ever signing in</li>
+      <li>Export your bookmarks, highlights, and sermon notes via the Share button on each list</li>
+      <li>Request a copy of your stored data — email <a href="mailto:privacy@rhemabibles.com">privacy@rhemabibles.com</a></li>
+      <li>Delete your account at any time</li>
+    </ul>
 
-    <h2>9. Contact Us</h2>
-    <p>If you have any questions about this Privacy Policy, please contact us at:</p>
-    <p><strong>Email:</strong> support@rhemabibles.com</p>
-    <p><strong>Website:</strong> <a href="https://rhemabibles.com">rhemabibles.com</a></p>
+    <h2>9. Changes to This Policy</h2>
+    <p>If this policy changes, we will update the "Last updated" date below. For material changes, we will surface a notice in the app. Continued use after changes constitutes acceptance.</p>
 
-    <div class="updated">Last updated: April 15, 2026</div>
+    <h2>10. Contact Us</h2>
+    <p>Privacy questions: <a href="mailto:privacy@rhemabibles.com">privacy@rhemabibles.com</a></p>
+    <p>General support: <a href="mailto:support@rhemabibles.com">support@rhemabibles.com</a></p>
+    <p>Website: <a href="https://rhemabibles.com">rhemabibles.com</a></p>
+
+    <div class="updated">Last updated: April 30, 2026</div>
   </div>
 </body>
 </html>

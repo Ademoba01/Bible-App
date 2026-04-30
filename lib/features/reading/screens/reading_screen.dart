@@ -42,8 +42,18 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
   bool _backChipVisible = true;
   // GlobalKeys for pixel-accurate verse scrolling
   final Map<int, GlobalKey> _verseKeys = {};
+  // GlobalKey for accessing _VerseListState from the chapter bar's
+  // "Select" IconButton — needed because the chapter bar lives in this
+  // _ReadingScreenState while selection-mode state lives in
+  // _VerseListState. Same-file private state access via GlobalKey is
+  // legal and avoids a state-lifting refactor.
+  final GlobalKey<_VerseListState> _verseListKey = GlobalKey<_VerseListState>();
   // Pinch-to-zoom font size tracking
   double _baseFontSize = 18;
+  // Mirror of _VerseListState._selectionMode for the chapter bar — the
+  // bar's icon needs to render filled/unfilled based on this. Updated
+  // via [_onSelectionChanged] callback which _VerseListState invokes.
+  bool _selectionActive = false;
 
   @override
   void initState() {
@@ -404,6 +414,19 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                 translationId: ref.watch(
                     settingsProvider.select((s) => s.translation)),
                 onPickTranslation: () => _showTranslationPicker(context),
+                onEnterSelectionMode: () {
+                  _verseListKey.currentState
+                      ?._enterSelectionModeFromBar();
+                  setState(() => _selectionActive = true);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          'Tap each verse to add — drag for a range'),
+                      duration: Duration(seconds: 3),
+                    ),
+                  );
+                },
+                selectionActive: _selectionActive,
                 scholarMode: ref.watch(
                     settingsProvider.select((s) => s.scholarMode)),
                 onToggleScholar: () {
@@ -477,6 +500,7 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                   child: Stack(
                     children: [
                       _VerseList(
+                        key: _verseListKey,
                         chapter: chapters[current - 1],
                         book: loc.book,
                         chapterNum: current,
@@ -487,6 +511,11 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                         highlightVerse: _activeHighlightVerse,
                         highlightAnim: _highlightAnim,
                         verseKeys: _verseKeys,
+                        onSelectionModeChanged: (active) {
+                          if (_selectionActive != active) {
+                            setState(() => _selectionActive = active);
+                          }
+                        },
                       ),
                       // ── Floating "Back to" chip — persists until dismissed ──
                       if (returnContext != null && _backChipVisible)
@@ -592,6 +621,7 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
 
 class _VerseList extends StatefulWidget {
   const _VerseList({
+    super.key,
     required this.chapter,
     required this.book,
     required this.chapterNum,
@@ -602,6 +632,7 @@ class _VerseList extends StatefulWidget {
     this.highlightVerse,
     this.verseKeys,
     this.highlightAnim,
+    this.onSelectionModeChanged,
   });
 
   final Chapter chapter;
@@ -614,6 +645,10 @@ class _VerseList extends StatefulWidget {
   final int? highlightVerse;
   final Animation<double>? highlightAnim;
   final Map<int, GlobalKey>? verseKeys;
+  /// Notifies the parent (_ReadingScreenState) whenever selection mode
+  /// flips. Lets the chapter bar's "Select" icon update its filled state
+  /// without lifting all selection state up.
+  final ValueChanged<bool>? onSelectionModeChanged;
 
   @override
   State<_VerseList> createState() => _VerseListState();
@@ -783,6 +818,7 @@ class _VerseListState extends State<_VerseList> {
       _selectedVerses.add(verseNumber);
       _dragSelectionAnchor = verseNumber;
     });
+    widget.onSelectionModeChanged?.call(true);
   }
 
   /// Extend the selection range from the long-press anchor to the verse
@@ -829,6 +865,7 @@ class _VerseListState extends State<_VerseList> {
       _selectedVerses.clear();
       _dragSelectionAnchor = null;
     });
+    widget.onSelectionModeChanged?.call(false);
   }
 
   /// Web/desktop entry to drag-select. Mobile users get the same flow via
@@ -845,6 +882,24 @@ class _VerseListState extends State<_VerseList> {
         ..add(verseNumber);
       _dragSelectionAnchor = verseNumber;
     });
+    widget.onSelectionModeChanged?.call(true);
+  }
+
+  /// Chapter-bar entry to selection mode — used by the new "Select"
+  /// IconButton in [_ChapterBar]. No anchor verse: user just taps
+  /// individual verses to toggle them in/out of the selection. Bypasses
+  /// the long-press requirement entirely, which is the path that's been
+  /// flaky on web mouse + iOS-sim mouse + some Android variants. Drag-
+  /// to-extend stays available for power users via the existing long-
+  /// press lifecycle, but this is the reliable common path.
+  void _enterSelectionModeFromBar() {
+    setState(() {
+      _selectionMode = true;
+      _selectedVerses.clear();
+      _dragSelectionAnchor = null;
+    });
+    widget.onSelectionModeChanged?.call(true);
+    HapticFeedback.lightImpact();
   }
 
   /// Build the "2 Corinthians 4:2-6 (WEB)" style reference for selected verses
@@ -1660,6 +1715,8 @@ class _ChapterBar extends StatelessWidget {
     required this.onToggleScholar,
     required this.translationId,
     required this.onPickTranslation,
+    required this.onEnterSelectionMode,
+    required this.selectionActive,
   });
 
   final String book;
@@ -1685,6 +1742,13 @@ class _ChapterBar extends StatelessWidget {
   /// most users want quick A/B comparison while reading. This shortcut
   /// lands them on the picker in one tap.
   final VoidCallback onPickTranslation;
+  /// Enters selection mode without requiring a long-press. Tapped via the
+  /// "Select" icon in the chapter bar. Once entered, subsequent verse
+  /// taps toggle into the selection — same UX as iOS Mail / Files Edit.
+  final VoidCallback onEnterSelectionMode;
+  /// Whether selection mode is currently active — toggles the "Select"
+  /// icon's filled state so users see they're in selection mode.
+  final bool selectionActive;
 
   @override
   Widget build(BuildContext context) {
@@ -1836,6 +1900,27 @@ class _ChapterBar extends StatelessWidget {
                 ? 'Word study (on) — tap a word for Greek/Hebrew'
                 : 'Word study — turn on to see Greek/Hebrew',
             onPressed: onToggleScholar,
+          ),
+          // ── Select multiple verses ──
+          // Reliable cross-platform entry to multi-select. Works without
+          // long-press / drag, which has been flaky on web mouse + some
+          // Android variants. Once tapped, the user just taps each verse
+          // to add it to the selection (iOS Mail Edit pattern). Drag-to-
+          // extend remains available via the existing long-press
+          // lifecycle for power users.
+          IconButton(
+            icon: Icon(
+              selectionActive
+                  ? Icons.check_circle
+                  : Icons.check_circle_outline,
+              color: selectionActive
+                  ? BrandColors.goldDark
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
+            tooltip: selectionActive
+                ? 'Selecting — tap verses to add'
+                : 'Select multiple verses to copy or share',
+            onPressed: onEnterSelectionMode,
           ),
           const SizedBox(width: 2),
           GestureDetector(
