@@ -2130,55 +2130,71 @@ class _ChapterBar extends StatelessWidget {
           // gold pill confirms the state. Replaces "Scholar Mode" jargon
           // with an icon pattern users already recognise (Google
           // Translate, etc.).
-          IconButton(
+          // ── Reading menu (kebab) ──
+          // User feedback: chapter bar overflowed on iOS — too many
+          // standalone icons (translate, select, settings) competing
+          // with chevrons + chapter picker + translation chip + Listen.
+          // Consolidating the three secondary actions into a single
+          // PopupMenuButton saves ~96 px and keeps the bar tidy on
+          // narrow phones, while the primary actions stay one-tap.
+          PopupMenuButton<String>(
+            tooltip: 'Reading menu',
             icon: Icon(
-              Icons.translate,
-              color: scholarMode
+              Icons.more_vert,
+              color: (scholarMode || selectionActive)
                   ? BrandColors.goldDark
                   : theme.colorScheme.onSurfaceVariant,
             ),
-            tooltip: scholarMode
-                ? 'Word study (on) — tap a word for Greek/Hebrew'
-                : 'Word study — turn on to see Greek/Hebrew',
-            onPressed: onToggleScholar,
-          ),
-          // ── Select multiple verses ──
-          // Reliable cross-platform entry to multi-select. Works without
-          // long-press / drag, which has been flaky on web mouse + some
-          // Android variants. Once tapped, the user just taps each verse
-          // to add it to the selection (iOS Mail Edit pattern). Drag-to-
-          // extend remains available via the existing long-press
-          // lifecycle for power users.
-          IconButton(
-            icon: Icon(
-              selectionActive
-                  ? Icons.check_circle
-                  : Icons.check_circle_outline,
-              color: selectionActive
-                  ? BrandColors.goldDark
-                  : theme.colorScheme.onSurfaceVariant,
-            ),
-            tooltip: selectionActive
-                ? 'Selecting — tap verses to add'
-                : 'Select multiple verses to copy or share',
-            onPressed: onEnterSelectionMode,
-          ),
-          // ── Settings shortcut ──
-          // User feedback: "Where is settings when in bible view? I have
-          // to go back to home to access settings, not a good flow."
-          // Direct access from the chapter bar so users can tweak font
-          // size, theme, voice, and red-letter toggles without leaving
-          // the reading flow. Push as a regular route so back-navigation
-          // returns the user to the same chapter / verse position.
-          IconButton(
-            icon: Icon(
-              Icons.tune,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            tooltip: 'Reading settings',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
-            ),
+            onSelected: (action) {
+              switch (action) {
+                case 'scholar':
+                  onToggleScholar();
+                case 'select':
+                  onEnterSelectionMode();
+                case 'settings':
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const SettingsScreen()),
+                  );
+              }
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'scholar',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.translate,
+                      color: scholarMode ? BrandColors.goldDark : null),
+                  title: Text(scholarMode
+                      ? 'Word study  ✓'
+                      : 'Word study (Greek/Hebrew)'),
+                ),
+              ),
+              PopupMenuItem(
+                value: 'select',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    selectionActive
+                        ? Icons.check_circle
+                        : Icons.check_circle_outline,
+                    color:
+                        selectionActive ? BrandColors.goldDark : null,
+                  ),
+                  title: Text(selectionActive
+                      ? 'Selecting verses…'
+                      : 'Select multiple verses'),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'settings',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.tune),
+                  title: Text('Reading settings'),
+                ),
+              ),
+            ],
           ),
           const SizedBox(width: 2),
           GestureDetector(

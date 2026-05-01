@@ -79,15 +79,24 @@ OT_BOOKS = {
 # phrase + everything after it on the same verse. Conservative: we only
 # fire on these very-stable KJV templates — false positives would be
 # embarrassing and confusing.
+#
+# Each pattern matches the speech-introducing phrase up to the FIRST
+# comma or colon (using `[^.,;:]*` instead of `[^.;]*` so the regex
+# stops at the speech-opener punctuation rather than greedily
+# consuming the entire quote).  Bug fix: the earlier `[^.;]*` allowed
+# commas inside the quoted speech, so for "And God said, Let there be
+# light: and there was light." the regex matched all the way through
+# "be light:" and incorrectly colored only the trailing narrative
+# "and there was light." instead of the actual divine speech.
 BLUE_OPENERS = [
-    r"\bthus saith the LORD\b[^.;]*[,:]\s*",
-    r"\bthe LORD said\b[^.;]*[,:]\s*",
-    r"\bthe LORD spake\b[^.;]*[,:]\s*",
-    r"\bthe LORD answered\b[^.;]*[,:]\s*",
-    r"\band God said\b[^.;]*[,:]\s*",
-    r"\bGod said unto\b[^.;]*[,:]\s*",
-    r"\bGod spake\b[^.;]*[,:]\s*",
-    r"\bword of the LORD came\b[^.;]*[,:]\s*",
+    r"\bthus saith the LORD\b[^.,;:]*[,:]\s*",
+    r"\bthe LORD said\b[^.,;:]*[,:]\s*",
+    r"\bthe LORD spake\b[^.,;:]*[,:]\s*",
+    r"\bthe LORD answered\b[^.,;:]*[,:]\s*",
+    r"\band God said\b[^.,;:]*[,:]\s*",
+    r"\bGod said unto\b[^.,;:]*[,:]\s*",
+    r"\bGod spake\b[^.,;:]*[,:]\s*",
+    r"\bword of the LORD came\b[^.,;:]*[,:]\s*",
 ]
 BLUE_RE = re.compile("|".join(BLUE_OPENERS), re.IGNORECASE)
 
