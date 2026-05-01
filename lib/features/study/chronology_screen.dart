@@ -8,6 +8,7 @@ import '../../data/bible_maps_data.dart';
 import '../../theme.dart';
 import '../../widgets/rhema_title.dart';
 import '../share/animated_story_share.dart';
+import 'bible_maps_screen.dart';
 
 /// "Bible Timeline" — a chronological walk through biblical history.
 ///
@@ -187,6 +188,18 @@ class _ChronologyScreenState extends State<ChronologyScreen> {
             isLast: i == _entries.length,
             onSpeakTap: () => _toggleSpeak(entry),
             onStoryTap: () => _shareEraAsStory(entry),
+            // E4 review: doc-comment promised "Open in Maps" chip; the
+            // implementation was never wired. Now pushes BibleMapsScreen
+            // with the era's filter pre-selected so users see only that
+            // era's places (e.g. Exodus → Sinai, Red Sea, Marah).
+            onMapsTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      BibleMapsScreen(initialEra: entry.era),
+                ),
+              );
+            },
           );
         },
       ),
@@ -236,12 +249,14 @@ class _EraCard extends StatelessWidget {
     required this.isLast,
     required this.onSpeakTap,
     required this.onStoryTap,
+    required this.onMapsTap,
   });
   final _TimelineEra entry;
   final bool isSpeaking;
   final bool isLast;
   final VoidCallback onSpeakTap;
   final VoidCallback onStoryTap;
+  final VoidCallback onMapsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -441,6 +456,33 @@ class _EraCard extends StatelessWidget {
                             ),
                             label: Text(
                               'Share story',
+                              style: GoogleFonts.lora(
+                                fontWeight: FontWeight.w600,
+                                color: color,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              side: BorderSide(color: color, width: 1.4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                          // Open in Maps — fulfilling the doc-comment
+                          // promise (E4 review). Pushes Bible Maps with
+                          // this era pre-filtered.
+                          OutlinedButton.icon(
+                            onPressed: onMapsTap,
+                            icon: Icon(
+                              Icons.map_outlined,
+                              size: 18,
+                              color: color,
+                            ),
+                            label: Text(
+                              'Open in Maps',
                               style: GoogleFonts.lora(
                                 fontWeight: FontWeight.w600,
                                 color: color,

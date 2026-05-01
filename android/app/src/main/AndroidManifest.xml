@@ -1,10 +1,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Android 13+ requires explicit notification permission. Without
+         this declaration, NotificationService.requestPermission() is a
+         silent no-op and daily-verse / lapse reminders never fire. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Foreground service for TTS narration that survives the user
+         navigating away from Listen / locking the screen. Without these
+         permissions Android Doze + lifecycle policy kills flutter_tts
+         within ~30 s of background, breaking the documented "background
+         narration" promise in listen_screen.dart. The actual Service
+         class is added in a future iteration; declaring the permissions
+         now avoids needing a manifest-only follow-up. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <!-- Wake-lock so audio playback isn't paused when the screen sleeps. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <application
         android:label="Rhema"
         android:name="${applicationName}"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@mipmap/launcher_icon"
+        android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

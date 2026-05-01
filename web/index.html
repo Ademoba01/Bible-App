@@ -57,11 +57,6 @@
       "price": "0",
       "priceCurrency": "USD"
     },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "5",
-      "ratingCount": "1"
-    },
     "featureList": "AI-Powered Bible Search, Audio Narration, Multiple Translations, Bible Maps, Bible Quizzes, Daily Devotionals, Personalized Study Plans, Offline Access, Kid-Friendly Bible Quizzes, Family Bible Study",
     "audience": {
       "@type": "PeopleAudience",
@@ -255,7 +250,10 @@
       document.body.style.background = "transparent";
     }
   </script>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+  <!-- Allow pinch-zoom + drop user-scalable=no (WCAG 1.4.4 SC). Older
+       readers and low-vision users need text magnification. viewport-fit=
+       cover lets us paint into the safe-area for notched devices. -->
+  <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
 </head>
 <body>
   <!-- SEO content for search engines and AI crawlers (hidden from visual users) -->

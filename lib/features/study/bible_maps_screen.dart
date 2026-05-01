@@ -15,7 +15,12 @@ import '../../widgets/rhema_title.dart';
 // ---------------------------------------------------------------------------
 
 class BibleMapsScreen extends ConsumerStatefulWidget {
-  const BibleMapsScreen({super.key});
+  const BibleMapsScreen({super.key, this.initialEra});
+
+  /// Pre-selected era when arriving from Chronology. Filters the map to
+  /// places for this era and centers the camera on its representative
+  /// location. Null → default "All Places" mode.
+  final BiblicalEra? initialEra;
 
   @override
   ConsumerState<BibleMapsScreen> createState() => _BibleMapsScreenState();
@@ -85,6 +90,14 @@ class _BibleMapsScreenState extends ConsumerState<BibleMapsScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
+
+    // Era pre-selection from Chronology (E4 review): if `initialEra` is
+    // passed, filter the map to that era's places on first paint. Lets
+    // users follow Chronology → "Open in Maps" → see only e.g. Exodus
+    // places without manually re-applying the era filter.
+    if (widget.initialEra != null) {
+      _selectedEra = widget.initialEra;
+    }
 
     // If the user came back from a verse via the "Back to Map" chip,
     // re-open the same info card on the next frame so they pick up

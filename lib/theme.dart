@@ -206,7 +206,11 @@ ThemeData buildAdultTheme({required Brightness brightness}) {
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      height: 64,
+      // M3 default is 80; previous override of 64 was below spec and
+      // smaller than iOS's 50pt tab bar. Drop the override entirely so
+      // each platform gets its native height (M3 80 on Android,
+      // implicit Cupertino sizing if we ever swap on iOS).
+      height: null,
       backgroundColor: isDark ? const Color(0xFF241814) : Colors.white,
       indicatorColor: scheme.primaryContainer,
       surfaceTintColor: Colors.transparent,
@@ -380,7 +384,11 @@ ThemeData buildModernTheme({required Brightness brightness}) {
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      height: 64,
+      // M3 default is 80; previous override of 64 was below spec and
+      // smaller than iOS's 50pt tab bar. Drop the override entirely so
+      // each platform gets its native height (M3 80 on Android,
+      // implicit Cupertino sizing if we ever swap on iOS).
+      height: null,
       backgroundColor: surfaceColor,
       indicatorColor: accent.withValues(alpha: 0.18),
       surfaceTintColor: Colors.transparent,

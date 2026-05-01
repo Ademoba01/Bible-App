@@ -327,7 +327,16 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
       _currentVerseIndex = startFromVerse;
     });
     // Start the pulse — the speaker disc breathes while narration plays.
-    _pulseController.repeat(reverse: true);
+    // Reduce Motion (iOS Settings → Accessibility → Motion → Reduce
+    // Motion / Android Settings → Accessibility → Remove animations):
+    // honour the OS preference. Vestibular users see a strobing gold
+    // halo with no opt-out otherwise (WCAG 2.3.3 / Apple HIG).
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (!reduceMotion) {
+      _pulseController.repeat(reverse: true);
+    } else {
+      _pulseController.value = 0.5; // static "on" appearance, no animation
+    }
 
     // Read verse by verse with natural pauses
     for (int i = startFromVerse; i < verses.length; i++) {
@@ -833,46 +842,60 @@ class _ListenScreenState extends ConsumerState<ListenScreen>
               ),
               const SizedBox(height: 24),
 
-              // ── Tappable book name ──
-              GestureDetector(
-                onTap: _showBookPicker,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(loc.book,
-                        style: GoogleFonts.lora(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface)),
-                    const SizedBox(width: 6),
-                    Icon(Icons.arrow_drop_down,
-                        color: theme.colorScheme.onSurfaceVariant),
-                  ],
+              // ── Tappable book name (with VoiceOver Semantics) ──
+              // I3 a11y review: previously announced as plain text mid-
+              // list with no role/state. Now exposed as a button with
+              // explicit label + hint so VoiceOver / TalkBack users
+              // know they can change book here.
+              Semantics(
+                button: true,
+                label: 'Book: ${loc.book}',
+                hint: 'Double tap to change book',
+                child: GestureDetector(
+                  onTap: _showBookPicker,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(loc.book,
+                          style: GoogleFonts.lora(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurface)),
+                      const SizedBox(width: 6),
+                      Icon(Icons.arrow_drop_down,
+                          color: theme.colorScheme.onSurfaceVariant),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
 
               // ── Tappable chapter number ──
-              GestureDetector(
-                onTap: _showChapterPicker,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: theme.colorScheme.surfaceContainerHighest,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('Chapter ${loc.chapter}',
-                          style: GoogleFonts.lora(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: theme.colorScheme.onSurface)),
-                      const SizedBox(width: 6),
-                      Icon(Icons.swap_horiz, size: 18,
-                          color: theme.colorScheme.onSurfaceVariant),
-                    ],
+              Semantics(
+                button: true,
+                label: 'Chapter ${loc.chapter}',
+                hint: 'Double tap to change chapter',
+                child: GestureDetector(
+                  onTap: _showChapterPicker,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: theme.colorScheme.surfaceContainerHighest,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Chapter ${loc.chapter}',
+                            style: GoogleFonts.lora(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.onSurface)),
+                        const SizedBox(width: 6),
+                        Icon(Icons.swap_horiz, size: 18,
+                            color: theme.colorScheme.onSurfaceVariant),
+                      ],
+                    ),
                   ),
                 ),
               ),

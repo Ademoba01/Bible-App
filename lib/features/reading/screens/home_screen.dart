@@ -23,6 +23,7 @@ import '../../personalization/preach_topic_screen.dart';
 import '../../personalization/reading_plan_screen.dart';
 import '../../prayer/prayer_wall_screen.dart';
 import '../../search/similar_verses_screen.dart';
+import '../../share/verse_card_renderer.dart';
 import '../../../services/ai_service.dart';
 import '../../settings/help_screen.dart';
 import '../../settings/settings_screen.dart';
@@ -76,15 +77,25 @@ class HomeScreen extends ConsumerWidget {
           const _InlineChatOverlay(),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (i) => ref.read(tabIndexProvider.notifier).set(i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.cottage_outlined), selectedIcon: Icon(Icons.cottage), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.auto_stories_outlined), selectedIcon: Icon(Icons.auto_stories), label: 'Read'),
-          NavigationDestination(icon: Icon(Icons.local_library_outlined), selectedIcon: Icon(Icons.local_library), label: 'Study'),
-          NavigationDestination(icon: Icon(Icons.bookmarks_outlined), selectedIcon: Icon(Icons.bookmarks), label: 'Saved'),
-        ],
+      // ── Primary navigation landmark (W4 a11y review) ──
+      // Wrap the bottom NavigationBar in Semantics so AT users hear it
+      // announced as the primary navigation region. On web Flutter
+      // exports this as ARIA role="navigation" with aria-label, which
+      // restores the landmark missing per the WCAG audit.
+      bottomNavigationBar: Semantics(
+        container: true,
+        explicitChildNodes: true,
+        label: 'Primary navigation',
+        child: NavigationBar(
+          selectedIndex: index,
+          onDestinationSelected: (i) => ref.read(tabIndexProvider.notifier).set(i),
+          destinations: const [
+            NavigationDestination(icon: Icon(Icons.cottage_outlined), selectedIcon: Icon(Icons.cottage), label: 'Home'),
+            NavigationDestination(icon: Icon(Icons.auto_stories_outlined), selectedIcon: Icon(Icons.auto_stories), label: 'Read'),
+            NavigationDestination(icon: Icon(Icons.local_library_outlined), selectedIcon: Icon(Icons.local_library), label: 'Study'),
+            NavigationDestination(icon: Icon(Icons.bookmarks_outlined), selectedIcon: Icon(Icons.bookmarks), label: 'Saved'),
+          ],
+        ),
       ),
     );
   }
@@ -525,7 +536,13 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
   @override
   void initState() {
     super.initState();
-    _initSpeech();
+    // ⚠️ Speech init is deferred until the user actually taps the mic.
+    // Calling `_speech.initialize()` here triggers iOS's mic + speech-
+    // recognition permission prompts the moment the Home tab paints,
+    // before the user has typed or shown intent. That double-prompt at
+    // app open caused 70%+ deny rates per the I4 review. Now permission
+    // is asked in `_startListening()` on first mic-icon tap, with the
+    // value-prop ("voice search") as visible context.
     _loadStoredMood();
     // Snapshot visit state BEFORE recording the new visit, so the very first
     // open shows "Welcome to Rhema" and every later open shows "Welcome back".
@@ -615,7 +632,16 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
   }
 
   Future<void> _startListening() async {
+    // Lazy speech init — the FIRST mic-tap is when iOS shows its
+    // permission prompts. Initializing here (instead of in initState)
+    // means users only see those prompts after they've explicitly
+    // intended to use voice search. See the matching comment in
+    // initState for the full rationale.
     if (!_speechAvailable) {
+      await _initSpeech();
+    }
+    if (!_speechAvailable) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Voice search not available on this device. Please type instead.'),
@@ -1436,6 +1462,13 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                   ref
                       .read(personalizationServiceProvider)
                       .recordReadVerse(_currentVotD.$1);
+                  // ── Streak credit on VotD tap ──
+                  // Per E2 review: previously only chapter render counted
+                  // toward streak. Daily-verse-only users got zero credit
+                  // for opening the app and reading the verse, breaking
+                  // the morning-ritual loop. Now any tap on the VotD card
+                  // counts as the day's read.
+                  ref.read(streakProvider.notifier).recordToday();
                 }
                 // Gentle sign-up nudge for unauthenticated users
                 _maybeShowSignUpNudge(context, ref);
@@ -1582,6 +1615,66 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                               ],
                             ),
                           ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    // ── Inline action row ──
+                    // E2 review: previously bookmark / share / streak-
+                    // recording on the VotD required tab-switch + verse
+                    // sheet (4 taps minimum to share the day's verse).
+                    // Inline icons let the morning ritual happen in one
+                    // tap and let users build a streak without leaving
+                    // Home. `stopPropagation` via `behavior: opaque`
+                    // keeps the underlying card-tap-to-read intact.
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        _VotDIconAction(
+                          icon: ref
+                                  .watch(bookmarksProvider)
+                                  .contains(_currentVotD.$1)
+                              ? Icons.bookmark
+                              : Icons.bookmark_border,
+                          tooltip: 'Bookmark',
+                          onTap: () {
+                            ref
+                                .read(bookmarksProvider.notifier)
+                                .toggle(_currentVotD.$1);
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        _VotDIconAction(
+                          icon: Icons.share,
+                          tooltip: 'Share',
+                          onTap: () {
+                            VerseCardRenderer.shareVerseCard(
+                              context: context,
+                              verseText: _currentVotD.$2,
+                              reference: _currentVotD.$1,
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        _VotDIconAction(
+                          icon: Icons.check_circle_outline,
+                          tooltip: 'Mark as read',
+                          onTap: () {
+                            ref
+                                .read(streakProvider.notifier)
+                                .recordToday();
+                            ref
+                                .read(personalizationServiceProvider)
+                                .recordReadVerse(_currentVotD.$1);
+                            HapticFeedback.lightImpact();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    '✓ Streak credit added for today'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -2643,6 +2736,54 @@ class _StreakStat extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Compact inline icon button used in the Verse-of-the-Day card action
+/// row. ≥40pt tap target with subtle gold-tinted background to read as
+/// "tappable" without overpowering the verse text. Wrapped in
+/// `Material+InkWell` so taps don't bubble to the card's main onTap
+/// handler (which navigates away).
+class _VotDIconAction extends StatelessWidget {
+  const _VotDIconAction({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            width: 40,
+            height: 40,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: BrandColors.gold.withValues(alpha: 0.10),
+              border: Border.all(
+                color: BrandColors.gold.withValues(alpha: 0.25),
+              ),
+            ),
+            child: Icon(
+              icon,
+              size: 18,
+              color: BrandColors.brownDeep,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

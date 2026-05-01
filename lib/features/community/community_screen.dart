@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
+
+import '../../theme.dart';
 
 // API base URL - change for production
 const _apiBase = 'http://localhost:3001/api';
@@ -289,8 +292,10 @@ class _StudyMaterialsTabState extends State<_StudyMaterialsTab>
                           child: ListView.builder(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             itemCount: _materials.length,
-                            itemBuilder: (context, i) =>
-                                _StudyMaterialCard(material: _materials[i]),
+                            itemBuilder: (context, i) => _StudyMaterialCard(
+                              materials: _materials,
+                              index: i,
+                            ),
                           ),
                         ),
         ),
@@ -300,8 +305,14 @@ class _StudyMaterialsTabState extends State<_StudyMaterialsTab>
 }
 
 class _StudyMaterialCard extends StatelessWidget {
-  const _StudyMaterialCard({required this.material});
-  final StudyMaterial material;
+  const _StudyMaterialCard({
+    required this.materials,
+    required this.index,
+  });
+  final List<StudyMaterial> materials;
+  final int index;
+
+  StudyMaterial get material => materials[index];
 
   @override
   Widget build(BuildContext context) {
@@ -313,7 +324,12 @@ class _StudyMaterialCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         onTap: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => _StudyMaterialDetail(material: material)),
+          MaterialPageRoute(
+            builder: (_) => _StudyMaterialDetail(
+              articles: materials,
+              initialIndex: index,
+            ),
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -379,93 +395,475 @@ class _StudyMaterialCard extends StatelessWidget {
   }
 }
 
-class _StudyMaterialDetail extends StatelessWidget {
-  const _StudyMaterialDetail({required this.material});
+/// Article reader for Study Materials with full navigation:
+///   • Side panel (Drawer on mobile, persistent left rail on desktop ≥900 px)
+///   • Bottom prev/next bar with progress dots
+///   • Swipe left/right gestures to advance/return
+///   • Keyboard ←/→ on hardware keyboards
+///   • Reading progress bar at top
+///
+/// Designed as a reusable pattern — Hymns + Sermon Notes can adopt the
+/// same shell by swapping the body builder.
+class _StudyMaterialDetail extends StatefulWidget {
+  const _StudyMaterialDetail({
+    required this.articles,
+    required this.initialIndex,
+  });
+
+  final List<StudyMaterial> articles;
+  final int initialIndex;
+
+  @override
+  State<_StudyMaterialDetail> createState() => _StudyMaterialDetailState();
+}
+
+class _StudyMaterialDetailState extends State<_StudyMaterialDetail> {
+  late int _currentIndex = widget.initialIndex;
+  final ScrollController _scrollController = ScrollController();
+  double _readingProgress = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final max = _scrollController.position.maxScrollExtent;
+    if (max <= 0) return;
+    final p = (_scrollController.offset / max).clamp(0.0, 1.0);
+    if ((p - _readingProgress).abs() > 0.01) {
+      setState(() => _readingProgress = p);
+    }
+  }
+
+  void _goTo(int newIndex) {
+    if (newIndex < 0 || newIndex >= widget.articles.length) return;
+    setState(() {
+      _currentIndex = newIndex;
+      _readingProgress = 0.0;
+    });
+    HapticFeedback.lightImpact();
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+  }
+
+  bool get _canPrev => _currentIndex > 0;
+  bool get _canNext => _currentIndex < widget.articles.length - 1;
+
+  StudyMaterial get _material => widget.articles[_currentIndex];
+
+  @override
+  Widget build(BuildContext context) {
+    return Shortcuts(
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.arrowRight): _NextArticleIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowLeft): _PrevArticleIntent(),
+      },
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          _NextArticleIntent: CallbackAction<_NextArticleIntent>(
+            onInvoke: (_) {
+              if (_canNext) _goTo(_currentIndex + 1);
+              return null;
+            },
+          ),
+          _PrevArticleIntent: CallbackAction<_PrevArticleIntent>(
+            onInvoke: (_) {
+              if (_canPrev) _goTo(_currentIndex - 1);
+              return null;
+            },
+          ),
+        },
+        child: Focus(
+          autofocus: true,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 900;
+              return Scaffold(
+                appBar: AppBar(
+                  title: Text(
+                    _material.category,
+                    style: GoogleFonts.lora(fontWeight: FontWeight.w600),
+                  ),
+                  bottom: PreferredSize(
+                    preferredSize: const Size.fromHeight(3),
+                    child: LinearProgressIndicator(
+                      value: _readingProgress,
+                      minHeight: 3,
+                      backgroundColor: Colors.transparent,
+                    ),
+                  ),
+                ),
+                drawer: isWide
+                    ? null
+                    : Drawer(
+                        child: _ArticleListPanel(
+                          articles: widget.articles,
+                          currentIndex: _currentIndex,
+                          onTap: (i) {
+                            Navigator.pop(context);
+                            _goTo(i);
+                          },
+                        ),
+                      ),
+                body: Row(
+                  children: [
+                    if (isWide)
+                      SizedBox(
+                        width: 280,
+                        child: Material(
+                          elevation: 1,
+                          child: _ArticleListPanel(
+                            articles: widget.articles,
+                            currentIndex: _currentIndex,
+                            onTap: _goTo,
+                          ),
+                        ),
+                      ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.translucent,
+                              onHorizontalDragEnd: (d) {
+                                if (d.primaryVelocity == null) return;
+                                if (d.primaryVelocity! < -300 && _canNext) {
+                                  _goTo(_currentIndex + 1);
+                                } else if (d.primaryVelocity! > 300 && _canPrev) {
+                                  _goTo(_currentIndex - 1);
+                                }
+                              },
+                              child: SingleChildScrollView(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.all(20),
+                                child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 680),
+                                  child: _ArticleBody(material: _material),
+                                ),
+                              ),
+                            ),
+                          ),
+                          _PrevNextBar(
+                            currentIndex: _currentIndex,
+                            total: widget.articles.length,
+                            onPrev: _canPrev
+                                ? () => _goTo(_currentIndex - 1)
+                                : null,
+                            onNext: _canNext
+                                ? () => _goTo(_currentIndex + 1)
+                                : null,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Reusable article body — pulled out so a future "Up next" preview card
+/// can share the rendering. Identical to the original detail body.
+class _ArticleBody extends StatelessWidget {
+  const _ArticleBody({required this.material});
   final StudyMaterial material;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Study Material', style: GoogleFonts.lora(fontWeight: FontWeight.w600)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sourceBadge(material.category),
-            const SizedBox(height: 12),
-            Text(
-              material.title,
-              style: GoogleFonts.lora(fontSize: 24, fontWeight: FontWeight.w700),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sourceBadge(material.category),
+        const SizedBox(height: 12),
+        Text(
+          material.title,
+          style: GoogleFonts.lora(fontSize: 24, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'By ${material.author}',
+          style: GoogleFonts.lora(
+              fontSize: 14, color: theme.colorScheme.onSurfaceVariant),
+        ),
+        if (material.date != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            material.date!,
+            style: GoogleFonts.lora(
+                fontSize: 13, color: theme.colorScheme.outline),
+          ),
+        ],
+        if (material.bibleReading != null &&
+            material.bibleReading!.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.secondaryContainer
+                  .withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(10),
             ),
-            const SizedBox(height: 4),
-            Text(
-              'By ${material.author}',
-              style: GoogleFonts.lora(fontSize: 14, color: theme.colorScheme.onSurfaceVariant),
+            child: Row(
+              children: [
+                Icon(Icons.menu_book,
+                    size: 18, color: theme.colorScheme.secondary),
+                const SizedBox(width: 8),
+                Text(
+                  'Bible Reading: ${material.bibleReading}',
+                  style: GoogleFonts.lora(
+                      fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ],
             ),
-            if (material.date != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                material.date!,
-                style: GoogleFonts.lora(fontSize: 13, color: theme.colorScheme.outline),
+          ),
+        ],
+        if (material.memoryVerse != null &&
+            material.memoryVerse!.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer
+                  .withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.format_quote,
+                    size: 18, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    material.memoryVerse!,
+                    style: GoogleFonts.lora(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 15,
+                        height: 1.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        const Divider(height: 32),
+        Text(
+          material.content,
+          style: GoogleFonts.lora(fontSize: 16, height: 1.7),
+        ),
+      ],
+    );
+  }
+}
+
+/// Side panel listing all articles, grouped by category, with the
+/// current one visually highlighted in gold. Auto-scrolls to keep the
+/// active row in view when navigating.
+class _ArticleListPanel extends StatefulWidget {
+  const _ArticleListPanel({
+    required this.articles,
+    required this.currentIndex,
+    required this.onTap,
+  });
+
+  final List<StudyMaterial> articles;
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
+  @override
+  State<_ArticleListPanel> createState() => _ArticleListPanelState();
+}
+
+class _ArticleListPanelState extends State<_ArticleListPanel> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void didUpdateWidget(_ArticleListPanel old) {
+    super.didUpdateWidget(old);
+    if (old.currentIndex != widget.currentIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_scrollController.hasClients) return;
+        final approxPos = widget.currentIndex * 72.0;
+        _scrollController.animateTo(
+          (approxPos - 100).clamp(0.0, _scrollController.position.maxScrollExtent),
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // Group by category, preserving the original order.
+    final grouped = <String, List<int>>{};
+    for (var i = 0; i < widget.articles.length; i++) {
+      grouped.putIfAbsent(widget.articles[i].category, () => []).add(i);
+    }
+
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              'All articles',
+              style: GoogleFonts.lora(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.onSurface,
               ),
-            ],
-            if (material.bibleReading != null && material.bibleReading!.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.menu_book, size: 18, color: theme.colorScheme.secondary),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Bible Reading: ${material.bibleReading}',
-                      style: GoogleFonts.lora(fontSize: 14, fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-            if (material.memoryVerse != null && material.memoryVerse!.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.format_quote, size: 18, color: theme.colorScheme.primary),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        material.memoryVerse!,
-                        style: GoogleFonts.lora(fontStyle: FontStyle.italic, fontSize: 15, height: 1.5),
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: ListView(
+              controller: _scrollController,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: [
+                for (final entry in grouped.entries) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+                    child: Text(
+                      entry.key,
+                      style: GoogleFonts.lora(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ],
-            const Divider(height: 32),
+                  ),
+                  ...entry.value.map((i) {
+                    final m = widget.articles[i];
+                    final isCurrent = i == widget.currentIndex;
+                    return ListTile(
+                      dense: true,
+                      selected: isCurrent,
+                      selectedTileColor: BrandColors.gold
+                          .withValues(alpha: 0.15),
+                      title: Text(
+                        m.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.lora(
+                          fontSize: 14,
+                          fontWeight: isCurrent
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      subtitle: m.date != null
+                          ? Text(
+                              m.date!,
+                              style: GoogleFonts.lora(
+                                fontSize: 11,
+                                color: theme.colorScheme.outline,
+                              ),
+                            )
+                          : null,
+                      onTap: () => widget.onTap(i),
+                    );
+                  }),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bottom navigation bar — prev / progress / next. Disabled at bounds.
+class _PrevNextBar extends StatelessWidget {
+  const _PrevNextBar({
+    required this.currentIndex,
+    required this.total,
+    required this.onPrev,
+    required this.onNext,
+  });
+
+  final int currentIndex;
+  final int total;
+  final VoidCallback? onPrev;
+  final VoidCallback? onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            TextButton.icon(
+              onPressed: onPrev,
+              icon: const Icon(Icons.chevron_left),
+              label: const Text('Previous'),
+            ),
+            const Spacer(),
             Text(
-              material.content,
-              style: GoogleFonts.lora(fontSize: 16, height: 1.7),
+              '${currentIndex + 1} / $total',
+              style: GoogleFonts.lora(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const Spacer(),
+            TextButton.icon(
+              onPressed: onNext,
+              // Reverse the order so the icon sits to the right.
+              icon: const Icon(Icons.chevron_right),
+              label: const Text('Next'),
+              style: TextButton.styleFrom(
+                iconAlignment: IconAlignment.end,
+              ),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _NextArticleIntent extends Intent {
+  const _NextArticleIntent();
+}
+
+class _PrevArticleIntent extends Intent {
+  const _PrevArticleIntent();
 }
 
 // ---------------------------------------------------------------------------

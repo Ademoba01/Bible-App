@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -14,6 +15,22 @@ import 'theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ── Edge-to-edge + transparent system bars (Android 15+ requirement) ──
+  // Android 15 enforces edge-to-edge; opting out is impossible. Calling
+  // SystemUiMode.edgeToEdge here makes our app paint behind both system
+  // bars on every Android version that supports it. The transparent
+  // overlay style ensures status-bar icons read against our brand brown
+  // AppBar (was invisible on light wallpapers without this).
+  if (!kIsWeb) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ));
+  }
 
   // Initialize Firebase. Web has explicit options. iOS/macOS expect a
   // GoogleService-Info.plist in the Runner bundle which we ship — but if

@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,6 +13,7 @@ import '../../../state/codex_provider.dart';
 import '../../../state/providers.dart';
 import '../../../theme.dart';
 import '../../cross_references/cross_references_sheet.dart';
+import '../../settings/settings_screen.dart';
 import '../../study/strongs_sheet.dart';
 import '../../study/my_lexicon_screen.dart';
 import '../../listen/listen_screen.dart';
@@ -84,7 +86,18 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
   void _handleHighlight(int verseNumber) {
     setState(() => _activeHighlightVerse = verseNumber);
     _highlightAnimController.reset();
-    _highlightAnimController.forward();
+    // Reduce Motion (Tier 4 a11y): instead of the 3-second gold-fade
+    // animation, jump straight to a brief static highlight then clear.
+    // Users with vestibular sensitivity see no flashing.
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+    if (reduceMotion) {
+      _highlightAnimController.value = 0.6;
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) _highlightAnimController.value = 0.0;
+      });
+    } else {
+      _highlightAnimController.forward();
+    }
 
     // Pixel-accurate scroll using GlobalKey
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -312,7 +325,58 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
       }
     });
 
-    return Scaffold(
+    return Shortcuts(
+      // ── iPad / hardware-keyboard shortcuts ──
+      // I3 a11y review: previously no keyboard support for font sizing.
+      // ⌘+ / ⌘= bumps font up, ⌘− down, ⌘0 resets. Voice Control "tap"
+      // verbosity also benefits since Shortcuts surfaces named actions
+      // to AT. Ctrl+= matches Material desktop convention too.
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.equal, meta: true):
+            _IncreaseFontIntent(),
+        SingleActivator(LogicalKeyboardKey.equal, control: true):
+            _IncreaseFontIntent(),
+        SingleActivator(LogicalKeyboardKey.numpadAdd, meta: true):
+            _IncreaseFontIntent(),
+        SingleActivator(LogicalKeyboardKey.minus, meta: true):
+            _DecreaseFontIntent(),
+        SingleActivator(LogicalKeyboardKey.minus, control: true):
+            _DecreaseFontIntent(),
+        SingleActivator(LogicalKeyboardKey.numpadSubtract, meta: true):
+            _DecreaseFontIntent(),
+        SingleActivator(LogicalKeyboardKey.digit0, meta: true):
+            _ResetFontIntent(),
+      },
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          _IncreaseFontIntent: CallbackAction<_IncreaseFontIntent>(
+            onInvoke: (_) {
+              final cur = ref.read(settingsProvider).fontSize;
+              ref
+                  .read(settingsProvider.notifier)
+                  .setFontSize((cur + 2).clamp(14.0, 28.0));
+              return null;
+            },
+          ),
+          _DecreaseFontIntent: CallbackAction<_DecreaseFontIntent>(
+            onInvoke: (_) {
+              final cur = ref.read(settingsProvider).fontSize;
+              ref
+                  .read(settingsProvider.notifier)
+                  .setFontSize((cur - 2).clamp(14.0, 28.0));
+              return null;
+            },
+          ),
+          _ResetFontIntent: CallbackAction<_ResetFontIntent>(
+            onInvoke: (_) {
+              ref.read(settingsProvider.notifier).setFontSize(18.0);
+              return null;
+            },
+          ),
+        },
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
       appBar: AppBar(
         centerTitle: true,
         // Compact RhemaTitle on the reading screen — the chapter bar below
@@ -616,8 +680,24 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
           );
         },
       ),
-    );
+        ), // close Scaffold
+        ), // close Focus
+      ), // close Actions
+    ); // close Shortcuts
   }
+}
+
+/// Keyboard-shortcut Intent for ⌘+ / Ctrl+= "increase font size".
+class _IncreaseFontIntent extends Intent {
+  const _IncreaseFontIntent();
+}
+
+class _DecreaseFontIntent extends Intent {
+  const _DecreaseFontIntent();
+}
+
+class _ResetFontIntent extends Intent {
+  const _ResetFontIntent();
 }
 
 class _VerseList extends StatefulWidget {
@@ -720,6 +800,12 @@ class _VerseListState extends State<_VerseList> {
     final hasBlueLetters = blueLetterMode && redLetter.blue.isNotEmpty;
     final hasColor = hasRedLetters || hasBlueLetters;
 
+    // Recycle tap recognizers each rebuild — without this they leak per
+    // chapter scroll and accumulate hundreds in long sessions (perf
+    // review A2). _newRecognizer() will allocate fresh ones below as
+    // tokens get rendered. Idempotent + cheap.
+    _resetTapRecognizers();
+
     if (!scholarMode && !hasColor) {
       // Fast path — single span exactly like the old code.
       final text = skipFirstLetter == null
@@ -782,20 +868,34 @@ class _VerseListState extends State<_VerseList> {
     final spans = <InlineSpan>[];
     final tokenRe = RegExp(r"[A-Za-z][A-Za-z'’]*");
 
+    // Append a run of contiguous same-color characters as ONE TextSpan
+    // (instead of per-character). The previous per-char emission broke
+    // CanvasKit's text shaper at every word boundary — kerning collapsed,
+    // ligatures dropped, and characters near soft-wrap points went
+    // missing on web. This run-coalescer emits one span per color
+    // transition, preserving glyph shaping while keeping correct red/
+    // blue coloring on punctuation/whitespace adjacent to colored words.
+    void emitRun(int start, int end) {
+      if (start >= end) return;
+      int runStart = start;
+      Color? runColor = colorFor(start);
+      for (int c = start + 1; c <= end; c++) {
+        final col = c < end ? colorFor(c) : null;
+        if (c == end || col != runColor) {
+          final style = runColor == null
+              ? baseStyle
+              : (baseStyle ?? const TextStyle()).copyWith(color: runColor);
+          spans.add(TextSpan(text: raw.substring(runStart, c), style: style));
+          runStart = c;
+          runColor = col;
+        }
+      }
+    }
+
     int cursor = 0;
     for (final m in tokenRe.allMatches(raw)) {
       if (m.start > cursor) {
-        // Punctuation/whitespace between tokens — split character-by-
-        // character so each char picks up the color of its own word.
-        for (int c = cursor; c < m.start; c++) {
-          final color = colorFor(c);
-          spans.add(TextSpan(
-            text: raw.substring(c, c + 1),
-            style: color == null
-                ? baseStyle
-                : (baseStyle ?? const TextStyle()).copyWith(color: color),
-          ));
-        }
+        emitRun(cursor, m.start);
       }
       final tok = m.group(0)!;
       final tokColor = colorFor(m.start);
@@ -828,16 +928,7 @@ class _VerseListState extends State<_VerseList> {
       cursor = m.end;
     }
     if (cursor < raw.length) {
-      // Trailing punctuation/whitespace.
-      for (int c = cursor; c < raw.length; c++) {
-        final color = colorFor(c);
-        spans.add(TextSpan(
-          text: raw.substring(c, c + 1),
-          style: color == null
-              ? baseStyle
-              : (baseStyle ?? const TextStyle()).copyWith(color: color),
-        ));
-      }
+      emitRun(cursor, raw.length);
     }
     return spans;
   }
@@ -1383,7 +1474,18 @@ class _VerseListState extends State<_VerseList> {
             padding: (isSelected || highlightColorIndex != null)
                 ? const EdgeInsets.symmetric(horizontal: 6, vertical: 2)
                 : EdgeInsets.zero,
-            child: GestureDetector(
+            // ── Drag-to-select with VoiceOver-friendly action ──
+            // I3 a11y review: previously the drag gesture had no
+            // alternative path for Switch Control / Voice Control
+            // users. Wrap in Semantics with `customSemanticsActions`
+            // exposing "Add to selection" so AT users can invoke it
+            // without performing the long-press-and-drag gesture.
+            child: Semantics(
+              customSemanticsActions: {
+                CustomSemanticsAction(label: 'Add to selection'):
+                    () => _toggleVerse(v.number),
+              },
+              child: GestureDetector(
               // Long-press LIFECYCLE so we can track drag-to-extend.
               // onLongPressStart: enter selection mode + capture anchor.
               // onLongPressMoveUpdate: as user slides finger, extend
@@ -1467,6 +1569,7 @@ class _VerseListState extends State<_VerseList> {
               ),
               ), // closes inner InkWell
             ),
+            ), // closes Semantics customSemanticsActions wrapper
           ),
         );
         if (isNavHighlighted) {
@@ -1597,7 +1700,67 @@ class _VerseListState extends State<_VerseList> {
             Text(refId, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 12),
             Text(v.text, style: BrandColors.verseStyle(size: 17)),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
+            // ── Primary CTA: Original language ──
+            // E1 review identified choice paralysis from 9 equal-weight
+            // actions. The single highest-value moment when a user taps
+            // a verse is the curiosity that drives word-study; promoting
+            // it to a gold pill button (vs one-of-nine TextButton) makes
+            // the "aha" path obvious in one tap. Helper subtext explains
+            // the action since "Original language" is jargon-adjacent.
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.translate, size: 18),
+                label: const Text('See the original Greek / Hebrew'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: BrandColors.gold,
+                  foregroundColor: const Color(0xFF3E2723),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  textStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                onPressed: () {
+                  final wasOn =
+                      widget.ref.read(settingsProvider).scholarMode;
+                  if (!wasOn) {
+                    widget.ref
+                        .read(settingsProvider.notifier)
+                        .setScholarMode(true);
+                  }
+                  Navigator.pop(sheetContext);
+                  HapticFeedback.lightImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(wasOn
+                          ? 'Tap any underlined word for Greek/Hebrew'
+                          : 'Word study turned on — tap any underlined word'),
+                      duration: const Duration(seconds: 3),
+                      action: SnackBarAction(
+                        label: 'My Lexicon',
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const MyLexiconScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 14),
+            // ── Common secondary actions ──
+            // Copy / Share / Bookmark / Find similar / Cross-references —
+            // the operations a user performs most often per verse.
             Wrap(
               spacing: 4,
               runSpacing: 4,
@@ -1627,42 +1790,6 @@ class _VerseListState extends State<_VerseList> {
                       context: context,
                       verseText: v.text,
                       reference: '$refId ($versionName)',
-                    );
-                  },
-                ),
-                TextButton.icon(
-                  icon: Icon(Icons.movie_filter, color: theme.colorScheme.secondary),
-                  label: const Text('Animated story (9:16)'),
-                  onPressed: () {
-                    final translation = widget.ref.read(settingsProvider).translation;
-                    final versionName = translationById(translation).name;
-                    Navigator.pop(sheetContext);
-                    showAnimatedStorySheet(
-                      context,
-                      reference: '$refId ($versionName)',
-                      verseText: v.text,
-                    );
-                  },
-                ),
-                // ── Web/desktop entry to drag-select ──
-                // On mobile users discover this via long-press; on web a
-                // long-press-on-mouse is awkward. This action enters
-                // selection mode immediately so the user can click+drag
-                // (handled by the Listener around the verse list) or
-                // click subsequent verses to toggle them.
-                TextButton.icon(
-                  icon: Icon(Icons.checklist, color: theme.colorScheme.primary),
-                  label: const Text('Select multiple'),
-                  onPressed: () {
-                    Navigator.pop(sheetContext);
-                    _enterSelectionFromModal(v.number);
-                    HapticFeedback.lightImpact();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content:
-                            Text('Drag down or tap verses to add'),
-                        duration: Duration(seconds: 2),
-                      ),
                     );
                   },
                 ),
@@ -1703,45 +1830,57 @@ class _VerseListState extends State<_VerseList> {
                     }
                   },
                 ),
-                // ── Original language (Strong's) ──
-                // The single highest-ROI discovery surface — the moment a
-                // user taps a verse is the moment they're curious about it.
-                // Auto-flips Scholar Mode on so the next tap on a word
-                // reveals Greek/Hebrew without a Settings detour. Shows a
-                // toast pointing at the now-underlined words.
-                TextButton.icon(
-                  icon: Icon(Icons.translate,
-                      color: theme.colorScheme.secondary),
-                  label: const Text('Original language'),
-                  onPressed: () {
-                    final wasOn =
-                        widget.ref.read(settingsProvider).scholarMode;
-                    if (!wasOn) {
-                      widget.ref
-                          .read(settingsProvider.notifier)
-                          .setScholarMode(true);
-                    }
+                // ── More overflow ──
+                // 9:16 animated story + Select multiple are powerful but
+                // less frequent. Tucking them behind a "More" overflow
+                // (PopupMenuButton) keeps the primary surface clean
+                // while still offering full power for users who want it.
+                PopupMenuButton<String>(
+                  tooltip: 'More actions',
+                  icon: Icon(Icons.more_horiz,
+                      color: theme.colorScheme.onSurfaceVariant),
+                  onSelected: (action) {
                     Navigator.pop(sheetContext);
-                    HapticFeedback.lightImpact();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(wasOn
-                            ? 'Tap any underlined word for Greek/Hebrew'
-                            : 'Word study turned on — tap any underlined word'),
-                        duration: const Duration(seconds: 3),
-                        action: SnackBarAction(
-                          label: 'My Lexicon',
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const MyLexiconScreen(),
-                              ),
-                            );
-                          },
+                    if (action == 'story') {
+                      final translation =
+                          widget.ref.read(settingsProvider).translation;
+                      final versionName =
+                          translationById(translation).name;
+                      showAnimatedStorySheet(
+                        context,
+                        reference: '$refId ($versionName)',
+                        verseText: v.text,
+                      );
+                    } else if (action == 'select') {
+                      _enterSelectionFromModal(v.number);
+                      HapticFeedback.lightImpact();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Drag down or tap verses to add'),
+                          duration: Duration(seconds: 2),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(
+                      value: 'story',
+                      child: ListTile(
+                        leading: Icon(Icons.movie_filter),
+                        title: Text('Animated story (9:16)'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'select',
+                      child: ListTile(
+                        leading: Icon(Icons.checklist),
+                        title: Text('Select multiple verses'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -2023,6 +2162,23 @@ class _ChapterBar extends StatelessWidget {
                 ? 'Selecting — tap verses to add'
                 : 'Select multiple verses to copy or share',
             onPressed: onEnterSelectionMode,
+          ),
+          // ── Settings shortcut ──
+          // User feedback: "Where is settings when in bible view? I have
+          // to go back to home to access settings, not a good flow."
+          // Direct access from the chapter bar so users can tweak font
+          // size, theme, voice, and red-letter toggles without leaving
+          // the reading flow. Push as a regular route so back-navigation
+          // returns the user to the same chapter / verse position.
+          IconButton(
+            icon: Icon(
+              Icons.tune,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            tooltip: 'Reading settings',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
           ),
           const SizedBox(width: 2),
           GestureDetector(

@@ -134,6 +134,7 @@ class StrongsOccurrencesScreen extends ConsumerWidget {
                           ref: ref,
                           verse: v,
                           theme: theme,
+                          strongsId: strongsId,
                         )),
                   ],
                 );
@@ -148,11 +149,13 @@ class _OccurrenceRow extends StatelessWidget {
     required this.ref,
     required this.verse,
     required this.theme,
+    required this.strongsId,
   });
 
   final WidgetRef ref;
   final VerseRefWithWord verse;
   final ThemeData theme;
+  final String strongsId;
 
   void _open(BuildContext context) {
     // Same deep-link pattern as reading_plan_screen.dart:141
@@ -161,6 +164,142 @@ class _OccurrenceRow extends StatelessWidget {
     ref.read(highlightVerseProvider.notifier).state = verse.verse;
     ref.read(tabIndexProvider.notifier).set(1); // Read tab
     Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  /// E3 review: pastors browsing 240 occurrences shouldn't have to
+  /// navigate back to Reading + re-tap the same word just to add a
+  /// specific verse to a sermon series. One-tap add per row closes
+  /// the highest-friction loop in the study flow.
+  Future<void> _addToSermon(BuildContext context) async {
+    final collections = ref.read(sermonCollectionsProvider);
+    String? collectionId;
+    if (collections.isEmpty) {
+      collectionId = await _promptNewCollection(context);
+      if (collectionId == null) return;
+    } else {
+      collectionId = await showModalBottomSheet<String>(
+        context: context,
+        builder: (sheetCtx) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Add ${verse.refId} to series',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+              ...collections.map((c) => ListTile(
+                    leading: Icon(Icons.menu_book_rounded,
+                        color: BrandColors.brownDeep),
+                    title: Text(c.title),
+                    subtitle: Text(
+                      '${c.insights.length} ${c.insights.length == 1 ? "insight" : "insights"}',
+                    ),
+                    onTap: () => Navigator.pop(sheetCtx, c.id),
+                  )),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.add),
+                title: const Text('New series…'),
+                onTap: () async {
+                  final id = await _promptNewCollection(context);
+                  if (sheetCtx.mounted) Navigator.pop(sheetCtx, id);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      );
+    }
+    if (collectionId == null) return;
+    if (!context.mounted) return;
+    final note = await _promptNote(context);
+    if (note == null) return;
+    final insight = SermonInsight(
+      strongsId: strongsId,
+      verseRef: verse.refId,
+      word: verse.word,
+      note: note,
+      createdAt: DateTime.now(),
+    );
+    await ref
+        .read(sermonCollectionsProvider.notifier)
+        .addInsight(collectionId, insight);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Added ${verse.refId} to sermon notes'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<String?> _promptNewCollection(BuildContext context) async {
+    final controller = TextEditingController();
+    final title = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('New sermon series'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'e.g. "Series on Love"',
+          ),
+          onSubmitted: (v) => Navigator.pop(context, v),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
+          TextButton(
+              onPressed: () =>
+                  Navigator.pop(context, controller.text.trim()),
+              child: const Text('Create')),
+        ],
+      ),
+    );
+    if (title == null || title.isEmpty) return null;
+    final c = await ref
+        .read(sermonCollectionsProvider.notifier)
+        .createCollection(title);
+    return c.id;
+  }
+
+  Future<String?> _promptNote(BuildContext context) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Add a note (optional)'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLines: 3,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: const InputDecoration(
+            hintText: 'Why this verse?',
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
+          TextButton(
+              onPressed: () =>
+                  Navigator.pop(context, controller.text.trim()),
+              child: const Text('Save')),
+        ],
+      ),
+    );
   }
 
   @override
@@ -193,6 +332,16 @@ class _OccurrenceRow extends StatelessWidget {
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
+            ),
+            // ── Add to sermon (per-row shortcut) ──
+            IconButton(
+              icon: Icon(Icons.bookmark_add_outlined,
+                  size: 20, color: BrandColors.brownDeep),
+              tooltip: 'Add to sermon notes',
+              padding: EdgeInsets.zero,
+              constraints:
+                  const BoxConstraints(minWidth: 36, minHeight: 36),
+              onPressed: () => _addToSermon(context),
             ),
             Icon(
               Icons.chevron_right,
