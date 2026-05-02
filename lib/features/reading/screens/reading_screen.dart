@@ -1994,18 +1994,36 @@ class _ChapterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // Reported overflow on narrow phones (iPhone 17 sim, 393 px wide):
+    // Chapter label was colliding with the translation chip because the
+    // Row content totaled ~494 px. Compact mode shrinks chevrons/kebab,
+    // drops the "Chapter " prefix, and trims paddings to fit comfortably
+    // on phones ≤400 px wide. ≥400 px keeps the spacious layout.
+    final isNarrow = MediaQuery.of(context).size.width < 420;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: EdgeInsets.symmetric(
+          horizontal: isNarrow ? 4 : 8, vertical: 6),
       child: Row(
         children: [
           IconButton(
             icon: const Icon(Icons.chevron_left),
             tooltip: 'Previous chapter',
+            visualDensity:
+                isNarrow ? VisualDensity.compact : VisualDensity.standard,
             onPressed: chapter > 1 ? onPrev : null,
           ),
           Expanded(
             child: Center(
               child: TextButton(
+                style: isNarrow
+                    ? TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap,
+                      )
+                    : null,
                 onPressed: () async {
                   final picked = await showDialog<int>(
                     context: context,
@@ -2066,10 +2084,19 @@ class _ChapterBar extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Chapter $chapter / $max',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    Text(
+                      // Drop the "Chapter " prefix on narrow phones —
+                      // saves ~55 px which the translation chip needs.
+                      // On wide screens keep the full label for clarity.
+                      isNarrow
+                          ? '$chapter / $max'
+                          : 'Chapter $chapter / $max',
+                      style: TextStyle(
+                          fontSize: isNarrow ? 14 : 16,
+                          fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(width: 4),
-                    const Icon(Icons.grid_view, size: 16),
+                    Icon(Icons.grid_view, size: isNarrow ? 14 : 16),
                   ],
                 ),
               ),
@@ -2086,8 +2113,9 @@ class _ChapterBar extends StatelessWidget {
             onTap: onPickTranslation,
             borderRadius: BorderRadius.circular(14),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 5),
+              padding: EdgeInsets.symmetric(
+                  horizontal: isNarrow ? 8 : 10,
+                  vertical: isNarrow ? 4 : 5),
               decoration: BoxDecoration(
                 color: BrandColors.gold.withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(14),
@@ -2099,13 +2127,17 @@ class _ChapterBar extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.menu_book_rounded,
-                      size: 13, color: BrandColors.brownDeep),
-                  const SizedBox(width: 4),
+                  // Drop the leading book icon on narrow screens — the
+                  // gold chip is already visually distinct enough.
+                  if (!isNarrow) ...[
+                    Icon(Icons.menu_book_rounded,
+                        size: 13, color: BrandColors.brownDeep),
+                    const SizedBox(width: 4),
+                  ],
                   Text(
                     translationById(translationId).name,
-                    style: const TextStyle(
-                      fontSize: 12,
+                    style: TextStyle(
+                      fontSize: isNarrow ? 11 : 12,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.3,
                       color: BrandColors.brownDeep,
@@ -2113,15 +2145,18 @@ class _ChapterBar extends StatelessWidget {
                   ),
                   const SizedBox(width: 2),
                   Icon(Icons.unfold_more,
-                      size: 14, color: BrandColors.brownDeep),
+                      size: isNarrow ? 12 : 14,
+                      color: BrandColors.brownDeep),
                 ],
               ),
             ),
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: isNarrow ? 2 : 4),
           IconButton(
             icon: const Icon(Icons.chevron_right),
             tooltip: 'Next chapter',
+            visualDensity:
+                isNarrow ? VisualDensity.compact : VisualDensity.standard,
             onPressed: chapter < max ? onNext : null,
           ),
           // ── Word-study toggle (always visible discovery affordance) ──
@@ -2139,6 +2174,8 @@ class _ChapterBar extends StatelessWidget {
           // narrow phones, while the primary actions stay one-tap.
           PopupMenuButton<String>(
             tooltip: 'Reading menu',
+            padding: EdgeInsets.zero,
+            iconSize: isNarrow ? 20 : 24,
             icon: Icon(
               Icons.more_vert,
               color: (scholarMode || selectionActive)
@@ -2196,27 +2233,31 @@ class _ChapterBar extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(width: 2),
+          SizedBox(width: isNarrow ? 0 : 2),
           GestureDetector(
             onTap: onListen,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: EdgeInsets.symmetric(
+                  horizontal: isNarrow ? 8 : 10,
+                  vertical: isNarrow ? 5 : 6),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [BrandColors.goldLight, BrandColors.gold],
                 ),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.headphones, size: 16, color: Color(0xFF3E2723)),
-                  SizedBox(width: 4),
+                  Icon(Icons.headphones,
+                      size: isNarrow ? 14 : 16,
+                      color: const Color(0xFF3E2723)),
+                  const SizedBox(width: 4),
                   Text('Listen',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: isNarrow ? 11 : 12,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF3E2723),
+                        color: const Color(0xFF3E2723),
                       )),
                 ],
               ),
