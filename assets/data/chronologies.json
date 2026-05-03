@@ -1,0 +1,329 @@
+{
+  "_meta": {
+    "schema": "Each chronology is {title, subtitle, source, icon, color, era, entries: [...]}. Each entry: {name, verseRef, refs?, dates?, regnal?, age?, lifespan?, bornTo?, notes?, alias?}. Dates are scholarly conventions (Thiele for kings, traditional Masoretic for patriarchs).",
+    "version": 1,
+    "generated": "2026-05-02"
+  },
+
+  "patriarchs_pre_flood": {
+    "title": "Patriarchs Before the Flood",
+    "subtitle": "Adam → Noah · 10 generations · Genesis 5",
+    "source": "Genesis 5",
+    "icon": "scroll",
+    "color": "#8B4513",
+    "era": "patriarchs",
+    "entries": [
+      {"name": "Adam", "verseRef": "Genesis 5:3", "ageAtFathering": 130, "lifespan": 930, "notes": "First man · created by God on day six (Gen 1:27) · died in year 930 from creation."},
+      {"name": "Seth", "verseRef": "Genesis 5:6", "ageAtFathering": 105, "lifespan": 912, "notes": "Born when Adam was 130 (Gen 5:3) · ancestor of Noah."},
+      {"name": "Enos", "alias": "Enosh", "verseRef": "Genesis 5:9", "ageAtFathering": 90, "lifespan": 905, "notes": "In his time \"men began to call upon the name of the LORD\" (Gen 4:26)."},
+      {"name": "Cainan", "alias": "Kenan", "verseRef": "Genesis 5:12", "ageAtFathering": 70, "lifespan": 910},
+      {"name": "Mahalaleel", "verseRef": "Genesis 5:15", "ageAtFathering": 65, "lifespan": 895},
+      {"name": "Jared", "verseRef": "Genesis 5:18", "ageAtFathering": 162, "lifespan": 962, "notes": "Father of Enoch."},
+      {"name": "Enoch", "verseRef": "Genesis 5:21", "ageAtFathering": 65, "lifespan": 365, "notes": "Walked with God · was translated without dying (Gen 5:24; Heb 11:5) · prophesied (Jude 14)."},
+      {"name": "Methuselah", "verseRef": "Genesis 5:25", "ageAtFathering": 187, "lifespan": 969, "notes": "Longest-lived person in Scripture · died the year of the Flood."},
+      {"name": "Lamech", "verseRef": "Genesis 5:28", "ageAtFathering": 182, "lifespan": 777, "notes": "Father of Noah · prophesied comfort through Noah (Gen 5:29)."},
+      {"name": "Noah", "verseRef": "Genesis 5:32", "refs": ["Genesis 9:28-29"], "ageAtFathering": 500, "lifespan": 950, "notes": "Built the ark · entered at age 600 · lived 350 years after the Flood."}
+    ]
+  },
+
+  "patriarchs_post_flood": {
+    "title": "Patriarchs After the Flood",
+    "subtitle": "Shem → Abram · 10 generations · Genesis 11:10–26",
+    "source": "Genesis 11:10–26",
+    "icon": "scroll",
+    "color": "#A0522D",
+    "era": "patriarchs",
+    "entries": [
+      {"name": "Shem", "verseRef": "Genesis 11:10", "ageAtFathering": 100, "lifespan": 600, "notes": "Eldest son of Noah · ancestor of Abraham."},
+      {"name": "Arphaxad", "verseRef": "Genesis 11:12", "ageAtFathering": 35, "lifespan": 438, "notes": "Born two years after the Flood."},
+      {"name": "Salah", "alias": "Shelah", "verseRef": "Genesis 11:14", "ageAtFathering": 30, "lifespan": 433},
+      {"name": "Eber", "verseRef": "Genesis 11:16", "ageAtFathering": 34, "lifespan": 464, "notes": "Eponymous ancestor of \"Hebrew\"."},
+      {"name": "Peleg", "verseRef": "Genesis 11:18", "refs": ["Genesis 10:25"], "ageAtFathering": 30, "lifespan": 239, "notes": "\"In his days the earth was divided\" (Gen 10:25)."},
+      {"name": "Reu", "verseRef": "Genesis 11:20", "ageAtFathering": 32, "lifespan": 239},
+      {"name": "Serug", "verseRef": "Genesis 11:22", "ageAtFathering": 30, "lifespan": 230},
+      {"name": "Nahor", "verseRef": "Genesis 11:24", "ageAtFathering": 29, "lifespan": 148, "notes": "Grandfather of Abraham (his namesake grandson is Abraham's brother)."},
+      {"name": "Terah", "verseRef": "Genesis 11:26", "refs": ["Genesis 11:32"], "ageAtFathering": 70, "lifespan": 205, "notes": "Father of Abram, Nahor, and Haran · died in Haran."},
+      {"name": "Abram", "alias": "Abraham", "verseRef": "Genesis 11:26", "refs": ["Genesis 25:7"], "lifespan": 175, "notes": "Renamed Abraham (Gen 17:5) · called from Ur · father of the faithful."}
+    ]
+  },
+
+  "patriarchs_genesis": {
+    "title": "Patriarchs of Israel",
+    "subtitle": "Abraham → Joseph · the founding family · Genesis 12–50",
+    "source": "Genesis 12–50",
+    "icon": "scroll",
+    "color": "#B8860B",
+    "era": "patriarchs",
+    "entries": [
+      {"name": "Abraham", "verseRef": "Genesis 25:7", "lifespan": 175, "notes": "Born ~2166 BC (traditional) · called at 75 (Gen 12:4) · Isaac born when he was 100 (Gen 21:5)."},
+      {"name": "Sarah", "verseRef": "Genesis 23:1", "lifespan": 127, "notes": "Wife of Abraham · only woman in Scripture whose age at death is recorded."},
+      {"name": "Isaac", "verseRef": "Genesis 35:28", "lifespan": 180, "notes": "Son of promise · married Rebekah at 40 (Gen 25:20) · twin sons born when he was 60 (Gen 25:26)."},
+      {"name": "Jacob", "alias": "Israel", "verseRef": "Genesis 47:28", "lifespan": 147, "notes": "Renamed Israel (Gen 32:28) · father of the twelve tribes · died in Egypt."},
+      {"name": "Joseph", "verseRef": "Genesis 50:26", "lifespan": 110, "notes": "Sold into Egypt at 17 · viceroy of Egypt · died in Egypt; bones taken back to Canaan (Ex 13:19)."}
+    ]
+  },
+
+  "judges": {
+    "title": "Judges of Israel",
+    "subtitle": "Othniel → Samuel · between Joshua and Saul · Book of Judges + 1 Samuel",
+    "source": "Judges; 1 Samuel 1–7",
+    "icon": "shield",
+    "color": "#556B2F",
+    "era": "judges",
+    "entries": [
+      {"name": "Othniel", "verseRef": "Judges 3:9", "refs": ["Judges 3:11"], "regnal": 40, "notes": "Nephew of Caleb · delivered Israel from Cushan-rishathaim of Mesopotamia."},
+      {"name": "Ehud", "verseRef": "Judges 3:15", "refs": ["Judges 3:30"], "regnal": 80, "notes": "Left-handed Benjamite · slew Eglon king of Moab."},
+      {"name": "Shamgar", "verseRef": "Judges 3:31", "notes": "Slew 600 Philistines with an oxgoad · also mentioned Judg 5:6."},
+      {"name": "Deborah & Barak", "verseRef": "Judges 4:4", "refs": ["Judges 5:31"], "regnal": 40, "notes": "Prophetess Deborah judged from under a palm in Ephraim · Barak defeated Sisera."},
+      {"name": "Gideon", "alias": "Jerubbaal", "verseRef": "Judges 6:11", "refs": ["Judges 8:28"], "regnal": 40, "notes": "300-man victory over Midian (Judg 7) · refused kingship (Judg 8:23)."},
+      {"name": "Abimelech", "verseRef": "Judges 9:6", "refs": ["Judges 9:22"], "regnal": 3, "notes": "Son of Gideon by a concubine · killed his 70 brothers and ruled Shechem · died ignominiously by a millstone."},
+      {"name": "Tola", "verseRef": "Judges 10:1", "regnal": 23, "notes": "From the tribe of Issachar."},
+      {"name": "Jair", "verseRef": "Judges 10:3", "regnal": 22, "notes": "Gileadite · had 30 sons riding 30 ass colts."},
+      {"name": "Jephthah", "verseRef": "Judges 11:1", "refs": ["Judges 12:7"], "regnal": 6, "notes": "Gileadite outcast · vow led to sacrifice of his daughter (Judg 11:30-40)."},
+      {"name": "Ibzan", "verseRef": "Judges 12:8", "regnal": 7, "notes": "From Bethlehem · 30 sons + 30 daughters."},
+      {"name": "Elon", "verseRef": "Judges 12:11", "regnal": 10, "notes": "Of the tribe of Zebulun."},
+      {"name": "Abdon", "verseRef": "Judges 12:13", "regnal": 8, "notes": "From Pirathon in Ephraim · 40 sons + 30 grandsons riding ass colts."},
+      {"name": "Samson", "verseRef": "Judges 13:24", "refs": ["Judges 16:31"], "regnal": 20, "notes": "Nazarite from birth · slew 1,000 Philistines with a jawbone · final temple-collapse at Gaza."},
+      {"name": "Eli", "verseRef": "1 Samuel 1:9", "refs": ["1 Samuel 4:18"], "regnal": 40, "lifespan": 98, "notes": "High priest at Shiloh · judged Israel · died on hearing of the ark's capture."},
+      {"name": "Samuel", "verseRef": "1 Samuel 7:15", "notes": "Last judge · prophet · anointed Saul and David."}
+    ]
+  },
+
+  "kings_united": {
+    "title": "Kings of United Israel",
+    "subtitle": "Saul · David · Solomon · ~1050–931 BC · 1 & 2 Samuel, 1 Kings 1–11",
+    "source": "1–2 Samuel; 1 Kings 1–11",
+    "icon": "crown",
+    "color": "#B8860B",
+    "era": "kingdom",
+    "entries": [
+      {"name": "Saul", "verseRef": "1 Samuel 10:1", "refs": ["Acts 13:21"], "regnal": 40, "dates": "c. 1050–1010 BC", "notes": "Of the tribe of Benjamin · first king of Israel · rejected by God · died at Mount Gilboa (1 Sam 31)."},
+      {"name": "David", "verseRef": "2 Samuel 5:4", "refs": ["1 Kings 2:11"], "regnal": 40, "dates": "c. 1010–970 BC", "lifespan": 70, "notes": "From Bethlehem · reigned 7.5 years over Judah at Hebron, then 33 years over all Israel from Jerusalem · ancestor of Christ."},
+      {"name": "Solomon", "verseRef": "1 Kings 11:42", "regnal": 40, "dates": "c. 970–931 BC", "notes": "Built the Temple (1 Kgs 6) · author of Proverbs, Ecclesiastes, Song of Solomon · 700 wives + 300 concubines."}
+    ]
+  },
+
+  "kings_judah": {
+    "title": "Kings of Judah",
+    "subtitle": "Rehoboam → Zedekiah · the southern kingdom · 931–586 BC · 1 & 2 Kings, 2 Chronicles",
+    "source": "1 Kings 12 – 2 Kings 25; 2 Chronicles 10–36",
+    "icon": "crown",
+    "color": "#8B0000",
+    "era": "kingdom",
+    "entries": [
+      {"name": "Rehoboam", "verseRef": "1 Kings 14:21", "regnal": 17, "dates": "931–913 BC", "notes": "Son of Solomon · refused the elders' advice; ten tribes seceded (1 Kgs 12)."},
+      {"name": "Abijam", "alias": "Abijah", "verseRef": "1 Kings 15:2", "regnal": 3, "dates": "913–911 BC"},
+      {"name": "Asa", "verseRef": "1 Kings 15:10", "regnal": 41, "dates": "911–870 BC", "notes": "Reformer · removed idols · diseased in his feet (1 Kgs 15:23)."},
+      {"name": "Jehoshaphat", "verseRef": "1 Kings 22:42", "regnal": 25, "dates": "870–848 BC", "notes": "Allied with Ahab · godly king · sent teachers throughout Judah (2 Chr 17:7-9)."},
+      {"name": "Jehoram", "alias": "Joram", "verseRef": "2 Kings 8:17", "regnal": 8, "dates": "848–841 BC", "notes": "Married Athaliah of the house of Ahab · died of a bowel disease (2 Chr 21:18-19)."},
+      {"name": "Ahaziah", "verseRef": "2 Kings 8:26", "regnal": 1, "dates": "841 BC", "notes": "Killed by Jehu (2 Kgs 9:27)."},
+      {"name": "Athaliah", "verseRef": "2 Kings 11:3", "regnal": 6, "dates": "841–835 BC", "notes": "Queen mother who usurped the throne · only female ruler of Judah · executed in coup."},
+      {"name": "Joash", "alias": "Jehoash", "verseRef": "2 Kings 12:1", "regnal": 40, "dates": "835–796 BC", "notes": "Crowned at age 7 · hidden by Jehosheba (2 Kgs 11:2-3) · repaired the Temple."},
+      {"name": "Amaziah", "verseRef": "2 Kings 14:2", "regnal": 29, "dates": "796–767 BC", "notes": "Slew Edomites at the Valley of Salt · slain at Lachish (2 Kgs 14:19)."},
+      {"name": "Uzziah", "alias": "Azariah", "verseRef": "2 Kings 15:2", "refs": ["2 Chronicles 26:3"], "regnal": 52, "dates": "767–740 BC", "notes": "Strong king · struck with leprosy for usurping priestly duties (2 Chr 26:16-21) · Isaiah's call in his death-year (Isa 6:1)."},
+      {"name": "Jotham", "verseRef": "2 Kings 15:33", "regnal": 16, "dates": "740–732 BC", "notes": "Co-regent during Uzziah's leprosy."},
+      {"name": "Ahaz", "verseRef": "2 Kings 16:2", "regnal": 16, "dates": "732–716 BC", "notes": "Sacrificed his son in the fire (2 Kgs 16:3) · Isaiah delivered the Immanuel prophecy to him (Isa 7)."},
+      {"name": "Hezekiah", "verseRef": "2 Kings 18:2", "regnal": 29, "dates": "716–687 BC", "notes": "Major reformer · destroyed the brazen serpent (2 Kgs 18:4) · life extended 15 years (2 Kgs 20:6) · withstood Sennacherib (2 Kgs 19)."},
+      {"name": "Manasseh", "verseRef": "2 Kings 21:1", "regnal": 55, "dates": "687–642 BC", "notes": "Longest reign in Judah · most wicked · later repented in Babylonian captivity (2 Chr 33:11-13)."},
+      {"name": "Amon", "verseRef": "2 Kings 21:19", "regnal": 2, "dates": "642–640 BC", "notes": "Assassinated by his servants (2 Kgs 21:23)."},
+      {"name": "Josiah", "verseRef": "2 Kings 22:1", "regnal": 31, "dates": "640–609 BC", "notes": "Crowned at 8 · greatest reformer · Book of the Law rediscovered (2 Kgs 22:8) · slain at Megiddo by Pharaoh-necho."},
+      {"name": "Jehoahaz", "alias": "Shallum", "verseRef": "2 Kings 23:31", "regnal": 0, "dates": "609 BC (3 months)", "notes": "Deposed by Pharaoh-necho · died in Egypt (2 Kgs 23:34)."},
+      {"name": "Jehoiakim", "alias": "Eliakim", "verseRef": "2 Kings 23:36", "regnal": 11, "dates": "609–598 BC", "notes": "Set up by Pharaoh-necho · burned Jeremiah's scroll (Jer 36:23) · vassal of Babylon."},
+      {"name": "Jehoiachin", "alias": "Jeconiah / Coniah", "verseRef": "2 Kings 24:8", "regnal": 0, "dates": "598 BC (3 months)", "notes": "Carried captive to Babylon · later released by Evil-merodach (2 Kgs 25:27)."},
+      {"name": "Zedekiah", "alias": "Mattaniah", "verseRef": "2 Kings 24:18", "regnal": 11, "dates": "597–586 BC", "notes": "Last king of Judah · saw his sons killed before his eyes were put out · taken in chains to Babylon (2 Kgs 25:7) · Jerusalem destroyed."}
+    ]
+  },
+
+  "kings_israel": {
+    "title": "Kings of Northern Israel",
+    "subtitle": "Jeroboam I → Hoshea · the breakaway northern kingdom · 931–722 BC",
+    "source": "1 Kings 12 – 2 Kings 17",
+    "icon": "crown",
+    "color": "#4682B4",
+    "era": "kingdom",
+    "entries": [
+      {"name": "Jeroboam I", "verseRef": "1 Kings 14:20", "regnal": 22, "dates": "931–910 BC", "notes": "Set up golden calves at Bethel and Dan · the archetypal evil king (\"sin of Jeroboam\")."},
+      {"name": "Nadab", "verseRef": "1 Kings 15:25", "regnal": 2, "dates": "910–909 BC", "notes": "Killed by Baasha at Gibbethon."},
+      {"name": "Baasha", "verseRef": "1 Kings 15:33", "regnal": 24, "dates": "909–886 BC", "notes": "Wiped out the house of Jeroboam · prophesied against by Jehu the seer (1 Kgs 16:1-4)."},
+      {"name": "Elah", "verseRef": "1 Kings 16:8", "regnal": 2, "dates": "886–885 BC", "notes": "Killed while drunk by his servant Zimri (1 Kgs 16:9-10)."},
+      {"name": "Zimri", "verseRef": "1 Kings 16:15", "regnal": 0, "dates": "885 BC (7 days)", "notes": "Burned the palace over himself when Omri besieged Tirzah."},
+      {"name": "Omri", "verseRef": "1 Kings 16:23", "regnal": 12, "dates": "885–874 BC", "notes": "Built Samaria as the new capital · founder of a long-lived dynasty · references in Assyrian and Moabite inscriptions."},
+      {"name": "Ahab", "verseRef": "1 Kings 16:29", "regnal": 22, "dates": "874–853 BC", "notes": "Married Jezebel of Sidon · battled Elijah · died at Ramoth-gilead by a random arrow (1 Kgs 22:34)."},
+      {"name": "Ahaziah", "verseRef": "1 Kings 22:51", "regnal": 2, "dates": "853–852 BC", "notes": "Fell through a lattice · sent to Baal-zebub for healing · died per Elijah's word (2 Kgs 1)."},
+      {"name": "Jehoram", "alias": "Joram", "verseRef": "2 Kings 3:1", "regnal": 12, "dates": "852–841 BC", "notes": "Removed Baal pillar · killed by Jehu (2 Kgs 9:24)."},
+      {"name": "Jehu", "verseRef": "2 Kings 10:36", "regnal": 28, "dates": "841–814 BC", "notes": "Anointed by Elisha's servant · annihilated the house of Ahab and the priests of Baal · pictured bowing to Shalmaneser III on the Black Obelisk."},
+      {"name": "Jehoahaz", "verseRef": "2 Kings 13:1", "regnal": 17, "dates": "814–798 BC", "notes": "Reign weakened by Hazael of Syria."},
+      {"name": "Jehoash", "alias": "Joash", "verseRef": "2 Kings 13:10", "regnal": 16, "dates": "798–782 BC", "notes": "Visited the dying Elisha (2 Kgs 13:14)."},
+      {"name": "Jeroboam II", "verseRef": "2 Kings 14:23", "regnal": 41, "dates": "782–753 BC", "notes": "Restored Israel's borders · prosperity that Amos and Hosea decried."},
+      {"name": "Zechariah", "verseRef": "2 Kings 15:8", "regnal": 0, "dates": "753 BC (6 months)", "notes": "Last of Jehu's dynasty · slain by Shallum."},
+      {"name": "Shallum", "verseRef": "2 Kings 15:13", "regnal": 0, "dates": "752 BC (1 month)", "notes": "Killed by Menahem after one month."},
+      {"name": "Menahem", "verseRef": "2 Kings 15:17", "regnal": 10, "dates": "752–742 BC", "notes": "Paid 1,000 talents of silver to Tiglath-pileser of Assyria (2 Kgs 15:19-20)."},
+      {"name": "Pekahiah", "verseRef": "2 Kings 15:23", "regnal": 2, "dates": "742–740 BC", "notes": "Slain by his captain Pekah."},
+      {"name": "Pekah", "verseRef": "2 Kings 15:27", "regnal": 20, "dates": "740–732 BC", "notes": "Tiglath-pileser deported the trans-Jordan tribes during his reign (2 Kgs 15:29)."},
+      {"name": "Hoshea", "verseRef": "2 Kings 17:1", "regnal": 9, "dates": "732–722 BC", "notes": "Last king of Israel · Samaria fell to Shalmaneser V/Sargon II in 722 BC · ten tribes carried into exile."}
+    ]
+  },
+
+  "pharaohs": {
+    "title": "Pharaohs of Egypt",
+    "subtitle": "Often unnamed in Scripture; identifications follow scholarly consensus",
+    "source": "Genesis – Jeremiah",
+    "icon": "pyramid",
+    "color": "#DAA520",
+    "era": "various",
+    "entries": [
+      {"name": "Pharaoh of Abraham's time", "verseRef": "Genesis 12:15", "dates": "c. 2000 BC", "notes": "Took Sarai into his house · plagued by God; possibly an Old Kingdom or early Middle Kingdom ruler. Unnamed."},
+      {"name": "Pharaoh of Joseph", "verseRef": "Genesis 41:14", "dates": "c. 1885 BC (traditional)", "notes": "Promoted Joseph to second-in-command · likely a Hyksos ruler or 12th-dynasty king. Unnamed."},
+      {"name": "Pharaoh \"who knew not Joseph\"", "verseRef": "Exodus 1:8", "dates": "c. 1450 BC (early date) or 1290 BC (late date)", "notes": "Began the oppression of Israel · ordered the Hebrew male infants killed. Often identified with Thutmose III or Seti I. Unnamed."},
+      {"name": "Pharaoh of the Exodus", "verseRef": "Exodus 5:1", "refs": ["Exodus 14:28"], "dates": "c. 1446 BC (early) or 1260 BC (late)", "notes": "Hardened heart through ten plagues · perished at the Red Sea. Often identified as Amenhotep II (early) or Ramesses II (late). Unnamed in Scripture."},
+      {"name": "Shishak", "alias": "Sheshonq I", "verseRef": "1 Kings 14:25", "refs": ["2 Chronicles 12:9"], "dates": "c. 925 BC", "notes": "Founder of the 22nd dynasty · invaded Judah in Rehoboam's 5th year and looted the Temple."},
+      {"name": "Zerah the Ethiopian", "verseRef": "2 Chronicles 14:9", "dates": "c. 897 BC", "notes": "Came against Asa with a million-man army · routed at Mareshah."},
+      {"name": "So", "verseRef": "2 Kings 17:4", "dates": "c. 725 BC", "notes": "Hoshea sent messengers to him for help · likely Osorkon IV or general Sib'e."},
+      {"name": "Tirhakah", "alias": "Taharqa", "verseRef": "2 Kings 19:9", "refs": ["Isaiah 37:9"], "dates": "690–664 BC", "notes": "25th-dynasty Cushite pharaoh · marched against Sennacherib in Hezekiah's day."},
+      {"name": "Pharaoh-necho", "alias": "Necho II", "verseRef": "2 Kings 23:29", "refs": ["2 Chronicles 35:20", "Jeremiah 46:2"], "dates": "610–595 BC", "notes": "Killed Josiah at Megiddo · deposed Jehoahaz · defeated by Nebuchadnezzar at Carchemish (605 BC)."},
+      {"name": "Pharaoh-hophra", "alias": "Apries", "verseRef": "Jeremiah 44:30", "dates": "589–570 BC", "notes": "Egyptian ally Zedekiah relied on against Babylon · prophesied to fall by Jeremiah."}
+    ]
+  },
+
+  "assyrian_kings": {
+    "title": "Kings of Assyria",
+    "subtitle": "The empire that destroyed northern Israel",
+    "source": "2 Kings 15–19; Isaiah 20, 36–37; Nahum",
+    "icon": "shield",
+    "color": "#5F4B32",
+    "era": "exile",
+    "entries": [
+      {"name": "Tiglath-pileser III", "alias": "Pul", "verseRef": "2 Kings 15:19", "refs": ["2 Kings 15:29", "1 Chronicles 5:26"], "dates": "745–727 BC", "notes": "Took tribute from Menahem · deported the trans-Jordan tribes."},
+      {"name": "Shalmaneser V", "verseRef": "2 Kings 17:3", "refs": ["2 Kings 18:9"], "dates": "727–722 BC", "notes": "Besieged Samaria for three years · died during the siege."},
+      {"name": "Sargon II", "verseRef": "Isaiah 20:1", "dates": "722–705 BC", "notes": "Completed the conquest of Samaria and the deportation of the ten tribes."},
+      {"name": "Sennacherib", "verseRef": "2 Kings 18:13", "refs": ["2 Kings 19:36", "Isaiah 36–37"], "dates": "705–681 BC", "notes": "Invaded Judah in Hezekiah's 14th year · 185,000 men slain by the angel of the LORD outside Jerusalem · murdered by his sons in Nineveh."},
+      {"name": "Esarhaddon", "verseRef": "2 Kings 19:37", "refs": ["Ezra 4:2", "Isaiah 37:38"], "dates": "681–669 BC", "notes": "Conquered Egypt · resettled foreign peoples in Samaria."}
+    ]
+  },
+
+  "babylonian_kings": {
+    "title": "Kings of Babylon",
+    "subtitle": "The empire that destroyed Jerusalem and exiled Judah",
+    "source": "2 Kings 20, 24–25; Daniel; Jeremiah 52",
+    "icon": "crown",
+    "color": "#6B0F1A",
+    "era": "exile",
+    "entries": [
+      {"name": "Merodach-baladan", "alias": "Berodach-baladan", "verseRef": "2 Kings 20:12", "refs": ["Isaiah 39:1"], "dates": "722–710 BC and 703 BC", "notes": "Sent envoys to Hezekiah after his recovery · Isaiah prophesied the future Babylonian captivity in response."},
+      {"name": "Nabopolassar", "verseRef": "2 Kings 24:1 (background)", "dates": "626–605 BC", "notes": "Founded the Neo-Babylonian Empire · destroyed Nineveh in 612 BC. Not named in Scripture but father of Nebuchadnezzar."},
+      {"name": "Nebuchadnezzar II", "verseRef": "2 Kings 24:1", "refs": ["Daniel 1:1", "Daniel 4:30", "Jeremiah 52"], "dates": "605–562 BC", "notes": "Defeated Pharaoh-necho at Carchemish · destroyed Jerusalem in 586 BC · driven mad seven years (Dan 4) · restored to acknowledge \"the Most High\"."},
+      {"name": "Evil-merodach", "alias": "Amel-Marduk", "verseRef": "2 Kings 25:27", "refs": ["Jeremiah 52:31"], "dates": "562–560 BC", "notes": "Released Jehoiachin from prison in his accession year."},
+      {"name": "Belshazzar", "verseRef": "Daniel 5:1", "refs": ["Daniel 7:1", "Daniel 8:1"], "dates": "co-regent c. 553–539 BC", "notes": "Son of Nabonidus · saw the writing on the wall · slain the night Babylon fell to the Medes and Persians."}
+    ]
+  },
+
+  "persian_kings": {
+    "title": "Kings of Persia",
+    "subtitle": "Cyrus → Artaxerxes · the empire that ended the exile",
+    "source": "Ezra; Nehemiah; Esther; Daniel",
+    "icon": "crown",
+    "color": "#D4A017",
+    "era": "exile",
+    "entries": [
+      {"name": "Cyrus the Great", "verseRef": "2 Chronicles 36:22", "refs": ["Ezra 1:1-4", "Isaiah 44:28", "Isaiah 45:1", "Daniel 6:28"], "dates": "559–530 BC", "notes": "Conquered Babylon in 539 BC · issued the decree releasing the Jews to return and rebuild the Temple · named in Isaiah 200 years before his birth."},
+      {"name": "Darius the Mede", "verseRef": "Daniel 5:31", "refs": ["Daniel 6", "Daniel 9:1"], "dates": "c. 539 BC", "notes": "Took the kingdom when Belshazzar fell · cast Daniel into the lions' den · sometimes identified with Cyaxares II or Gubaru."},
+      {"name": "Cambyses II", "verseRef": "—", "dates": "530–522 BC", "notes": "Cyrus's son · conquered Egypt · not directly named in Scripture but reigned during the temple-building delays of Ezra 4."},
+      {"name": "Darius I", "alias": "Darius the Great", "verseRef": "Ezra 5:6", "refs": ["Ezra 6", "Haggai 1:1", "Zechariah 1:1"], "dates": "522–486 BC", "notes": "Re-issued Cyrus's decree · the Temple was completed in his 6th year (516 BC) · Haggai and Zechariah prophesied during his reign."},
+      {"name": "Ahasuerus", "alias": "Xerxes I", "verseRef": "Esther 1:1", "dates": "486–465 BC", "notes": "Persian king of the Esther narrative · invaded Greece in 480 BC · married Esther in his 7th year."},
+      {"name": "Artaxerxes I", "verseRef": "Ezra 7:1", "refs": ["Nehemiah 2:1"], "dates": "465–424 BC", "notes": "Authorized Ezra's return in his 7th year (458 BC) · authorized Nehemiah to rebuild the walls in his 20th year (445 BC)."},
+      {"name": "Darius II", "alias": "Darius the Persian", "verseRef": "Nehemiah 12:22", "dates": "423–405 BC", "notes": "Last Persian king explicitly named in Scripture."}
+    ]
+  },
+
+  "roman_emperors": {
+    "title": "Roman Emperors of the New Testament",
+    "subtitle": "Augustus → Nero · the imperial backdrop of Christ and the early Church",
+    "source": "Luke 2–3; Acts 11–28",
+    "icon": "crown",
+    "color": "#800020",
+    "era": "newtestament",
+    "entries": [
+      {"name": "Augustus", "alias": "Octavian, Caesar Augustus", "verseRef": "Luke 2:1", "dates": "27 BC – AD 14", "notes": "Decreed the census that brought Joseph and Mary to Bethlehem · first Roman emperor."},
+      {"name": "Tiberius", "verseRef": "Luke 3:1", "dates": "AD 14–37", "notes": "Reigning emperor when John the Baptist began ministry (15th year, c. AD 28-29) · throughout Christ's public ministry and crucifixion."},
+      {"name": "Caligula", "alias": "Gaius", "verseRef": "—", "dates": "AD 37–41", "notes": "Not named in Scripture · attempted to set up his statue in the Temple."},
+      {"name": "Claudius", "verseRef": "Acts 11:28", "refs": ["Acts 18:2"], "dates": "AD 41–54", "notes": "Famine in his reign foretold by Agabus · expelled Jews from Rome (Acts 18:2)."},
+      {"name": "Nero", "verseRef": "Acts 25:11 (\"Caesar\")", "refs": ["Philippians 4:22"], "dates": "AD 54–68", "notes": "The \"Caesar\" to whom Paul appealed · executed Paul (and tradition holds Peter) · burned Rome in AD 64."}
+    ]
+  },
+
+  "herodian_dynasty": {
+    "title": "The Herodian Dynasty",
+    "subtitle": "Herod the Great and his successors · 37 BC – AD 100",
+    "source": "Matthew, Luke, Acts",
+    "icon": "crown",
+    "color": "#5B0E2D",
+    "era": "newtestament",
+    "entries": [
+      {"name": "Herod the Great", "verseRef": "Matthew 2:1", "refs": ["Luke 1:5"], "dates": "37–4 BC", "notes": "Edomite by birth · rebuilt the Temple · ordered the slaughter of Bethlehem's infants."},
+      {"name": "Herod Archelaus", "verseRef": "Matthew 2:22", "dates": "4 BC – AD 6", "notes": "Inherited Judea and Samaria · so cruel that Joseph took the family to Galilee instead · deposed by Augustus."},
+      {"name": "Herod Antipas", "verseRef": "Matthew 14:1", "refs": ["Luke 3:1", "Luke 23:7", "Mark 6:14-29"], "dates": "4 BC – AD 39", "notes": "Tetrarch of Galilee and Perea · beheaded John the Baptist · examined Jesus before His crucifixion · the \"that fox\" of Luke 13:32."},
+      {"name": "Herod Philip", "verseRef": "Luke 3:1", "dates": "4 BC – AD 34", "notes": "Tetrarch of Iturea and Trachonitis · rebuilt Caesarea Philippi where Peter confessed Christ (Matt 16:13-16)."},
+      {"name": "Herod Agrippa I", "verseRef": "Acts 12:1", "dates": "AD 41–44", "notes": "Killed James the brother of John · imprisoned Peter · struck dead by an angel for accepting worship (Acts 12:23)."},
+      {"name": "Herod Agrippa II", "verseRef": "Acts 25:13", "refs": ["Acts 26"], "dates": "AD 50–c. 100", "notes": "Heard Paul's defense at Caesarea · \"almost thou persuadest me to be a Christian\" (Acts 26:28)."}
+    ]
+  },
+
+  "roman_governors": {
+    "title": "Roman Governors of Judea",
+    "subtitle": "Pontius Pilate, Felix, Festus · Roman procurators in Acts",
+    "source": "Matthew 27; John 18; Acts 23–25",
+    "icon": "shield",
+    "color": "#4A0E1F",
+    "era": "newtestament",
+    "entries": [
+      {"name": "Pontius Pilate", "verseRef": "Matthew 27:2", "refs": ["Luke 3:1", "John 18:28-19:22"], "dates": "AD 26–36", "notes": "Fifth Roman prefect of Judea · sentenced Jesus to be crucified · attested in the Pilate Stone inscription found at Caesarea."},
+      {"name": "Felix", "verseRef": "Acts 23:24", "refs": ["Acts 24"], "dates": "AD 52–60", "notes": "Heard Paul · trembled at his preaching · left him bound, hoping for a bribe (Acts 24:25-26)."},
+      {"name": "Festus", "verseRef": "Acts 24:27", "refs": ["Acts 25–26"], "dates": "AD 60–62", "notes": "Successor to Felix · before whom Paul appealed to Caesar · died in office."}
+    ]
+  },
+
+  "high_priests": {
+    "title": "Notable High Priests",
+    "subtitle": "Aaron through Caiaphas",
+    "source": "Various — Exodus, Leviticus, 1–2 Samuel, John, Acts",
+    "icon": "scroll",
+    "color": "#702963",
+    "era": "various",
+    "entries": [
+      {"name": "Aaron", "verseRef": "Exodus 28:1", "refs": ["Leviticus 8"], "lifespan": 123, "dates": "c. 1446 BC", "notes": "First high priest · brother of Moses · tribe of Levi · died on Mount Hor (Num 33:38-39)."},
+      {"name": "Eleazar", "verseRef": "Numbers 20:25", "notes": "Aaron's third son and successor."},
+      {"name": "Phinehas", "verseRef": "Numbers 25:7", "refs": ["Psalm 106:30"], "notes": "Stopped a plague by zealous action · received the covenant of an everlasting priesthood."},
+      {"name": "Eli", "verseRef": "1 Samuel 1:9", "lifespan": 98, "regnal": 40, "notes": "Priest at Shiloh · raised Samuel · died on hearing of the Ark's capture."},
+      {"name": "Zadok", "verseRef": "2 Samuel 8:17", "refs": ["1 Kings 1:39"], "notes": "Loyal to David and Solomon · anointed Solomon · ancestor of subsequent legitimate priestly line (Sadducees)."},
+      {"name": "Hilkiah", "verseRef": "2 Kings 22:8", "notes": "Found the Book of the Law during Josiah's Temple repairs."},
+      {"name": "Joshua", "alias": "Jeshua son of Jozadak", "verseRef": "Haggai 1:1", "refs": ["Zechariah 3", "Ezra 3:2"], "notes": "First high priest after the return from exile · co-led the rebuilding of the Temple with Zerubbabel."},
+      {"name": "Annas", "verseRef": "Luke 3:2", "refs": ["John 18:13", "Acts 4:6"], "dates": "AD 6–15 in office; influential thereafter", "notes": "Father-in-law of Caiaphas · still called \"high priest\" though deposed · Jesus first led to him after arrest."},
+      {"name": "Caiaphas", "alias": "Joseph", "verseRef": "Matthew 26:3", "refs": ["John 11:49-52", "John 18:14"], "dates": "AD 18–36", "notes": "Officiating high priest at Jesus' trial · prophesied that one man would die for the people."}
+    ]
+  },
+
+  "twelve_apostles": {
+    "title": "The Twelve Apostles",
+    "subtitle": "Christ's chosen Twelve · Matthew 10:2–4; Mark 3:16–19; Luke 6:13–16; Acts 1:13",
+    "source": "Matthew 10:2–4 (and parallels)",
+    "icon": "dove",
+    "color": "#1E3A5F",
+    "era": "newtestament",
+    "entries": [
+      {"name": "Simon Peter", "alias": "Cephas", "verseRef": "Matthew 4:18", "refs": ["Matthew 10:2", "John 1:42"], "notes": "Brother of Andrew · fisherman · spokesman of the Twelve · author of 1 & 2 Peter."},
+      {"name": "Andrew", "verseRef": "Matthew 4:18", "refs": ["John 1:40"], "notes": "Brother of Peter · originally a disciple of John the Baptist · brought Peter to Jesus."},
+      {"name": "James (son of Zebedee)", "verseRef": "Matthew 4:21", "refs": ["Acts 12:2"], "notes": "Brother of John · with Peter and John in the inner circle · first apostle martyred (by Herod Agrippa I, c. AD 44)."},
+      {"name": "John", "verseRef": "Matthew 4:21", "refs": ["John 13:23", "Revelation 1:9"], "notes": "\"The disciple whom Jesus loved\" · author of the Fourth Gospel, three epistles, and Revelation."},
+      {"name": "Philip", "verseRef": "John 1:43", "refs": ["John 6:5", "John 12:21"], "notes": "From Bethsaida · brought Nathanael to Jesus."},
+      {"name": "Bartholomew", "alias": "Nathanael", "verseRef": "John 1:45", "refs": ["Matthew 10:3"], "notes": "From Cana · Jesus saw him under the fig tree."},
+      {"name": "Thomas", "alias": "Didymus (\"Twin\")", "verseRef": "John 11:16", "refs": ["John 20:24-29"], "notes": "\"Doubting Thomas\" · would not believe without seeing the wounds · eventually proclaimed \"My Lord and my God\"."},
+      {"name": "Matthew", "alias": "Levi", "verseRef": "Matthew 9:9", "refs": ["Mark 2:14", "Luke 5:27"], "notes": "Tax collector at Capernaum · author of the Gospel of Matthew."},
+      {"name": "James (son of Alphaeus)", "verseRef": "Matthew 10:3", "notes": "Sometimes called \"James the Less\" · possibly the brother of Matthew."},
+      {"name": "Thaddaeus", "alias": "Judas (not Iscariot), Lebbaeus", "verseRef": "Matthew 10:3", "refs": ["John 14:22", "Acts 1:13"], "notes": "Asked Jesus, \"Lord, how is it that thou wilt manifest thyself unto us, and not unto the world?\""},
+      {"name": "Simon the Zealot", "alias": "Simon the Canaanite", "verseRef": "Matthew 10:4", "refs": ["Acts 1:13"], "notes": "Belonged to (or sympathised with) the Zealot party that opposed Roman rule."},
+      {"name": "Judas Iscariot", "verseRef": "Matthew 10:4", "refs": ["John 13:26", "Matthew 27:5"], "notes": "Treasurer of the Twelve · betrayed Jesus for thirty pieces of silver · hanged himself."},
+      {"name": "Matthias (replacement)", "verseRef": "Acts 1:26", "notes": "Chosen by lot to replace Judas after the resurrection · had been with the disciples from John's baptism onward."},
+      {"name": "Paul", "alias": "Saul of Tarsus", "verseRef": "Acts 9:15", "refs": ["1 Corinthians 15:8-10", "Galatians 1"], "notes": "Apostle to the Gentiles · former Pharisee and persecutor · author of 13 NT epistles · martyred under Nero, c. AD 67."}
+    ]
+  }
+}

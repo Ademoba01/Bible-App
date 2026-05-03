@@ -8,6 +8,7 @@ import '../../data/bible_maps_data.dart';
 import '../../theme.dart';
 import '../../widgets/rhema_title.dart';
 import '../share/animated_story_share.dart';
+import 'bible_chronologies_screen.dart';
 import 'bible_maps_screen.dart';
 
 /// "Bible Timeline" — a chronological walk through biblical history.
@@ -234,6 +235,73 @@ class _IntroCard extends StatelessWidget {
               fontSize: 15,
               color: BrandColors.brown.withValues(alpha: 0.85),
               height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // ── Cross-link to the genealogy/chronology lists ──
+          // The era timeline above narrates BIBLE HISTORY by period.
+          // BibleChronologiesScreen indexes the same history by named
+          // FAMILY TREES + KING LISTS (Patriarchs, Kings of Judah,
+          // Pharaohs, Persian kings, Roman emperors, the Twelve, etc.).
+          // Both are useful — this card surfaces the alternate cut.
+          Material(
+            color: BrandColors.gold.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(14),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const BibleChronologiesScreen(),
+                ),
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: BrandColors.gold.withValues(alpha: 0.40)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: BrandColors.gold.withValues(alpha: 0.22),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.account_tree,
+                          color: BrandColors.brownDeep, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Bible Chronologies',
+                            style: GoogleFonts.cormorantGaramond(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: BrandColors.brownDeep,
+                            ),
+                          ),
+                          Text(
+                            'Patriarchs, kings, pharaohs, apostles — '
+                            'every named lineage in Scripture',
+                            style: GoogleFonts.lora(
+                              fontSize: 12,
+                              color: BrandColors.brownMid,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right,
+                        color: BrandColors.brownDeep),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
