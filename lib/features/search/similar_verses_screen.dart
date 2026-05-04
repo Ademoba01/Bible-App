@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../data/models.dart';
+import '../../data/translations.dart';
 import '../../services/ai_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
@@ -173,69 +174,300 @@ class _SimilarVersesScreenState extends ConsumerState<SimilarVersesScreen> {
     );
   }
 
+  /// Navigate to the source verse in the Read tab. Used by the
+  /// "Back to source" tap on the gold source-verse card at the top
+  /// (user feedback: the headline should take you back to the
+  /// initial search).
+  void _backToSource() {
+    ref.read(readingLocationProvider.notifier).setBook(widget.sourceRef.book);
+    ref
+        .read(readingLocationProvider.notifier)
+        .setChapter(widget.sourceRef.chapter);
+    ref.read(highlightVerseProvider.notifier).state = widget.sourceRef.verse;
+    ref.read(tabIndexProvider.notifier).set(1);
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  /// Open the translation picker sheet — reuses the same A/B layout
+  /// pattern as the chapter bar's translation switcher. Switching
+  /// translation re-fetches similar verses in the new language so
+  /// users can compare KJV ↔ Yoruba ↔ BSB on the same passage.
+  Future<void> _pickTranslation() async {
+    final theme = Theme.of(context);
+    final current = ref.read(settingsProvider).translation;
+    final available = kTranslations.where((t) => t.available).toList();
+    final local = available.where((t) => t.isLocal).toList();
+    final online = available.where((t) => !t.isLocal).toList();
+
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) {
+        Widget tile(Translation t) {
+          final isCurrent = t.id == current;
+          return ListTile(
+            leading: Icon(
+              isCurrent ? Icons.check_circle : Icons.menu_book_rounded,
+              color:
+                  isCurrent ? BrandColors.gold : BrandColors.brownMid,
+            ),
+            title: Text(t.name,
+                style: GoogleFonts.lora(
+                    fontWeight:
+                        isCurrent ? FontWeight.w700 : FontWeight.w500)),
+            subtitle: Text(
+              t.description,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.lora(fontSize: 12),
+            ),
+            trailing: t.isLocal
+                ? Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: BrandColors.gold.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text('Offline',
+                        style: GoogleFonts.lora(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: BrandColors.brownDeep,
+                        )))
+                : null,
+            onTap: () => Navigator.pop(sheetCtx, t.id),
+          );
+        }
+
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.7,
+          minChildSize: 0.4,
+          maxChildSize: 0.92,
+          builder: (_, scrollController) => ListView(
+            controller: scrollController,
+            padding: const EdgeInsets.only(bottom: 24),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                child: Text('Switch translation',
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    )),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                child: Text(
+                  'Re-runs the similar-verses search in the chosen translation. Useful for KJV ↔ Yoruba ↔ BSB study.',
+                  style: GoogleFonts.lora(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              if (local.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+                  child: Text('Offline',
+                      style: GoogleFonts.lora(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: BrandColors.brownMid,
+                      )),
+                ),
+                ...local.map(tile),
+              ],
+              if (online.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                  child: Text('Online',
+                      style: GoogleFonts.lora(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: BrandColors.brownMid,
+                      )),
+                ),
+                ...online.map(tile),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+
+    if (picked != null && picked != current && mounted) {
+      await ref.read(settingsProvider.notifier).setTranslation(picked);
+      // Re-fetch similar verses in the new translation. Wipe results
+      // first so the user sees the loading state and knows the change
+      // took effect.
+      setState(() {
+        _results = null;
+        _loading = true;
+      });
+      await _loadSimilar();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final translationId =
+        ref.watch(settingsProvider.select((s) => s.translation));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Similar Verses'),
+        actions: [
+          // Translation chip (same look as the chapter bar's chip in
+          // Reading screen) — tap opens the picker, switching re-runs
+          // the search in the new translation.
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(
+              child: InkWell(
+                onTap: _pickTranslation,
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: BrandColors.gold.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: BrandColors.gold.withValues(alpha: 0.45),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.menu_book_rounded,
+                          size: 13, color: BrandColors.brownDeep),
+                      const SizedBox(width: 4),
+                      Text(
+                        translationById(translationId).name,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.3,
+                          color: BrandColors.brownDeep,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(Icons.unfold_more,
+                          size: 14, color: BrandColors.brownDeep),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Source verse card
-          Container(
-            margin: const EdgeInsets.all(16),
+          // ── Source verse card — now tappable ──
+          // User feedback: "the similar verses headline should be
+          // clickable to take us back to the initial search". This
+          // gold card is the headline + source — tap navigates to
+          // that verse in the Read tab with the highlight pulse.
+          // Tooltip on hover (web) explains.
+          Padding(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
-              border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.format_quote, size: 18, color: theme.colorScheme.primary),
-                    const SizedBox(width: 8),
-                    Text(
-                      widget.sourceRef.id,
-                      style: GoogleFonts.lora(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.primary,
-                      ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _backToSource,
+                borderRadius: BorderRadius.circular(16),
+                child: Tooltip(
+                  message: 'Open ${widget.sourceRef.id} in Read',
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: theme.colorScheme.primaryContainer
+                          .withValues(alpha: 0.4),
+                      border: Border.all(
+                          color: theme.colorScheme.primary
+                              .withValues(alpha: 0.3)),
                     ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                      ),
-                      child: Text('SOURCE',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.primary,
-                            letterSpacing: 1,
-                          )),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.format_quote,
+                                size: 18,
+                                color: theme.colorScheme.primary),
+                            const SizedBox(width: 8),
+                            Text(
+                              widget.sourceRef.id,
+                              style: GoogleFonts.lora(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: theme.colorScheme.primary
+                                    .withValues(alpha: 0.1),
+                              ),
+                              child: Text('TAP TO OPEN',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: theme.colorScheme.primary,
+                                    letterSpacing: 1,
+                                  )),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          widget.sourceText,
+                          style: GoogleFonts.lora(
+                            fontSize: 14,
+                            height: 1.5,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.arrow_back,
+                                size: 12,
+                                color: theme.colorScheme.primary
+                                    .withValues(alpha: 0.7)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Back to source verse',
+                              style: GoogleFonts.lora(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                fontStyle: FontStyle.italic,
+                                color: theme.colorScheme.primary
+                                    .withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  widget.sourceText,
-                  style: GoogleFonts.lora(
-                    fontSize: 14,
-                    height: 1.5,
-                    color: theme.colorScheme.onSurface,
                   ),
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
+              ),
             ),
           ),
 
