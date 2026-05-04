@@ -79,11 +79,81 @@ void main() async {
   runApp(const ProviderScope(child: BibleApp()));
 }
 
-class BibleApp extends ConsumerWidget {
+/// Parses the launch URL on web and applies any deep-link query
+/// parameters to the appropriate Riverpod providers. Lets links like
+///   https://rhemabibles.com/?book=Genesis&chapter=5&verse=3
+/// open the app at the right verse — which makes "Open in new tab"
+/// genuinely useful (the new tab actually loads the verse, not the
+/// home screen). No-op on mobile (apps launch with no URL state).
+///
+/// Param shape:
+///   ?book=Genesis        → readingLocationProvider.book
+///   &chapter=5           → readingLocationProvider.chapter
+///   &verse=3             → highlightVerseProvider (triggers gold pulse)
+///   &tab=read|study|...  → tabIndexProvider (defaults to "read" if any
+///                          book is set)
+void _applyDeepLinkFromUrl(WidgetRef ref) {
+  if (!kIsWeb) return;
+  final params = Uri.base.queryParameters;
+  if (params.isEmpty) return;
+
+  final book = params['book'];
+  final chapterStr = params['chapter'];
+  final verseStr = params['verse'];
+  final tab = params['tab'];
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (book != null && book.isNotEmpty) {
+      ref.read(readingLocationProvider.notifier).setBook(book);
+    }
+    final chapter = int.tryParse(chapterStr ?? '');
+    if (chapter != null && chapter > 0) {
+      ref.read(readingLocationProvider.notifier).setChapter(chapter);
+    }
+    final verse = int.tryParse(verseStr ?? '');
+    if (verse != null && verse > 0) {
+      ref.read(highlightVerseProvider.notifier).state = verse;
+    }
+    // Switch to read tab if a verse-level deep link came in. Otherwise
+    // honour an explicit ?tab= param.
+    int? tabIdx;
+    if (tab != null) {
+      switch (tab) {
+        case 'home': tabIdx = 0; break;
+        case 'read': tabIdx = 1; break;
+        case 'study': tabIdx = 2; break;
+        case 'saved': tabIdx = 3; break;
+      }
+    }
+    if (tabIdx == null && (book != null || chapter != null)) {
+      tabIdx = 1;
+    }
+    if (tabIdx != null) {
+      ref.read(tabIndexProvider.notifier).set(tabIdx);
+    }
+  });
+}
+
+class BibleApp extends ConsumerStatefulWidget {
   const BibleApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BibleApp> createState() => _BibleAppState();
+}
+
+class _BibleAppState extends ConsumerState<BibleApp> {
+  bool _deepLinkApplied = false;
+
+  @override
+  Widget build(BuildContext context) {
+    // Apply URL deep-link once on first build. Done here (not in main)
+    // because we need a WidgetRef to write providers and ProviderScope
+    // is only mounted inside the runApp tree.
+    if (!_deepLinkApplied) {
+      _deepLinkApplied = true;
+      _applyDeepLinkFromUrl(ref);
+    }
+
     final settings = ref.watch(settingsProvider);
     final brightness = settings.darkMode ? Brightness.dark : Brightness.light;
     // Kids takes precedence (it's its own world). Otherwise the user's

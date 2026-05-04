@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/chronologies_service.dart';
 import '../../data/models.dart';
@@ -473,39 +475,9 @@ class _EntryRow extends StatelessWidget {
                       children: allRefs
                           .where((r) => r.isNotEmpty && r != '—')
                           .map(
-                            (r) => InkWell(
-                              borderRadius: BorderRadius.circular(8),
+                            (r) => _VerseRefChip(
+                              refStr: r,
                               onTap: () => onOpenRef(r),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: BrandColors.gold
-                                      .withValues(alpha: 0.18),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: BrandColors.gold
-                                        .withValues(alpha: 0.4),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.menu_book,
-                                        size: 11,
-                                        color: BrandColors.brownDeep),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      r,
-                                      style: GoogleFonts.lora(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                        color: BrandColors.brownDeep,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ),
                           )
                           .toList(),
@@ -516,6 +488,99 @@ class _EntryRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Verse-reference chip with "open in new tab" affordance on web.
+///
+/// Standard tap → in-app deep link (existing behavior).
+/// Web only: a small `↗` icon next to the chip → builds the canonical
+/// URL `https://rhemabibles.com/?book=X&chapter=Y&verse=Z` and opens
+/// it in a new tab. The new tab is genuinely useful — main.dart's
+/// `_applyDeepLinkFromUrl` parses those query params on boot and
+/// applies them to the providers, so the new tab loads on the right
+/// verse instead of the home screen.
+class _VerseRefChip extends StatelessWidget {
+  const _VerseRefChip({required this.refStr, required this.onTap});
+
+  final String refStr;
+  final VoidCallback onTap;
+
+  String? _verseUrl() {
+    final m = RegExp(r'^([1-3]?\s*[A-Za-z ]+?)\s+(\d+):(\d+)')
+        .firstMatch(refStr.trim());
+    if (m == null) return null;
+    final book = Uri.encodeComponent(m.group(1)!.trim());
+    final chapter = m.group(2)!;
+    final verse = m.group(3)!;
+    return 'https://rhemabibles.com/?book=$book&chapter=$chapter&verse=$verse';
+  }
+
+  Future<void> _openInNewTab() async {
+    final url = _verseUrl();
+    if (url == null) return;
+    final uri = Uri.parse(url);
+    // webOnlyWindowName='_blank' tells the browser to open a new tab.
+    // On native this parameter is ignored, but the kIsWeb guard at the
+    // call site means this path is web-only anyway.
+    await launchUrl(uri, webOnlyWindowName: '_blank');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: BrandColors.gold.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: BrandColors.gold.withValues(alpha: 0.4),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.menu_book,
+              size: 11, color: BrandColors.brownDeep),
+          const SizedBox(width: 4),
+          Text(
+            refStr,
+            style: GoogleFonts.lora(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: BrandColors.brownDeep,
+            ),
+          ),
+          if (kIsWeb) ...[
+            const SizedBox(width: 4),
+            Tooltip(
+              message: 'Open in new tab',
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _openInNewTab,
+                  borderRadius: BorderRadius.circular(4),
+                  child: const Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Icon(Icons.open_in_new,
+                        size: 11, color: BrandColors.brownDeep),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: chip,
       ),
     );
   }

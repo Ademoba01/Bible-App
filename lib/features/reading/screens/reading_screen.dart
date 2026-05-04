@@ -1191,15 +1191,32 @@ class _VerseListState extends State<_VerseList> {
         if (_dragSelectionAnchor == null) return;
         _extendDragSelectionTo(event.position);
       },
-      child: Stack(
-      // Tight constraints — same fix class as home_screen Stack. Without
-      // fit:expand, the inner ListView gets unbounded vertical and can't
-      // compute its viewport.
-      fit: StackFit.expand,
-      children: [
-        Container(
-      color: isDark ? const Color(0xFF2B1E19) : BrandColors.parchment,
-      child: ListView.builder(
+      // ── SelectionArea ──
+      // User-reported: drag-to-select a few words to copy was almost
+      // impossible. The custom multi-verse selection mode only does
+      // whole verses; partial-text copy (the single most common Bible-
+      // study action) had no good path.
+      //
+      // SelectionArea (Flutter 3.7+) hands selection back to the
+      // platform: native click+drag on web/desktop, native long-press +
+      // drag handles on iOS/Android, system Copy / Look Up / Translate
+      // menu out-of-the-box. ⌘C / Ctrl+C / right-click → Copy work.
+      // Standard pattern matched by every modern reading app
+      // (Pocket, Substack, Medium, Books.app).
+      //
+      // Multi-verse Select mode (✓ icon in chapter bar) is unchanged
+      // — that flow still does whole-verse selection with reference
+      // attribution, exactly as before.
+      child: SelectionArea(
+        child: Stack(
+        // Tight constraints — same fix class as home_screen Stack. Without
+        // fit:expand, the inner ListView gets unbounded vertical and can't
+        // compute its viewport.
+        fit: StackFit.expand,
+        children: [
+          Container(
+        color: isDark ? const Color(0xFF2B1E19) : BrandColors.parchment,
+        child: ListView.builder(
       controller: scrollController,
       // BouncingScrollPhysics: iOS-style fling + edge bounce on swipe.
       // AlwaysScrollableScrollPhysics keeps the surface interactive
@@ -1663,6 +1680,7 @@ class _VerseListState extends State<_VerseList> {
           ),
       ],
       ),
+      ), // close SelectionArea
     );
   }
 
