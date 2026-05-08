@@ -155,6 +155,18 @@ class _SimilarVersesScreenState extends ConsumerState<SimilarVersesScreen> {
                 ),
                 onPressed: () {
                   Navigator.pop(sheetContext); // dismiss bottom sheet
+                  // Preserve the similar-verses source so the floating
+                  // "Back to Similar Verses" chip on the Read screen
+                  // can re-push SimilarVersesScreen with the same
+                  // source verse pre-loaded — user lands back where
+                  // they left off, not on a fresh search.
+                  ref.read(similarVersesReturnProvider.notifier).state =
+                      SimilarVersesReturn(
+                    book: widget.sourceRef.book,
+                    chapter: widget.sourceRef.chapter,
+                    verse: widget.sourceRef.verse,
+                    text: widget.sourceText,
+                  );
                   // Set highlight + return context providers
                   ref.read(highlightVerseProvider.notifier).state = verseRef.verse;
                   ref.read(returnContextProvider.notifier).state = 'similar_verses';

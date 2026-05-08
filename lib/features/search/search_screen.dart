@@ -25,6 +25,25 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       const [];
 
   @override
+  void initState() {
+    super.initState();
+    // If the user came back here via the floating "Back to Search"
+    // chip on the Read screen, restore their last query so they
+    // pick up exactly where they left off (with results re-running
+    // automatically). One-shot consume — clear after restoring so
+    // a fresh open of Search starts blank.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final saved = ref.read(searchReturnQueryProvider);
+      if (saved != null && saved.isNotEmpty) {
+        _controller.text = saved;
+        ref.read(searchReturnQueryProvider.notifier).state = null;
+        _run();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _debounce?.cancel();
     _controller.dispose();
@@ -201,6 +220,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             fromAi: r.fromAi,
                             onTap: () {
                               if (r.ref.chapter == 0) return; // unresolved ref
+                              // Preserve the search context so the
+                              // floating "Back to Search" chip on the
+                              // Read screen can re-push this screen with
+                              // the same query restored.
+                              ref
+                                  .read(searchReturnQueryProvider.notifier)
+                                  .state = _lastQuery;
+                              ref
+                                  .read(returnContextProvider.notifier)
+                                  .state = 'search';
                               ref
                                   .read(readingLocationProvider.notifier)
                                   .setBook(r.ref.book);

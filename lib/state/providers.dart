@@ -639,6 +639,33 @@ final streakProvider =
 /// and highlight it with an animated gold background.
 final highlightVerseProvider = StateProvider<int?>((ref) => null);
 
+/// Preserved Similar-Verses context. When the user taps "Read full
+/// chapter" from a similar-verses result, the source verse is saved
+/// here so the floating "Back to Similar Verses" chip on the Read
+/// screen can re-push SimilarVersesScreen with the same source — the
+/// user lands exactly where they left off, not on a fresh search.
+class SimilarVersesReturn {
+  final String book;
+  final int chapter;
+  final int verse;
+  final String text;
+  const SimilarVersesReturn({
+    required this.book,
+    required this.chapter,
+    required this.verse,
+    required this.text,
+  });
+}
+
+final similarVersesReturnProvider =
+    StateProvider<SimilarVersesReturn?>((ref) => null);
+
+/// Preserved Search-results context. When the user taps a search
+/// result (or its "Read full chapter" path), the query string is
+/// saved here so the floating "Back to Search" chip can re-push
+/// SearchScreen with the query restored — no retyping needed.
+final searchReturnQueryProvider = StateProvider<String?>((ref) => null);
+
 // ---------- Strong's: Saved Words + History (Personal Lexicon) ----------
 
 /// One entry in the user's personal lexicon — every Greek/Hebrew word they

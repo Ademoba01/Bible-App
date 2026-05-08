@@ -17,6 +17,7 @@ import '../../settings/settings_screen.dart';
 import '../../study/strongs_sheet.dart';
 import '../../study/my_lexicon_screen.dart';
 import '../../listen/listen_screen.dart';
+import '../../search/search_screen.dart';
 import '../../search/similar_verses_screen.dart';
 import '../../share/verse_card_renderer.dart';
 import '../../share/animated_story_share.dart';
@@ -630,6 +631,51 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                                           builder: (_) =>
                                               const BibleMapsScreen(),
                                         );
+                                      } else if (ctx == 'similar_verses') {
+                                        // Similar Verses was popped via
+                                        // popUntil(first) when we deep-
+                                        // linked. Re-push using the
+                                        // saved source so the user lands
+                                        // back on the same search.
+                                        final saved = ref.read(
+                                            similarVersesReturnProvider);
+                                        ref
+                                            .read(returnContextProvider
+                                                .notifier)
+                                            .state = null;
+                                        if (saved != null) {
+                                          ref
+                                              .read(
+                                                  similarVersesReturnProvider
+                                                      .notifier)
+                                              .state = null;
+                                          await Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  SimilarVersesScreen(
+                                                sourceRef: VerseRef(
+                                                    saved.book,
+                                                    saved.chapter,
+                                                    saved.verse),
+                                                sourceText: saved.text,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      } else if (ctx == 'search') {
+                                        // Search was popped when the
+                                        // result was tapped — re-push
+                                        // SearchScreen and the saved
+                                        // query gets restored on init.
+                                        ref
+                                            .read(returnContextProvider
+                                                .notifier)
+                                            .state = null;
+                                        await Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) => const SearchScreen(),
+                                          ),
+                                        );
                                       } else {
                                         Navigator.of(context).maybePop();
                                       }
@@ -642,9 +688,11 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                                         Text(
                                           returnContext == 'similar_verses'
                                               ? 'Back to Similar Verses'
-                                              : returnContext == 'map'
-                                                  ? 'Back to Map'
-                                                  : 'Back',
+                                              : returnContext == 'search'
+                                                  ? 'Back to Search'
+                                                  : returnContext == 'map'
+                                                      ? 'Back to Map'
+                                                      : 'Back',
                                           style: GoogleFonts.lora(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,
