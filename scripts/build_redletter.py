@@ -89,16 +89,51 @@ OT_BOOKS = {
 # "be light:" and incorrectly colored only the trailing narrative
 # "and there was light." instead of the actual divine speech.
 BLUE_OPENERS = [
-    r"\bthus saith the LORD\b[^.,;:]*[,:]\s*",
-    r"\bthe LORD said\b[^.,;:]*[,:]\s*",
-    r"\bthe LORD spake\b[^.,;:]*[,:]\s*",
-    r"\bthe LORD answered\b[^.,;:]*[,:]\s*",
-    r"\band God said\b[^.,;:]*[,:]\s*",
-    r"\bGod said unto\b[^.,;:]*[,:]\s*",
-    r"\bGod spake\b[^.,;:]*[,:]\s*",
-    r"\bword of the LORD came\b[^.,;:]*[,:]\s*",
+    # Classic prophetic / oracle frames
+    r"\bthus saith the LORD\b[^.,;:]*[,:]?\s*",
+    r"\bthus says the LORD\b[^.,;:]*[,:]?\s*",
+    r"\bthe LORD said\b[^.,;:]*[,:]?\s*",
+    r"\bthe LORD spake\b[^.,;:]*[,:]?\s*",
+    r"\bthe LORD spoke\b[^.,;:]*[,:]?\s*",
+    r"\bthe LORD answered\b[^.,;:]*[,:]?\s*",
+    r"\bthe LORD called\b[^.,;:]*[,:]?\s*",
+    r"\bthe LORD commanded\b[^.,;:]*[,:]?\s*",
+    r"\bthe LORD God said\b[^.,;:]*[,:]?\s*",
+    # Direct God speech (Gen 1, Job, etc.)
+    r"\band God said\b[^.,;:]*[,:]?\s*",
+    r"\bGod said unto\b[^.,;:]*[,:]?\s*",
+    r"\bGod said,\s*",
+    r"\bGod spake\b[^.,;:]*[,:]?\s*",
+    r"\bGod spoke\b[^.,;:]*[,:]?\s*",
+    r"\bGod answered\b[^.,;:]*[,:]?\s*",
+    # Word-of-the-LORD prophetic chains (Jer, Ezek, Hos, Hag, Zech)
+    r"\bword of the LORD came\b[^.,;:]*[,:]?\s*",
+    r"\bso saith the LORD\b[^.,;:]*[,:]?\s*",
+    r"\bsaith the LORD of hosts\b[^.,;:]*[,:]?\s*",
+    r"\bsaith the Lord GOD\b[^.,;:]*[,:]?\s*",
+    # Decalogue speech-frame
+    r"\bGOD spake all these words\b[^.,;:]*[,:]?\s*",
+    # "Hear" oracular openings
+    r"\bhear the word of the LORD\b[^.,;:]*[,:]?\s*",
+    r"\bhear ye the word of the LORD\b[^.,;:]*[,:]?\s*",
 ]
 BLUE_RE = re.compile("|".join(BLUE_OPENERS), re.IGNORECASE)
+
+# Verse-anywhere divine-speech anchors. If any of these appear ANYWHERE
+# in the verse (typically at the end, e.g. "...saith the LORD."), the
+# WHOLE verse is colored blue. This catches a major class of prophetic
+# / oracular speech the opener regex misses — Psalms divine speech,
+# embedded "saith the LORD" closers, etc.
+BLUE_ANCHOR = re.compile(
+    r"\bsaith the LORD\b"
+    r"|\bsays the LORD\b"
+    r"|\bdeclares the LORD\b"
+    r"|\bdeclareth the LORD\b"
+    r"|\bsaith the Lord GOD\b"
+    r"|\bsaith the LORD of hosts\b"
+    r"|\boracle of the LORD\b",
+    re.IGNORECASE,
+)
 
 
 def fetch_osis() -> bytes:
@@ -271,12 +306,23 @@ def osis_id_to_key(osis: str) -> str | None:
 
 def detect_blue_ranges(text: str, words: list[str]) -> list[list[int]]:
     """Run the blue-letter regex against the verse and return word-index
-    ranges. Conservative: we only color from the matched opener forward
-    to the END of the verse (no attempt to detect mid-verse closers — the
-    regex would mis-fire too often to be safe).
+    ranges.
+
+    Two-pass detection:
+      1. **Anchor pass** — if "saith the LORD" / "says the LORD" /
+         "declares the LORD" appears ANYWHERE in the verse, color the
+         whole verse blue. Catches embedded oracle closers like Isa
+         55:8 ("...saith the LORD") and Jer 31:31 ("...saith the LORD,
+         that I will...") that the opener regex misses.
+      2. **Opener pass** — match speech-introductory phrases ("And God
+         said,", "Thus saith the LORD,", "the LORD spake unto Moses
+         saying:"), then color from the phrase end to the verse end.
     """
     if not words:
         return []
+    # Pass 1: anchor — whole-verse color
+    if BLUE_ANCHOR.search(text):
+        return [[0, len(words) - 1]]
     matches = list(BLUE_RE.finditer(text))
     if not matches:
         return []

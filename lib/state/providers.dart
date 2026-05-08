@@ -190,6 +190,12 @@ class AppSettings {
   /// because the heuristic detection is conservative and some users
   /// find dual-color text busy. ~2,510 verses tagged.
   final bool blueLetterMode;
+  /// Whether to append "— Rhema Study Bible · https://rhemabibles.com"
+  /// after the copied text. ON by default (drives organic discovery
+  /// of the app from shared screenshots / pasted-into-WhatsApp text).
+  /// Pastor users sometimes prefer pasting into a sermon doc without
+  /// the attribution — they can flip this off in Settings.
+  final bool copyAttribution;
   const AppSettings({
     this.fontSize = 18,
     this.darkMode = false,
@@ -204,6 +210,7 @@ class AppSettings {
     this.themeStyle = ThemeStyle.classic,
     this.redLetterMode = true,
     this.blueLetterMode = false,
+    this.copyAttribution = true,
   });
 
   /// Whether AI online features should be used right now.
@@ -233,6 +240,7 @@ class AppSettings {
     ThemeStyle? themeStyle,
     bool? redLetterMode,
     bool? blueLetterMode,
+    bool? copyAttribution,
   }) =>
       AppSettings(
         fontSize: fontSize ?? this.fontSize,
@@ -248,6 +256,7 @@ class AppSettings {
         themeStyle: themeStyle ?? this.themeStyle,
         redLetterMode: redLetterMode ?? this.redLetterMode,
         blueLetterMode: blueLetterMode ?? this.blueLetterMode,
+        copyAttribution: copyAttribution ?? this.copyAttribution,
       );
 }
 
@@ -273,6 +282,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
           ),
           redLetterMode: _prefs?.getBool('redLetterMode') ?? true,
           blueLetterMode: _prefs?.getBool('blueLetterMode') ?? false,
+          copyAttribution: _prefs?.getBool('copyAttribution') ?? true,
         )) {
     // Initialize AiService if we have a saved key.
     final savedKey = _prefs?.getString('geminiApiKey') ?? '';
@@ -320,6 +330,11 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setBlueLetterMode(bool v) async {
     state = state.copyWith(blueLetterMode: v);
     await _prefs?.setBool('blueLetterMode', v);
+  }
+
+  Future<void> setCopyAttribution(bool v) async {
+    state = state.copyWith(copyAttribution: v);
+    await _prefs?.setBool('copyAttribution', v);
   }
 
   Future<void> setVoiceName(String v) async {

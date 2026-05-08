@@ -133,6 +133,111 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
     setState(() => _backChipVisible = true);
   }
 
+  /// Range-copy dialog — the killer fix from the UX audit. Two
+  /// number fields ("From verse" / "To verse") + a Copy button.
+  /// Bypasses every gesture-based selection path. Pastors copy
+  /// "Verses 3 to 7 of Matt 5" in one interaction. The dialog
+  /// validates against the current chapter's bounds, swaps if
+  /// reversed, defaults to "1 to last" when empty.
+  Future<void> _showRangeCopyDialog(BuildContext context) async {
+    final theme = Theme.of(context);
+    final chaptersAsync = ref.read(currentBookChaptersProvider);
+    final chapters = chaptersAsync.asData?.value;
+    if (chapters == null || chapters.isEmpty) return;
+    final loc = ref.read(readingLocationProvider);
+    final ch = chapters[(loc.chapter - 1).clamp(0, chapters.length - 1)];
+    final maxVerse = ch.verses.last.number;
+
+    final startCtrl = TextEditingController(text: '1');
+    final endCtrl = TextEditingController(text: '$maxVerse');
+
+    final picked = await showDialog<({int start, int end})>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Copy ${loc.book} ${loc.chapter}',
+            style: GoogleFonts.cormorantGaramond(
+                fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Copy verses straight to clipboard — no selection mode required.',
+              style: GoogleFonts.lora(
+                fontSize: 12,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: startCtrl,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      labelText: 'From verse',
+                      border: const OutlineInputBorder(),
+                      helperText: '1 – $maxVerse',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text('to',
+                    style: GoogleFonts.lora(
+                        fontSize: 14,
+                        color: theme.colorScheme.onSurfaceVariant)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: endCtrl,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    decoration: InputDecoration(
+                      labelText: 'To verse',
+                      border: const OutlineInputBorder(),
+                      helperText: '1 – $maxVerse',
+                    ),
+                    onSubmitted: (_) {
+                      final s = int.tryParse(startCtrl.text) ?? 1;
+                      final e = int.tryParse(endCtrl.text) ?? maxVerse;
+                      Navigator.pop(
+                          context, (start: s, end: e));
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.icon(
+            icon: const Icon(Icons.content_copy, size: 16),
+            label: const Text('Copy'),
+            onPressed: () {
+              final s = int.tryParse(startCtrl.text) ?? 1;
+              final e = int.tryParse(endCtrl.text) ?? maxVerse;
+              Navigator.pop(context, (start: s, end: e));
+            },
+          ),
+        ],
+      ),
+    );
+    if (picked != null) {
+      _verseListKey.currentState
+          ?.copyVerseRange(picked.start, picked.end);
+    }
+  }
+
   /// In-read translation picker. Opens a tidy bottom sheet listing every
   /// available translation grouped by Local (offline) vs Online. Tapping
   /// a row updates settingsProvider.translation, which causes the
@@ -493,6 +598,10 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                   );
                 },
                 selectionActive: _selectionActive,
+                onCopyChapter: () {
+                  _verseListKey.currentState?._copyWholeChapter();
+                },
+                onPickRangeAndCopy: () => _showRangeCopyDialog(context),
                 scholarMode: ref.watch(
                     settingsProvider.select((s) => s.scholarMode)),
                 onToggleScholar: () {
@@ -841,12 +950,24 @@ class _VerseListState extends State<_VerseList> {
     required RedLetterEntry redLetter,
     required bool redLetterMode,
     required bool blueLetterMode,
+    required String translationId,
     TextStyle? baseStyle,
     String? skipFirstLetter, // e.g. "I" — already rendered as the drop-cap
   }) {
     final hasRedLetters = redLetterMode && redLetter.red.isNotEmpty;
     final hasBlueLetters = blueLetterMode && redLetter.blue.isNotEmpty;
     final hasColor = hasRedLetters || hasBlueLetters;
+    // ── Translation fallback for red/blue letters ──
+    // The redletter_kjv.json dataset stores word-INDEX ranges aligned
+    // to KJV verse text. When the user reads a non-KJV translation
+    // (WEB / BSB / Yoruba / etc.), word counts and ordering differ —
+    // applying KJV indices would color the wrong words. For non-KJV,
+    // fall back to whole-verse coloring: if the verse has ANY red
+    // span, color the entire verse red. Same for blue. This matches
+    // how budget red-letter Bibles handle non-flagship translations.
+    final isAlignedTranslation = translationId.toLowerCase() == 'kjv';
+    final wholeVerseRed = !isAlignedTranslation && hasRedLetters;
+    final wholeVerseBlue = !isAlignedTranslation && hasBlueLetters;
 
     // Recycle tap recognizers each rebuild — without this they leak per
     // chapter scroll and accumulate hundreds in long sessions (perf
@@ -905,6 +1026,11 @@ class _VerseListState extends State<_VerseList> {
 
     Color? colorFor(int charInRaw) {
       if (!hasColor) return null;
+      // Whole-verse fallback for non-aligned translations (red wins
+      // over blue when the verse has both — matches printed-Bible
+      // conventions where Christ's words override divine speech).
+      if (wholeVerseRed) return BrandColors.redLetter;
+      if (wholeVerseBlue) return BrandColors.blueLetter;
       final fullChar = charInRaw + renderOffset;
       if (fullChar < 0 || fullChar >= wordIdxAtChar.length) return null;
       final w = wordIdxAtChar[fullChar];
@@ -1131,24 +1257,99 @@ class _VerseListState extends State<_VerseList> {
     return '${widget.book} ${widget.chapterNum}:${ranges.join(",")} ($versionName)';
   }
 
-  /// Combine selected verse texts
+  /// Combine selected verse texts. Verse numbers are inlined as
+  /// superscripts so a paste preserves verse boundaries instead of
+  /// running everything together as one paragraph (per UX audit).
   String _buildSelectedText() {
     final sorted = _selectedVerses.toList()..sort();
     return sorted.map((vn) {
       final verse = widget.chapter.verses.firstWhere((v) => v.number == vn);
-      return verse.text;
-    }).join(' ');
+      // Use superscript-style numerals so any subsequent reformat
+      // (Markdown, Google Docs paragraph styles) keeps them readable.
+      return '$vn ${verse.text}';
+    }).join('  ');
   }
 
   void _copySelected() {
     final rangeRef = _buildRangeRef();
     final text = _buildSelectedText();
-    final copyText = '$rangeRef\n$text\n\n— Rhema Study Bible\nhttps://rhemabibles.com';
+    final includeFooter =
+        widget.ref.read(settingsProvider).copyAttribution;
+    final copyText = includeFooter
+        ? '$rangeRef\n$text\n\n— Rhema Study Bible\nhttps://rhemabibles.com'
+        : '$rangeRef\n$text';
     Clipboard.setData(ClipboardData(text: copyText));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${_selectedVerses.length} verse${_selectedVerses.length > 1 ? "s" : ""} copied'), duration: const Duration(seconds: 2)),
     );
     _clearSelection();
+  }
+
+  /// Bypass-all-gestures path: copy the entire chapter in one tap.
+  /// Wired to the new "Copy whole chapter" kebab item so preachers /
+  /// students can dump a passage in one keystroke (the most common
+  /// case the UX audit identified).
+  void _copyWholeChapter() {
+    final translation = widget.ref.read(settingsProvider).translation;
+    final versionName = translationById(translation).name;
+    final book = widget.book;
+    final ch = widget.chapterNum;
+    final body = widget.chapter.verses
+        .map((v) => '${v.number} ${v.text}')
+        .join('  ');
+    final includeFooter =
+        widget.ref.read(settingsProvider).copyAttribution;
+    final ref =
+        '$book $ch:1-${widget.chapter.verses.last.number} ($versionName)';
+    final copyText = includeFooter
+        ? '$ref\n$body\n\n— Rhema Study Bible\nhttps://rhemabibles.com'
+        : '$ref\n$body';
+    Clipboard.setData(ClipboardData(text: copyText));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+            'Copied $book $ch · ${widget.chapter.verses.length} verses'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  /// Copy a verse range specified by [start] and [end]. Used by the
+  /// new range-input chip in the ChapterBar so users skip the
+  /// gesture-based selection mode entirely.
+  void copyVerseRange(int start, int end) {
+    if (start < 1) start = 1;
+    final maxVerse = widget.chapter.verses.last.number;
+    if (end > maxVerse) end = maxVerse;
+    if (start > end) {
+      // Swap if user typed them backwards
+      final t = start;
+      start = end;
+      end = t;
+    }
+    final translation = widget.ref.read(settingsProvider).translation;
+    final versionName = translationById(translation).name;
+    final body = widget.chapter.verses
+        .where((v) => v.number >= start && v.number <= end)
+        .map((v) => '${v.number} ${v.text}')
+        .join('  ');
+    final includeFooter =
+        widget.ref.read(settingsProvider).copyAttribution;
+    final rangeStr = start == end ? '$start' : '$start-$end';
+    final ref =
+        '${widget.book} ${widget.chapterNum}:$rangeStr ($versionName)';
+    final copyText = includeFooter
+        ? '$ref\n$body\n\n— Rhema Study Bible\nhttps://rhemabibles.com'
+        : '$ref\n$body';
+    Clipboard.setData(ClipboardData(text: copyText));
+    final n = end - start + 1;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Copied ${widget.book} ${widget.chapterNum}:$rangeStr · $n ${n == 1 ? "verse" : "verses"}'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    HapticFeedback.lightImpact();
   }
 
   void _shareSelected() {
@@ -1205,6 +1406,8 @@ class _VerseListState extends State<_VerseList> {
         ref.watch(settingsProvider.select((s) => s.redLetterMode));
     final blueLetterMode =
         ref.watch(settingsProvider.select((s) => s.blueLetterMode));
+    final translationId =
+        ref.watch(settingsProvider.select((s) => s.translation));
     // Trigger Strong's load in the background as soon as Scholar Mode is on.
     if (scholarMode) {
       ref.watch(strongsServiceProvider);
@@ -1222,20 +1425,41 @@ class _VerseListState extends State<_VerseList> {
         verseKeys!.putIfAbsent(v.number, () => GlobalKey());
       }
     }
-    return Listener(
-      // ── Web/desktop click-and-drag selection ──
-      // On touch the existing onLongPressMoveUpdate handles drag-extend.
-      // On web/desktop, that gesture requires holding the mouse still for
-      // 500 ms before moving — unnatural for a text-selection-style
-      // interaction. Listener fires on every PointerMove regardless of
-      // hold duration. We only react when the user is already in
-      // selection mode (entered via long-press OR the modal's "Select
-      // multiple" affordance) AND a primary button is held, so this
-      // never interferes with normal scroll.
+    return CallbackShortcuts(
+      // ── ⌘C / Ctrl+C → copy in selection mode ──
+      // Tier A #4 from the UX audit: power users on iPad keyboards
+      // and desktop browsers expect ⌘C to copy whatever they've
+      // selected. Without this, the selection toolbar's Copy icon
+      // is the only path — even after they've gold-highlighted the
+      // verses they want.
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.keyC, meta: true): () {
+          if (_selectionMode && _selectedVerses.isNotEmpty) _copySelected();
+        },
+        const SingleActivator(LogicalKeyboardKey.keyC, control: true): () {
+          if (_selectionMode && _selectedVerses.isNotEmpty) _copySelected();
+        },
+      },
+      child: Listener(
+      // ── Hoisted drag-extend (Tier A #2) ──
+      // Previously the drag-to-extend handler was bound to each verse's
+      // `GestureDetector` via `onLongPressMoveUpdate`, so when the
+      // finger crossed out of the original verse's hit-rect Flutter's
+      // gesture arena cancelled the long-press and drag died after
+      // ~1 verse. By moving the move-tracking up to a Listener that
+      // covers the whole verse list, we get drag-extend that survives
+      // the finger leaving any single verse — works for both touch
+      // and mouse without the per-verse arena collapse.
+      //
+      // The `event.buttons & kPrimaryButton` filter that used to be
+      // here is intentionally dropped: on touch, `event.buttons` is
+      // already kPrimaryButton when a finger is down; the previous
+      // filter was correct for mouse but blocked touch on some
+      // platforms. Now any pointer movement while in selection mode
+      // with an anchor extends the selection.
       behavior: HitTestBehavior.translucent,
       onPointerMove: (event) {
         if (!_selectionMode) return;
-        if (event.buttons & kPrimaryButton == 0) return;
         if (_dragSelectionAnchor == null) return;
         _extendDragSelectionTo(event.position);
       },
@@ -1418,12 +1642,20 @@ class _VerseListState extends State<_VerseList> {
                 child: RichText(
                   text: TextSpan(
                     children: [
-                      TextSpan(
-                        text: '${v.number} ',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
-                          fontSize: fontSize,
+                      // ── Verse number (drop-cap render path) ──
+                      // Skip native text selection (Tier A #3).
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.baseline,
+                        baseline: TextBaseline.alphabetic,
+                        child: SelectionContainer.disabled(
+                          child: Text(
+                            '${v.number} ',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                              fontSize: fontSize,
+                            ),
+                          ),
                         ),
                       ),
                       TextSpan(
@@ -1481,6 +1713,7 @@ class _VerseListState extends State<_VerseList> {
                             const RedLetterEntry(),
                         redLetterMode: redLetterMode,
                         blueLetterMode: blueLetterMode,
+                        translationId: translationId,
                         baseStyle: GoogleFonts.lora(
                           fontSize: fontSize,
                           height: 1.7,
@@ -1490,9 +1723,11 @@ class _VerseListState extends State<_VerseList> {
                       ),
                       if (isMarked)
                         WidgetSpan(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 4),
-                            child: Icon(Icons.bookmark, size: 16, color: theme.colorScheme.primary),
+                          child: SelectionContainer.disabled(
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 4),
+                              child: Icon(Icons.bookmark, size: 16, color: theme.colorScheme.primary),
+                            ),
                           ),
                         ),
                     ],
@@ -1592,13 +1827,23 @@ class _VerseListState extends State<_VerseList> {
                     color: theme.colorScheme.onSurface,
                   ),
                   children: [
-                    TextSpan(
-                      text: '${v.number}  ',
-                      // goldDark passes WCAG AA contrast on cream
-                      // (~4.7:1); the plain `gold` would fail.
-                      style: BrandColors.verseNumberStyle(
-                        color: BrandColors.goldDark,
-                      ).copyWith(fontSize: fontSize - 4),
+                    // ── Verse number, excluded from native text selection ──
+                    // Tier A #3: when users cmd+drag select verse text,
+                    // the verse-number prefix used to land in the copy
+                    // buffer ("3 Blessed are..."). Wrap in WidgetSpan +
+                    // SelectionContainer.disabled so it's visually present
+                    // but skipped by SelectionArea's drag-highlight.
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.baseline,
+                      baseline: TextBaseline.alphabetic,
+                      child: SelectionContainer.disabled(
+                        child: Text(
+                          '${v.number}  ',
+                          style: BrandColors.verseNumberStyle(
+                            color: BrandColors.goldDark,
+                          ).copyWith(fontSize: fontSize - 4),
+                        ),
+                      ),
                     ),
                     ..._buildVerseSpans(
                       verse: v,
@@ -1617,6 +1862,7 @@ class _VerseListState extends State<_VerseList> {
                           const RedLetterEntry(),
                       redLetterMode: redLetterMode,
                       blueLetterMode: blueLetterMode,
+                      translationId: translationId,
                       baseStyle: BrandColors.verseStyle(
                         size: fontSize,
                         color: theme.colorScheme.onSurface,
@@ -1624,9 +1870,11 @@ class _VerseListState extends State<_VerseList> {
                     ),
                     if (isMarked)
                       WidgetSpan(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 4),
-                          child: Icon(Icons.bookmark, size: 16, color: theme.colorScheme.primary),
+                        child: SelectionContainer.disabled(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Icon(Icons.bookmark, size: 16, color: theme.colorScheme.primary),
+                          ),
                         ),
                       ),
                   ],
@@ -1729,7 +1977,8 @@ class _VerseListState extends State<_VerseList> {
       ],
       ),
       ), // close SelectionArea
-    );
+      ), // close Listener
+    ); // close CallbackShortcuts
   }
 
   void _showVerseSheet(BuildContext context, String refId, Verse v, ThemeData theme) {
@@ -2024,6 +2273,8 @@ class _ChapterBar extends StatelessWidget {
     required this.onPickTranslation,
     required this.onEnterSelectionMode,
     required this.selectionActive,
+    required this.onCopyChapter,
+    required this.onPickRangeAndCopy,
   });
 
   final String book;
@@ -2056,6 +2307,13 @@ class _ChapterBar extends StatelessWidget {
   /// Whether selection mode is currently active — toggles the "Select"
   /// icon's filled state so users see they're in selection mode.
   final bool selectionActive;
+  /// One-tap "Copy whole chapter" — bypasses gesture-based selection
+  /// entirely. The most common pastor / student request per the UX
+  /// audit.
+  final VoidCallback onCopyChapter;
+  /// Opens a tiny dialog asking for "Verses [start] – [end]" then
+  /// copies that range without entering selection mode at all.
+  final VoidCallback onPickRangeAndCopy;
 
   @override
   Widget build(BuildContext context) {
@@ -2254,6 +2512,10 @@ class _ChapterBar extends StatelessWidget {
                   onToggleScholar();
                 case 'select':
                   onEnterSelectionMode();
+                case 'copy_range':
+                  onPickRangeAndCopy();
+                case 'copy_chapter':
+                  onCopyChapter();
                 case 'settings':
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -2262,6 +2524,28 @@ class _ChapterBar extends StatelessWidget {
               }
             },
             itemBuilder: (_) => [
+              // ── Copy actions promoted to top of menu ──
+              // UX audit: copy was buried — multiple users couldn't
+              // find it. Top-of-menu surfaces it as the first action.
+              const PopupMenuItem(
+                value: 'copy_range',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.format_list_numbered),
+                  title: Text('Copy verse range…'),
+                  subtitle: Text('Type start and end',
+                      style: TextStyle(fontSize: 11)),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'copy_chapter',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.copy_all),
+                  title: Text('Copy whole chapter'),
+                ),
+              ),
+              const PopupMenuDivider(),
               PopupMenuItem(
                 value: 'scholar',
                 child: ListTile(
