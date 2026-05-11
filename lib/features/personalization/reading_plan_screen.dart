@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../data/featured_plans_service.dart';
 import '../../services/ai_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
@@ -28,6 +29,26 @@ class _ReadingPlanScreenState extends ConsumerState<ReadingPlanScreen> {
   bool _contextExpanded = false;
   bool _generating = false;
   String? _error;
+  /// Active filter chip on the Featured Plans rail. null = "All".
+  String? _featuredCategory;
+
+  /// Start a hand-curated plan (no AI call). Saves the FeaturedPlan's
+  /// pre-built schedule directly via personalizationService and
+  /// invalidates the active-plan provider so the UI flips to the
+  /// schedule view.
+  Future<void> _startFeatured(FeaturedPlan fp) async {
+    final plan = fp.toReadingPlan();
+    await ref.read(personalizationServiceProvider).saveActivePlan(plan);
+    ref.invalidate(activePlanProvider);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('“${fp.title}” started — ${fp.days} days'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -232,6 +253,41 @@ class _ReadingPlanScreenState extends ConsumerState<ReadingPlanScreen> {
             ),
           ),
           const SizedBox(height: 24),
+
+          // ── Featured Plans (curated, no AI required) ──
+          // Pre-curated YouVersion-style plans live in
+          // assets/data/featured_plans.json. Tapping a card calls
+          // _startFeatured which saves the schedule directly via
+          // personalizationService — no Gemini round-trip, works
+          // offline. Categories surface as filter chips above.
+          _FeaturedPlansSection(
+            selectedCategory: _featuredCategory,
+            onCategorySelected: (c) =>
+                setState(() => _featuredCategory = c),
+            onStart: _startFeatured,
+          ),
+          const SizedBox(height: 28),
+
+          // Divider between curated and AI custom
+          Row(
+            children: [
+              Expanded(child: Divider(color: theme.dividerColor)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  'OR BUILD YOUR OWN',
+                  style: GoogleFonts.lora(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              Expanded(child: Divider(color: theme.dividerColor)),
+            ],
+          ),
+          const SizedBox(height: 20),
 
           // Goal input
           Text('Your goal', style: GoogleFonts.lora(fontSize: 14, fontWeight: FontWeight.w700)),
@@ -639,6 +695,494 @@ class _DayCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────
+// FEATURED PLANS — YouVersion-style curated cards
+// ───────────────────────────────────────────────────────────────────
+
+const _categoryLabels = {
+  'couples': 'Couples',
+  'family': 'Family',
+  'prayer': 'Prayer',
+  'anxiety': 'Anxiety',
+  'newbeliever': 'New Believers',
+  'grief': 'Grief',
+  'discipline': 'Disciplines',
+  'discipleship': 'Discipleship',
+};
+
+const _categoryIcons = {
+  'couples': Icons.favorite,
+  'family': Icons.family_restroom,
+  'prayer': Icons.front_hand,
+  'anxiety': Icons.self_improvement,
+  'newbeliever': Icons.auto_stories,
+  'grief': Icons.healing,
+  'discipline': Icons.self_improvement,
+  'discipleship': Icons.school,
+};
+
+/// Featured-plans rail rendered above the AI form on the empty state.
+/// Loads from FeaturedPlansService (lazy JSON), filters by category
+/// chip, and exposes a tap handler that saves the schedule into the
+/// active-plan store.
+class _FeaturedPlansSection extends ConsumerWidget {
+  const _FeaturedPlansSection({
+    required this.selectedCategory,
+    required this.onCategorySelected,
+    required this.onStart,
+  });
+
+  final String? selectedCategory;
+  final ValueChanged<String?> onCategorySelected;
+  final ValueChanged<FeaturedPlan> onStart;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final svc = ref.watch(featuredPlansServiceProvider);
+
+    return FutureBuilder<void>(
+      future: svc.init(),
+      builder: (_, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const SizedBox(
+            height: 80,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return _buildContent(context, svc.all);
+      },
+    );
+  }
+
+  Widget _buildContent(BuildContext context, List<FeaturedPlan> all) {
+    if (all.isEmpty) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    // Distinct categories present in the data, in canonical order.
+    final categories = _categoryLabels.keys
+        .where((c) => all.any((p) => p.category == c))
+        .toList();
+    final filtered = selectedCategory == null
+        ? all
+        : all.where((p) => p.category == selectedCategory).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.bookmark_added,
+                size: 20, color: BrandColors.gold),
+            const SizedBox(width: 8),
+            Text(
+              'Featured Plans',
+              style: GoogleFonts.lora(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Hand-curated by Rhema. No AI required — works offline.',
+          style: GoogleFonts.cormorantGaramond(
+            fontSize: 14,
+            fontStyle: FontStyle.italic,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Category filter chips (horizontal scroll)
+        SizedBox(
+          height: 38,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _CategoryChip(
+                label: 'All',
+                icon: Icons.apps,
+                selected: selectedCategory == null,
+                onTap: () => onCategorySelected(null),
+              ),
+              for (final cat in categories)
+                _CategoryChip(
+                  label: _categoryLabels[cat] ?? cat,
+                  icon: _categoryIcons[cat] ?? Icons.bookmark,
+                  selected: selectedCategory == cat,
+                  onTap: () => onCategorySelected(cat),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Plan cards (vertical list)
+        ...filtered.map((plan) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _PlanCard(plan: plan, onStart: () => onStart(plan)),
+            )),
+      ],
+    );
+  }
+}
+
+class _CategoryChip extends StatelessWidget {
+  const _CategoryChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Material(
+        color: selected
+            ? BrandColors.gold.withValues(alpha: 0.25)
+            : Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: selected
+                    ? BrandColors.gold
+                    : Theme.of(context).dividerColor,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon,
+                    size: 14,
+                    color: selected
+                        ? BrandColors.brownDeep
+                        : Theme.of(context).colorScheme.onSurfaceVariant),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: GoogleFonts.lora(
+                    fontSize: 12,
+                    fontWeight:
+                        selected ? FontWeight.w700 : FontWeight.w600,
+                    color: selected
+                        ? BrandColors.brownDeep
+                        : Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PlanCard extends StatelessWidget {
+  const _PlanCard({required this.plan, required this.onStart});
+  final FeaturedPlan plan;
+  final VoidCallback onStart;
+
+  IconData _iconFor(String name) {
+    switch (name) {
+      case 'favorite':
+        return Icons.favorite;
+      case 'volunteer_activism':
+        return Icons.volunteer_activism;
+      case 'family_restroom':
+        return Icons.family_restroom;
+      case 'self_improvement':
+        return Icons.self_improvement;
+      case 'auto_stories':
+        return Icons.auto_stories;
+      case 'favorite_border':
+        return Icons.favorite_border;
+      case 'front_hand':
+        return Icons.front_hand;
+      case 'healing':
+        return Icons.healing;
+      case 'school':
+        return Icons.school;
+      default:
+        return Icons.bookmark;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = Color(plan.color);
+
+    return Material(
+      color: BrandColors.warmWhite,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _showPreview(context),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: accent.withValues(alpha: 0.30),
+            ),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                accent.withValues(alpha: 0.06),
+                Colors.transparent,
+              ],
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(_iconFor(plan.icon),
+                    color: accent, size: 26),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      plan.title,
+                      style: GoogleFonts.cormorantGaramond(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      plan.subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.lora(
+                        fontSize: 12,
+                        height: 1.35,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${plan.days} days',
+                        style: GoogleFonts.lora(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: BrandColors.brownDeep,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right,
+                  color: theme.colorScheme.onSurfaceVariant),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showPreview(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = Color(plan.color);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheet) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.75,
+        minChildSize: 0.4,
+        maxChildSize: 0.95,
+        builder: (_, ctrl) => ListView(
+          controller: ctrl,
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          children: [
+            Center(
+              child: Container(
+                width: 42,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    accent.withValues(alpha: 0.20),
+                    accent.withValues(alpha: 0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                    color: accent.withValues(alpha: 0.30)),
+              ),
+              child: Row(
+                children: [
+                  Icon(_iconFor(plan.icon), color: accent, size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(plan.title,
+                            style: GoogleFonts.cormorantGaramond(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                            )),
+                        Text(plan.subtitle,
+                            style: GoogleFonts.lora(
+                                fontSize: 13,
+                                color: theme.colorScheme.onSurfaceVariant)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(sheet);
+                  onStart();
+                },
+                style: FilledButton.styleFrom(
+                  backgroundColor: accent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                icon: const Icon(Icons.play_arrow),
+                label: Text('Start ${plan.days}-day plan',
+                    style: GoogleFonts.lora(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    )),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text('Schedule preview',
+                style: GoogleFonts.lora(
+                    fontSize: 14, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            ...plan.schedule.map((d) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: theme.cardColor,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                          color: theme.dividerColor
+                              .withValues(alpha: 0.4)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 24,
+                              height: 24,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: accent.withValues(alpha: 0.18),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text('${d.day}',
+                                  style: GoogleFonts.lora(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    color: BrandColors.brownDeep,
+                                  )),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(d.theme,
+                                  style: GoogleFonts.lora(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  )),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: d.verseRefs
+                              .map((r) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: BrandColors.gold
+                                          .withValues(alpha: 0.15),
+                                      borderRadius:
+                                          BorderRadius.circular(6),
+                                    ),
+                                    child: Text(r,
+                                        style: GoogleFonts.lora(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: BrandColors.brownDeep,
+                                        )),
+                                  ))
+                              .toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                )),
+          ],
+        ),
       ),
     );
   }

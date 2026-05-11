@@ -1,0 +1,216 @@
+{
+  "_meta": {
+    "schema": "Each plan: {id, title, subtitle, category, days, icon, color, source, schedule: [{day, theme, reflection, verseRefs:[]}]}. category drives the chip filter on the Plans screen. Selecting a plan calls personalizationService.saveActivePlan with these fields converted to ReadingPlan + PlanDay.",
+    "categories": ["couples", "family", "prayer", "anxiety", "newbeliever", "grief", "discipline", "discipleship"],
+    "version": 1,
+    "generated": "2026-05-04"
+  },
+
+  "love_talk": {
+    "title": "Love Talk",
+    "subtitle": "Daily devotionals for couples to grow together in love and faith",
+    "category": "couples",
+    "days": 7,
+    "icon": "favorite",
+    "color": "#E91E63",
+    "source": "Curated by Rhema",
+    "schedule": [
+      {"day": 1, "theme": "Love is patient and kind", "reflection": "Read 1 Corinthians 13 aloud together. Share one moment from this past month when your spouse was patient with you. Thank them.", "verseRefs": ["1 Corinthians 13:4-7", "Ephesians 4:2"]},
+      {"day": 2, "theme": "Two become one", "reflection": "God designed marriage to make two distinct people one in covenant. Talk about one area where you've grown closer this year — and one where you'd like to grow.", "verseRefs": ["Genesis 2:18-25", "Matthew 19:4-6"]},
+      {"day": 3, "theme": "Honoring one another", "reflection": "Submission isn't weakness; it's strength laid down for love. Each spouse: name one way you can honor the other this week, then pray for grace to follow through.", "verseRefs": ["Ephesians 5:21-33", "1 Peter 3:1-7"]},
+      {"day": 4, "theme": "Words that build", "reflection": "Words can wound or heal. Confess one harsh word from this week. Speak one word of praise over your spouse before you sleep.", "verseRefs": ["Proverbs 15:1", "Ephesians 4:29", "James 3:9-10"]},
+      {"day": 5, "theme": "Quick to forgive", "reflection": "Forgive as the Lord forgave you. If there's an unspoken hurt, name it gently and forgive it tonight — don't let the sun go down on your anger.", "verseRefs": ["Colossians 3:12-14", "Ephesians 4:26-32"]},
+      {"day": 6, "theme": "A worthy partner", "reflection": "Proverbs 31 isn't a checklist — it's a portrait of trust. Read it together and tell your spouse one strength you see in them that the world overlooks.", "verseRefs": ["Proverbs 31:10-31"]},
+      {"day": 7, "theme": "Delight in each other", "reflection": "The Song of Songs celebrates the joy of married love. Spend tonight delighting — laugh, hold hands, pray together, dream about the year ahead.", "verseRefs": ["Song of Solomon 2:10-13", "Song of Solomon 8:6-7"]}
+    ]
+  },
+
+  "married_for_god": {
+    "title": "Married for God",
+    "subtitle": "A 14-day journey to anchor your marriage in Scripture's blueprint",
+    "category": "couples",
+    "days": 14,
+    "icon": "favorite",
+    "color": "#C2185B",
+    "source": "Curated by Rhema",
+    "schedule": [
+      {"day": 1, "theme": "Made for each other", "reflection": "Read Genesis 1-2 together. Marriage is God's idea, not culture's. Take time to thank God for designing this covenant.", "verseRefs": ["Genesis 1:26-28", "Genesis 2:18-25"]},
+      {"day": 2, "theme": "A picture of Christ and the Church", "reflection": "Marriage models the gospel. Husbands love sacrificially; wives respond with respect. Both reflect Christ.", "verseRefs": ["Ephesians 5:22-33"]},
+      {"day": 3, "theme": "Covenant, not contract", "reflection": "Covenant means 'no exit clauses.' Discuss what 'till death do us part' really means in seasons of difficulty.", "verseRefs": ["Malachi 2:14-16", "Matthew 19:6"]},
+      {"day": 4, "theme": "Listen first", "reflection": "James 1:19 is marriage gold. Practice today: each spouse shares one thing weighing on them; the other listens without solving.", "verseRefs": ["James 1:19-20", "Proverbs 18:13"]},
+      {"day": 5, "theme": "Speak the truth in love", "reflection": "Honesty wrapped in tenderness builds trust. Avoid both flattery and harshness this week.", "verseRefs": ["Ephesians 4:15", "Proverbs 27:5-6"]},
+      {"day": 6, "theme": "Don't let the sun go down", "reflection": "Resolve conflict same-day when possible. Apologize specifically. Forgive completely.", "verseRefs": ["Ephesians 4:26-32", "Matthew 18:21-22"]},
+      {"day": 7, "theme": "Bear with one another", "reflection": "Patience in marriage means allowing room for your spouse to grow. List 3 ways your spouse has grown since you met.", "verseRefs": ["Colossians 3:12-14"]},
+      {"day": 8, "theme": "Pray together", "reflection": "Couples who pray together build something the enemy can't easily break. Begin a 5-minute nightly prayer rhythm.", "verseRefs": ["Matthew 18:19-20", "1 Peter 3:7"]},
+      {"day": 9, "theme": "Worship together", "reflection": "Your home is a sanctuary. Sing one worship song together tonight, even if only one of you carries the tune.", "verseRefs": ["Psalm 95:1-7", "Colossians 3:16"]},
+      {"day": 10, "theme": "Generosity at home", "reflection": "Serve each other before you serve anyone outside the home. Do one unrequested act of service for your spouse today.", "verseRefs": ["Philippians 2:3-4", "Galatians 5:13"]},
+      {"day": 11, "theme": "Guard your hearts", "reflection": "Protect your marriage from outside affection, secret comparisons, and digital distraction. Set one practical guardrail tonight.", "verseRefs": ["Proverbs 4:23", "Matthew 5:27-30"]},
+      {"day": 12, "theme": "Build a legacy of faith", "reflection": "Whether or not you have children, your marriage testifies to those watching. Discuss what story your marriage is telling.", "verseRefs": ["Deuteronomy 6:4-9", "Joshua 24:15"]},
+      {"day": 13, "theme": "Hope in trials", "reflection": "Every marriage faces seasons of pain. God's grace is sufficient — endurance produces character; character, hope.", "verseRefs": ["Romans 5:3-5", "James 1:2-4"]},
+      {"day": 14, "theme": "Until forever", "reflection": "Marriage on earth is a shadow of the marriage of the Lamb. Renew your vows tonight in your own words. Look forward to eternity together with Christ.", "verseRefs": ["Revelation 19:6-9", "1 Corinthians 13:13"]}
+    ]
+  },
+
+  "praying_for_spouse": {
+    "title": "Praying for Your Spouse",
+    "subtitle": "21 days of Spirit-led prayer over the one you love",
+    "category": "couples",
+    "days": 21,
+    "icon": "volunteer_activism",
+    "color": "#AD1457",
+    "source": "Curated by Rhema",
+    "schedule": [
+      {"day": 1, "theme": "Their relationship with God", "reflection": "Pray your spouse hungers and thirsts after righteousness today.", "verseRefs": ["Matthew 5:6", "Psalm 42:1-2"]},
+      {"day": 2, "theme": "Wisdom in decisions", "reflection": "Pray for wisdom in every word, choice, and silence today.", "verseRefs": ["James 1:5", "Proverbs 2:1-6"]},
+      {"day": 3, "theme": "Strength under pressure", "reflection": "Pray they would find joy in trials and not be overwhelmed.", "verseRefs": ["James 1:2-4", "Isaiah 40:31"]},
+      {"day": 4, "theme": "A pure heart", "reflection": "Pray temptation would have no foothold; pray for accountability and grace.", "verseRefs": ["Psalm 51:10", "1 Corinthians 10:13"]},
+      {"day": 5, "theme": "Peace that passes understanding", "reflection": "Pray anxiety would be replaced with the peace of God.", "verseRefs": ["Philippians 4:6-7", "John 14:27"]},
+      {"day": 6, "theme": "Words that bless", "reflection": "Pray their speech would build others up; that no idle word be spoken in haste.", "verseRefs": ["Ephesians 4:29", "Matthew 12:36"]},
+      {"day": 7, "theme": "Their work and calling", "reflection": "Pray they would do everything as unto the Lord; that their labor would not be in vain.", "verseRefs": ["Colossians 3:23-24", "1 Corinthians 15:58"]},
+      {"day": 8, "theme": "Health and rest", "reflection": "Pray for physical strength, mental clarity, and Sabbath rest in their week.", "verseRefs": ["3 John 1:2", "Mark 6:31"]},
+      {"day": 9, "theme": "Generosity", "reflection": "Pray they would be cheerful givers, never bound by greed or fear.", "verseRefs": ["2 Corinthians 9:7", "1 Timothy 6:17-19"]},
+      {"day": 10, "theme": "Patience", "reflection": "Pray patience with you, with children, with strangers, with God's timing.", "verseRefs": ["Galatians 5:22-23", "Psalm 27:14"]},
+      {"day": 11, "theme": "Boldness in faith", "reflection": "Pray they would not be ashamed of the gospel; that the Spirit would give them courage.", "verseRefs": ["Romans 1:16", "Acts 4:29-31"]},
+      {"day": 12, "theme": "A teachable spirit", "reflection": "Pray humility to receive correction; quickness to admit when wrong.", "verseRefs": ["Proverbs 9:8-9", "James 4:6"]},
+      {"day": 13, "theme": "Joy in the Lord", "reflection": "Pray they would draw deep joy from God's presence today, not from circumstances.", "verseRefs": ["Nehemiah 8:10", "Psalm 16:11"]},
+      {"day": 14, "theme": "Discernment", "reflection": "Pray they would test every spirit; recognize truth from counterfeit.", "verseRefs": ["1 John 4:1", "Hebrews 5:14"]},
+      {"day": 15, "theme": "Compassion", "reflection": "Pray their heart would break for what breaks God's heart; pray for kindness to flow easily.", "verseRefs": ["Colossians 3:12", "Micah 6:8"]},
+      {"day": 16, "theme": "Self-control", "reflection": "Pray over food, screens, anger, ambition — that the fruit of the Spirit would govern, not the flesh.", "verseRefs": ["Galatians 5:22-23", "1 Peter 5:8"]},
+      {"day": 17, "theme": "Faithfulness", "reflection": "Pray they would be faithful in the small, hidden things; that their integrity would be unshakeable.", "verseRefs": ["Luke 16:10", "Proverbs 28:6"]},
+      {"day": 18, "theme": "Gratitude", "reflection": "Pray a grateful heart in all circumstances; pray complaint would not take root.", "verseRefs": ["1 Thessalonians 5:16-18", "Philippians 4:11"]},
+      {"day": 19, "theme": "Friendship", "reflection": "Pray for a Jonathan to your David — for godly friends who sharpen them.", "verseRefs": ["Proverbs 27:17", "Ecclesiastes 4:9-10"]},
+      {"day": 20, "theme": "Their dreams", "reflection": "Pray over the desires of their heart — that the Lord would either fulfill or transform them.", "verseRefs": ["Psalm 37:4-5", "Proverbs 16:9"]},
+      {"day": 21, "theme": "Eternal perspective", "reflection": "Pray they would set their mind on things above; that today's troubles would feel light against eternal weight of glory.", "verseRefs": ["Colossians 3:1-4", "2 Corinthians 4:17-18"]}
+    ]
+  },
+
+  "raising_kids": {
+    "title": "Raising Kids in the Word",
+    "subtitle": "Two weeks for parents anchoring their family in Scripture",
+    "category": "family",
+    "days": 14,
+    "icon": "family_restroom",
+    "color": "#5E35B1",
+    "source": "Curated by Rhema",
+    "schedule": [
+      {"day": 1, "theme": "Children are a heritage", "reflection": "View your children today as God's reward, not a burden. Speak that aloud over them.", "verseRefs": ["Psalm 127:3-5"]},
+      {"day": 2, "theme": "Teach diligently", "reflection": "Talk about Scripture in ordinary moments — when you sit, walk, lie down, rise.", "verseRefs": ["Deuteronomy 6:4-9"]},
+      {"day": 3, "theme": "Train up a child", "reflection": "Each child has a unique design from God. Pray for discernment to train them in their way.", "verseRefs": ["Proverbs 22:6"]},
+      {"day": 4, "theme": "Discipline in love", "reflection": "Loving discipline is not anger; it shapes character. Apologize where you've crossed into anger.", "verseRefs": ["Proverbs 13:24", "Hebrews 12:5-11"]},
+      {"day": 5, "theme": "Words of life", "reflection": "Bless your children with words today — name what you see God doing in them.", "verseRefs": ["Numbers 6:24-26", "Proverbs 18:21"]},
+      {"day": 6, "theme": "Don't exasperate", "reflection": "Father, don't crush your children's spirit. Listen first; correct gently; never mock.", "verseRefs": ["Ephesians 6:4", "Colossians 3:21"]},
+      {"day": 7, "theme": "Pray with them", "reflection": "Pray AT bedtime WITH each child by name. Let them hear you intercede for them.", "verseRefs": ["1 Thessalonians 5:17", "James 5:16"]},
+      {"day": 8, "theme": "Model Christ", "reflection": "Your kids learn the gospel by watching you live it. Repent quickly when you fail.", "verseRefs": ["1 Corinthians 11:1", "1 Peter 2:21"]},
+      {"day": 9, "theme": "Generations", "reflection": "Every prayer you pray today shapes children, grandchildren, great-grandchildren.", "verseRefs": ["Psalm 78:1-7", "Joel 1:3"]},
+      {"day": 10, "theme": "Sabbath as a family", "reflection": "Carve out one full evening as family Sabbath. Worship, eat slowly, ditch phones.", "verseRefs": ["Exodus 20:8-11", "Mark 2:27"]},
+      {"day": 11, "theme": "Hospitality teaches love", "reflection": "Welcome a friend, neighbor, or stranger to your table this week. Let your kids serve.", "verseRefs": ["Romans 12:13", "Hebrews 13:2"]},
+      {"day": 12, "theme": "Honor in the home", "reflection": "Teach kids to honor authority — yours, teachers', the Lord's. Model honoring your own parents.", "verseRefs": ["Exodus 20:12", "Ephesians 6:1-3"]},
+      {"day": 13, "theme": "Their faith, not just yours", "reflection": "Each child must own their faith. Stop forcing; start inviting. Pray for the Spirit to draw them.", "verseRefs": ["John 6:44", "2 Timothy 1:5"]},
+      {"day": 14, "theme": "Joshua's choice", "reflection": "Recommit your home today: 'As for me and my house, we will serve the LORD.' Write it on something visible.", "verseRefs": ["Joshua 24:14-15", "Psalm 101:2"]}
+    ]
+  },
+
+  "anxiety_to_peace": {
+    "title": "Anxiety into Peace",
+    "subtitle": "Two weeks of Scripture to quiet a worried heart",
+    "category": "anxiety",
+    "days": 14,
+    "icon": "self_improvement",
+    "color": "#039BE5",
+    "source": "Curated by Rhema",
+    "schedule": [
+      {"day": 1, "theme": "Cast your cares", "reflection": "He cares about the thing that woke you up at 3am. Name it specifically and hand it over.", "verseRefs": ["1 Peter 5:6-7", "Philippians 4:6-7"]},
+      {"day": 2, "theme": "Do not be anxious", "reflection": "Birds and lilies. If God dresses the field, He will dress your tomorrow too.", "verseRefs": ["Matthew 6:25-34"]},
+      {"day": 3, "theme": "Be still", "reflection": "Stop planning. Stop scrolling. Sit in silence for 10 minutes today and let God be God.", "verseRefs": ["Psalm 46:10", "Lamentations 3:25-26"]},
+      {"day": 4, "theme": "He restores my soul", "reflection": "Read Psalm 23 aloud, slowly, three times. Let each phrase pour over you.", "verseRefs": ["Psalm 23"]},
+      {"day": 5, "theme": "Perfect love casts out fear", "reflection": "Fear feeds on the lie that you're alone. You are perfectly loved by the Father.", "verseRefs": ["1 John 4:18", "Romans 8:38-39"]},
+      {"day": 6, "theme": "Not by sight", "reflection": "Walk by faith today, not by what circumstances suggest. Faith reads ahead of evidence.", "verseRefs": ["2 Corinthians 5:7", "Hebrews 11:1"]},
+      {"day": 7, "theme": "Strength for today", "reflection": "Tomorrow's grace isn't yours yet. You only need today's. He will meet you again at sunrise.", "verseRefs": ["Lamentations 3:22-23", "Matthew 6:34"]},
+      {"day": 8, "theme": "When my heart is overwhelmed", "reflection": "Lead me to the rock that is higher than I. Pray that prayer for someone else today, too.", "verseRefs": ["Psalm 61:1-4", "Psalm 18:2"]},
+      {"day": 9, "theme": "I will not fear", "reflection": "List three fears. For each, write 'God is greater than this' and one verse beside it.", "verseRefs": ["Isaiah 41:10", "Joshua 1:9"]},
+      {"day": 10, "theme": "He gives sleep", "reflection": "Tonight, give the day to Him before your head hits the pillow. He gives His beloved sleep.", "verseRefs": ["Psalm 127:2", "Psalm 4:8"]},
+      {"day": 11, "theme": "Whatever is true", "reflection": "Anxiety lies. Hold each anxious thought against this list — true, noble, lovely, praiseworthy.", "verseRefs": ["Philippians 4:8-9"]},
+      {"day": 12, "theme": "Peace I give you", "reflection": "His peace is not the world's peace. It doesn't depend on circumstances changing.", "verseRefs": ["John 14:27", "John 16:33"]},
+      {"day": 13, "theme": "He hears me", "reflection": "Out of the depths, you cry. He inclines His ear. He has not forgotten you.", "verseRefs": ["Psalm 130", "Psalm 34:4-7"]},
+      {"day": 14, "theme": "He is faithful", "reflection": "Look back at how He brought you through. Build a small altar of remembrance for tomorrow's storms.", "verseRefs": ["Joshua 4:1-7", "Lamentations 3:21-26"]}
+    ]
+  },
+
+  "first_steps": {
+    "title": "First Steps with Jesus",
+    "subtitle": "21 days of essentials for a new follower of Christ",
+    "category": "newbeliever",
+    "days": 21,
+    "icon": "auto_stories",
+    "color": "#43A047",
+    "source": "Curated by Rhema",
+    "schedule": [
+      {"day": 1, "theme": "God so loved the world", "reflection": "Read John 3 slowly. Underline every phrase about God's love.", "verseRefs": ["John 3:16-21"]},
+      {"day": 2, "theme": "I am the bread of life", "reflection": "Jesus is the food your soul has been hungry for. Daily.", "verseRefs": ["John 6:35-40"]},
+      {"day": 3, "theme": "I am the light of the world", "reflection": "He shines into every dark corner. Invite Him into one you've kept hidden.", "verseRefs": ["John 8:12", "John 1:1-9"]},
+      {"day": 4, "theme": "I am the good shepherd", "reflection": "He knows your name. He laid down His life for you specifically.", "verseRefs": ["John 10:11-15", "Psalm 23"]},
+      {"day": 5, "theme": "I am the resurrection", "reflection": "Death has lost its sting. Sit with that truth.", "verseRefs": ["John 11:25-27", "1 Corinthians 15:54-57"]},
+      {"day": 6, "theme": "I am the way", "reflection": "Not a way; the Way. Not a truth; the Truth. Not a life; THE Life.", "verseRefs": ["John 14:6"]},
+      {"day": 7, "theme": "I am the vine", "reflection": "Stay connected to Him today — even one minute of prayer rooted you deeper.", "verseRefs": ["John 15:1-8"]},
+      {"day": 8, "theme": "Saved by grace", "reflection": "Not by your works — by His. Receive that today.", "verseRefs": ["Ephesians 2:1-10", "Romans 3:23-24"]},
+      {"day": 9, "theme": "A new creation", "reflection": "Old things are passed away. The voice of shame is no longer your master.", "verseRefs": ["2 Corinthians 5:17", "Romans 6:1-11"]},
+      {"day": 10, "theme": "Justified by faith", "reflection": "You are righteous in Christ — declared not guilty.", "verseRefs": ["Romans 5:1-5", "Galatians 2:16"]},
+      {"day": 11, "theme": "The Spirit lives in you", "reflection": "You are not alone today. The same Spirit that raised Christ is in you.", "verseRefs": ["Romans 8:9-17"]},
+      {"day": 12, "theme": "More than conquerors", "reflection": "Read Romans 8:31-39 aloud. Memorize verse 37.", "verseRefs": ["Romans 8:31-39"]},
+      {"day": 13, "theme": "How to pray", "reflection": "Jesus taught simply. Try praying the Lord's Prayer slowly today.", "verseRefs": ["Matthew 6:5-13"]},
+      {"day": 14, "theme": "Ask, seek, knock", "reflection": "Bring an actual request to Him today. Speak it out loud.", "verseRefs": ["Matthew 7:7-11", "Philippians 4:6"]},
+      {"day": 15, "theme": "Love God, love others", "reflection": "All the law and prophets — every command — hangs on these two.", "verseRefs": ["Matthew 22:36-40"]},
+      {"day": 16, "theme": "Forgive as forgiven", "reflection": "Is there someone you've held bitterness against? Today is the day to release them.", "verseRefs": ["Matthew 6:14-15", "Colossians 3:13"]},
+      {"day": 17, "theme": "Storing treasure", "reflection": "Move at least one priority today from earth's ledger to heaven's.", "verseRefs": ["Matthew 6:19-21", "Luke 12:32-34"]},
+      {"day": 18, "theme": "Take up your cross", "reflection": "Following Jesus costs everything — and gains everything.", "verseRefs": ["Luke 9:23-25", "Galatians 2:20"]},
+      {"day": 19, "theme": "Go and make disciples", "reflection": "Pray today for one person you can introduce to Jesus this month.", "verseRefs": ["Matthew 28:18-20"]},
+      {"day": 20, "theme": "The Church", "reflection": "You weren't meant to follow Jesus alone. Find or commit to a local church.", "verseRefs": ["Hebrews 10:24-25", "Acts 2:42-47"]},
+      {"day": 21, "theme": "He is coming again", "reflection": "Live today like Jesus might step through the clouds tomorrow. Watch and pray.", "verseRefs": ["Revelation 22:12-13", "1 Thessalonians 4:13-18"]}
+    ]
+  },
+
+  "comfort_in_grief": {
+    "title": "Comfort in Grief",
+    "subtitle": "Fourteen days of Scripture for the brokenhearted",
+    "category": "grief",
+    "days": 14,
+    "icon": "favorite_border",
+    "color": "#5C6BC0",
+    "source": "Curated by Rhema",
+    "schedule": [
+      {"day": 1, "theme": "He is near", "reflection": "He is close to the brokenhearted. He doesn't watch from afar.", "verseRefs": ["Psalm 34:18"]},
+      {"day": 2, "theme": "Jesus wept", "reflection": "Jesus stood at Lazarus's tomb and wept. Your tears today are not weakness; they are holy.", "verseRefs": ["John 11:33-36"]},
+      {"day": 3, "theme": "A time to mourn", "reflection": "Don't rush yourself. Grief has a season. Honor it.", "verseRefs": ["Ecclesiastes 3:1-4"]},
+      {"day": 4, "theme": "Comfort upon comfort", "reflection": "He comforts us so that we can later comfort others. Your sorrow is not wasted.", "verseRefs": ["2 Corinthians 1:3-7"]},
+      {"day": 5, "theme": "He restores my soul", "reflection": "Even in the valley of the shadow, you fear no evil — for He is with you.", "verseRefs": ["Psalm 23"]},
+      {"day": 6, "theme": "Cast all your cares", "reflection": "All. Not just the small ones. Hand Him the whole weight tonight.", "verseRefs": ["1 Peter 5:6-7", "Matthew 11:28-30"]},
+      {"day": 7, "theme": "Weeping endures for a night", "reflection": "Joy comes in the morning — even if morning takes years. He is faithful.", "verseRefs": ["Psalm 30:5", "Psalm 126:5-6"]},
+      {"day": 8, "theme": "He hears me", "reflection": "When you can't form words, He hears the groaning of your heart. Just sit with Him today.", "verseRefs": ["Romans 8:26-27"]},
+      {"day": 9, "theme": "Strength in weakness", "reflection": "His grace is sufficient. His power is made perfect in your weakness, not despite it.", "verseRefs": ["2 Corinthians 12:7-10"]},
+      {"day": 10, "theme": "Light affliction, eternal weight", "reflection": "What you suffer now is preparing in you a weight of glory beyond all comparison.", "verseRefs": ["2 Corinthians 4:16-18"]},
+      {"day": 11, "theme": "We do not grieve as others", "reflection": "Christian grief is honest and deep — but it is not without hope.", "verseRefs": ["1 Thessalonians 4:13-18"]},
+      {"day": 12, "theme": "He gathers the lambs", "reflection": "He gently leads those that are with young. He carries you when your legs give out.", "verseRefs": ["Isaiah 40:11", "Isaiah 40:28-31"]},
+      {"day": 13, "theme": "Beauty for ashes", "reflection": "He gives oil of joy for mourning, garment of praise for the spirit of heaviness.", "verseRefs": ["Isaiah 61:1-3"]},
+      {"day": 14, "theme": "He will wipe every tear", "reflection": "There is a coming day when sorrow ends. Death will be no more. Hold this hope tightly.", "verseRefs": ["Revelation 21:1-5"]}
+    ]
+  },
+
+  "lords_prayer": {
+    "title": "The Lord's Prayer Deep Dive",
+    "subtitle": "One week unpacking the prayer Jesus taught",
+    "category": "prayer",
+    "days": 7,
+    "icon": "front_hand",
+    "color": "#7B1FA2",
+    "source": "Curated by Rhema",
+    "schedule": [
+      {"day": 1, "theme": "Our Father", "reflection": "Not 'My Father' — OUR. You belong to a family. Pray for your church family today.", "verseRefs": ["Matthew 6:9", "Romans 8:14-17"]},
+      {"day": 2, "theme": "Hallowed be Your name", "reflection": "His name is set apart. Speak it with reverence. Let nothing in your speech today take it lightly.", "verseRefs": ["Exodus 20:7", "Psalm 8:1"]},
+      {"day": 3, "theme": "Your kingdom come", "reflection": "Pray for the rule of God to break into one specific situation in your life today.", "verseRefs": ["Matthew 6:10", "Luke 11:20"]},
+      {"day": 4, "theme": "Give us today our daily bread", "reflection": "Daily — not yearly. Trust Him for today's needs without storing in fear.", "verseRefs": ["Matthew 6:11", "Exodus 16:4"]},
+      {"day": 5, "theme": "Forgive us our debts", "reflection": "Confess specifically today. Receive specifically. Forgive specifically.", "verseRefs": ["Matthew 6:12", "1 John 1:9"]},
+      {"day": 6, "theme": "Lead us not into temptation", "reflection": "Where do you most need God's protection this week? Pray it out loud.", "verseRefs": ["Matthew 6:13", "1 Corinthians 10:13"]},
+      {"day": 7, "theme": "For Yours is the kingdom", "reflection": "End every prayer the way Jesus did — with God's glory, not ours.", "verseRefs": ["Matthew 6:13", "Revelation 5:13"]}
+    ]
+  }
+}
