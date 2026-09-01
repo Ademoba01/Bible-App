@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -7,6 +8,9 @@ import '../../data/translations.dart';
 import '../../services/ai_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../cross_references/cross_references_sheet.dart';
+import '../share/verse_card_renderer.dart';
+import '../study/my_lexicon_screen.dart';
 
 /// Shows verses similar to a given source verse, ranked by relevance.
 class SimilarVersesScreen extends ConsumerStatefulWidget {
@@ -85,103 +89,25 @@ class _SimilarVersesScreenState extends ConsumerState<SimilarVersesScreen> {
   }
 
   void _showVersePreview(BuildContext context, VerseRef verseRef, String text) {
-    final theme = Theme.of(context);
-    showDialog(
+    // Full verse-action sheet — matches the actions available when
+    // tapping a verse on the Read tab so users can Copy / Share /
+    // Bookmark / open Original language / see Cross-refs / recurse
+    // Find similar WITHOUT leaving the Similar Verses screen. Was
+    // previously a single "Read full chapter" button, which forced
+    // users off-screen just to copy.
+    showModalBottomSheet(
       context: context,
-      barrierColor: Colors.black54,
-      builder: (sheetContext) => Center(
-        child: Container(
-          width: 380,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFFD4A843).withOpacity(0.3)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(24),
-            child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Verse reference as title
-            Text(
-              verseRef.id,
-              style: GoogleFonts.lora(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Verse text
-            Text(
-              text,
-              style: GoogleFonts.lora(
-                fontSize: 15,
-                height: 1.6,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 20),
-            // "Read full chapter" button
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  foregroundColor: theme.colorScheme.onPrimary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                icon: const Icon(Icons.menu_book, size: 18),
-                label: Text(
-                  'Read full chapter',
-                  style: GoogleFonts.lora(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.pop(sheetContext); // dismiss bottom sheet
-                  // Preserve the similar-verses source so the floating
-                  // "Back to Similar Verses" chip on the Read screen
-                  // can re-push SimilarVersesScreen with the same
-                  // source verse pre-loaded — user lands back where
-                  // they left off, not on a fresh search.
-                  ref.read(similarVersesReturnProvider.notifier).state =
-                      SimilarVersesReturn(
-                    book: widget.sourceRef.book,
-                    chapter: widget.sourceRef.chapter,
-                    verse: widget.sourceRef.verse,
-                    text: widget.sourceText,
-                  );
-                  // Set highlight + return context providers
-                  ref.read(highlightVerseProvider.notifier).state = verseRef.verse;
-                  ref.read(returnContextProvider.notifier).state = 'similar_verses';
-                  ref.read(readingLocationProvider.notifier).setBook(verseRef.book);
-                  ref.read(readingLocationProvider.notifier).setChapter(verseRef.chapter);
-                  ref.read(tabIndexProvider.notifier).set(1);
-                  Navigator.popUntil(context, (route) => route.isFirst);
-                },
-              ),
-            ),
-          ],
-        ),
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-          ),
-        ),
+      builder: (sheetCtx) => _SimilarVerseActionSheet(
+        parentRef: ref,
+        verseRef: verseRef,
+        text: text,
+        sourceRef: widget.sourceRef,
+        sourceText: widget.sourceText,
       ),
     );
   }
@@ -709,5 +635,321 @@ class _SimilarVerseCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Full verse-action sheet reachable by tapping any similar-verses
+/// row. Mirrors the actions in reading_screen.dart's verse modal:
+/// gold primary CTA for Original Language, then Copy / Share /
+/// Bookmark / Find similar / Cross-references / Highlight, plus
+/// "Read full chapter" for jumping to context.
+///
+/// Keeps the sheet self-contained so the user copies inline —
+/// they never have to leave the Similar Verses screen just to
+/// grab a citation.
+class _SimilarVerseActionSheet extends ConsumerWidget {
+  const _SimilarVerseActionSheet({
+    required this.parentRef,
+    required this.verseRef,
+    required this.text,
+    required this.sourceRef,
+    required this.sourceText,
+  });
+
+  /// The parent ConsumerState's ref — the sheet builds via ref.watch
+  /// too, but we pass this so we can write providers even after the
+  /// sheet is popped (e.g. after deep-linking to Read).
+  final WidgetRef parentRef;
+  final VerseRef verseRef;
+  final String text;
+
+  /// Preserved so tapping "Read full chapter" can populate
+  /// similarVersesReturnProvider and the Read-tab back-chip works.
+  final VerseRef sourceRef;
+  final String sourceText;
+
+  String _formattedCopy(String versionName) =>
+      '${verseRef.id} ($versionName)\n$text\n\n— Rhema Study Bible\nhttps://rhemabibles.com';
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final bookmarks = ref.watch(bookmarksProvider);
+    final highlights = ref.watch(highlightsProvider);
+    final isBookmarked = bookmarks.contains(verseRef.id);
+    final activeHighlight = highlights[verseRef.id];
+
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.60,
+      minChildSize: 0.35,
+      maxChildSize: 0.92,
+      builder: (_, scrollController) => ListView(
+        controller: scrollController,
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        children: [
+          // Drag handle
+          Center(
+            child: Container(
+              width: 42,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          // Verse header
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.format_quote,
+                  size: 18, color: theme.colorScheme.primary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  verseRef.id,
+                  style: GoogleFonts.lora(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                tooltip: 'Close',
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          // Verse text
+          SelectableText(
+            text,
+            style: GoogleFonts.lora(
+              fontSize: 15,
+              height: 1.6,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 18),
+          // ── Primary CTA — same gold pill as the Read-tab modal ──
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.translate, size: 18),
+              label: const Text('See the original Greek / Hebrew'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: BrandColors.gold,
+                foregroundColor: const Color(0xFF3E2723),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                textStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () {
+                final wasOn =
+                    parentRef.read(settingsProvider).scholarMode;
+                if (!wasOn) {
+                  parentRef
+                      .read(settingsProvider.notifier)
+                      .setScholarMode(true);
+                }
+                _saveReturnContext();
+                _goToRead(context);
+                HapticFeedback.lightImpact();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(wasOn
+                        ? 'Tap any underlined word for Greek/Hebrew'
+                        : 'Word study turned on — tap any underlined word'),
+                    duration: const Duration(seconds: 3),
+                    action: SnackBarAction(
+                      label: 'My Lexicon',
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const MyLexiconScreen(),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+          // ── Common actions row ──
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: [
+              TextButton.icon(
+                icon: Icon(Icons.copy, color: theme.colorScheme.primary),
+                label: const Text('Copy'),
+                onPressed: () {
+                  final versionName = translationById(
+                          parentRef.read(settingsProvider).translation)
+                      .name;
+                  Clipboard.setData(
+                      ClipboardData(text: _formattedCopy(versionName)));
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Verse copied to clipboard'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+              TextButton.icon(
+                icon: Icon(Icons.share, color: theme.colorScheme.primary),
+                label: const Text('Share'),
+                onPressed: () {
+                  final versionName = translationById(
+                          parentRef.read(settingsProvider).translation)
+                      .name;
+                  Navigator.pop(context);
+                  VerseCardRenderer.shareVerseCard(
+                    context: context,
+                    verseText: text,
+                    reference: '${verseRef.id} ($versionName)',
+                  );
+                },
+              ),
+              TextButton.icon(
+                icon: Icon(
+                  isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                  color: theme.colorScheme.primary,
+                ),
+                label: Text(isBookmarked ? 'Bookmarked' : 'Bookmark'),
+                onPressed: () {
+                  parentRef
+                      .read(bookmarksProvider.notifier)
+                      .toggle(verseRef.id);
+                },
+              ),
+              TextButton.icon(
+                icon: Icon(Icons.auto_awesome,
+                    color: theme.colorScheme.secondary),
+                label: const Text('Find similar'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  // Recursive drill: use THIS verse as the new source
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => SimilarVersesScreen(
+                        sourceRef: verseRef,
+                        sourceText: text,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              TextButton.icon(
+                icon: Icon(Icons.alt_route,
+                    color: theme.colorScheme.primary),
+                label: const Text('Cross-references'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  showCrossReferencesSheet(context, parentRef, verseRef);
+                },
+              ),
+              TextButton.icon(
+                icon: Icon(Icons.menu_book,
+                    color: theme.colorScheme.primary),
+                label: const Text('Read full chapter'),
+                onPressed: () {
+                  _saveReturnContext();
+                  _goToRead(context);
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // ── Highlight color picker ──
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              Text('Highlight:',
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: theme.colorScheme.onSurfaceVariant)),
+              ...List.generate(HighlightsNotifier.colors.length, (i) {
+                final isSelected = activeHighlight == i;
+                return GestureDetector(
+                  onTap: () {
+                    if (isSelected) {
+                      parentRef
+                          .read(highlightsProvider.notifier)
+                          .removeHighlight(verseRef.id);
+                    } else {
+                      parentRef
+                          .read(highlightsProvider.notifier)
+                          .highlight(verseRef.id, i);
+                    }
+                  },
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: HighlightsNotifier.colors[i],
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected
+                            ? theme.colorScheme.primary
+                            : Colors.grey.shade300,
+                        width: isSelected ? 3 : 1.5,
+                      ),
+                    ),
+                    child: isSelected
+                        ? Icon(Icons.check,
+                            size: 18, color: theme.colorScheme.primary)
+                        : null,
+                  ),
+                );
+              }),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Save the source ref+text so the Read-tab floating chip can push
+  /// SimilarVersesScreen back with the same source when the user is
+  /// done. Called before any nav-to-Read action.
+  void _saveReturnContext() {
+    parentRef.read(similarVersesReturnProvider.notifier).state =
+        SimilarVersesReturn(
+      book: sourceRef.book,
+      chapter: sourceRef.chapter,
+      verse: sourceRef.verse,
+      text: sourceText,
+    );
+    parentRef.read(returnContextProvider.notifier).state =
+        'similar_verses';
+  }
+
+  void _goToRead(BuildContext context) {
+    parentRef.read(highlightVerseProvider.notifier).state = verseRef.verse;
+    parentRef
+        .read(readingLocationProvider.notifier)
+        .setBook(verseRef.book);
+    parentRef
+        .read(readingLocationProvider.notifier)
+        .setChapter(verseRef.chapter);
+    parentRef.read(tabIndexProvider.notifier).set(1);
+    // Pop the sheet + SimilarVersesScreen; land on Home shell → Read.
+    Navigator.of(context).popUntil((r) => r.isFirst);
   }
 }

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The King James Bible Online (KJV) | Rhema Study Bible</title>
+<meta name="description" content="The complete King James Bible online — all 66 books, 1,189 chapters, 31,102 verses. Fully searchable, indexed by chapter and verse, with a companion study app.">
+<link rel="canonical" href="https://rhemabibles.com/bible/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="The King James Bible Online (KJV)">
+<meta property="og:description" content="The complete King James Bible online — all 66 books, 1,189 chapters, 31,102 verses. Fully searchable, indexed by chapter and verse, with a companion study app.">
+<meta property="og:url" content="https://rhemabibles.com/bible/">
+<meta property="og:site_name" content="Rhema Study Bible">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700;800&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #D4A843;
+  --gold-deep: #A07B28;
+  --parchment: #FDF6EC;
+  --cream: #FFF8E1;
+  --brown: #5D4037;
+  --brown-deep: #4A2C1F;
+  --brown-mid: #8D6E63;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--parchment); color: var(--brown-deep); font-family: 'Lora', Georgia, 'Times New Roman', serif; line-height: 1.6; }
+header { background: var(--brown-deep); color: white; padding: 14px 20px; border-bottom: 3px solid var(--gold); }
+header a { color: var(--gold); text-decoration: none; font-weight: 700; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20px; letter-spacing: 0.3px; }
+header .home { color: rgba(255,255,255,0.85); font-size: 13px; margin-left: 12px; font-weight: 400; font-family: 'Lora', Georgia, serif; }
+main { max-width: 720px; margin: 0 auto; padding: 24px 20px 60px; }
+h1 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; margin: 8px 0 4px; color: var(--brown-deep); font-weight: 700; letter-spacing: -0.5px; }
+h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin: 24px 0 8px; color: var(--brown); font-weight: 600; }
+.breadcrumb { font-size: 13px; color: var(--brown-mid); margin-bottom: 4px; }
+.breadcrumb a { color: var(--brown); text-decoration: none; }
+.breadcrumb a:hover { color: var(--gold-deep); text-decoration: underline; }
+.chapter-nav { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; margin: 20px 0; border-top: 1px solid rgba(160,123,40,0.2); border-bottom: 1px solid rgba(160,123,40,0.2); font-size: 14px; }
+.chapter-nav a { color: var(--brown-deep); text-decoration: none; font-weight: 600; padding: 6px 12px; border-radius: 8px; background: rgba(212,168,67,0.1); }
+.chapter-nav a:hover { background: rgba(212,168,67,0.25); }
+.chapter-nav .center { color: var(--brown-mid); font-family: 'Cormorant Garamond', Georgia, serif; font-size: 15px; }
+.open-app { display: inline-block; margin: 16px 0 8px; padding: 10px 18px; background: linear-gradient(135deg, #FFC107 0%, #D4A843 100%); color: #3E2723; text-decoration: none; font-weight: 700; border-radius: 22px; font-size: 14px; box-shadow: 0 2px 6px rgba(160,123,40,0.2); }
+.open-app:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(160,123,40,0.3); }
+.verse { padding: 4px 0; scroll-margin-top: 80px; }
+.verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
+.verse-num a { color: inherit; text-decoration: none; }
+.verse-num a:hover { color: var(--brown-deep); }
+.chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
+.chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
+.book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
+.book-grid a { display: block; padding: 10px 12px; background: var(--cream); color: var(--brown-deep); text-decoration: none; border: 1px solid rgba(160,123,40,0.25); border-radius: 8px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 16px; font-weight: 600; text-align: center; transition: all 0.15s; }
+.book-grid a:hover { background: var(--gold); color: var(--brown-deep); border-color: var(--gold-deep); }
+.chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 6px; margin: 12px 0 32px; }
+.chapter-grid a { display: block; padding: 10px 0; background: var(--cream); color: var(--brown-deep); text-decoration: none; border: 1px solid rgba(160,123,40,0.25); border-radius: 6px; font-size: 15px; font-weight: 600; text-align: center; transition: all 0.15s; }
+.chapter-grid a:hover { background: var(--gold); color: var(--brown-deep); border-color: var(--gold-deep); }
+footer { text-align: center; padding: 24px 20px 40px; color: var(--brown-mid); font-size: 12px; }
+footer a { color: var(--brown-mid); }
+@media (prefers-color-scheme: dark) {
+  html, body { background: #2C1A12; color: #E8D9C4; }
+  main { color: #E8D9C4; }
+  h1, h2 { color: #F5E6C8; }
+  .breadcrumb, .breadcrumb a { color: #C8A97E; }
+  .chapter-nav a { background: rgba(212,168,67,0.15); color: #F5E6C8; }
+  .book-grid a, .chapter-grid a { background: #3E2A1F; color: #E8D9C4; border-color: rgba(212,168,67,0.3); }
+  footer { color: #A8926E; }
+}
+</style>
+</head>
+<body>
+<header><a href="/bible/">📖 Rhema Study Bible</a><span class="home"><a href="/" style="color:inherit">Open the app</a></span></header>
+<main>
+  <h1>The King James Bible</h1>
+  <p style="color:var(--brown-mid); font-size:14px; margin:0 0 16px;">66 books · 1,189 chapters · 31,102 verses · Public Domain</p>
+  <a class="open-app" href="https://rhemabibles.com/" rel="noopener">Open the study app →</a>
+
+  <h2>Old Testament</h2>
+  <div class="book-grid">
+    <a href="/bible/genesis/">Genesis</a>
+    <a href="/bible/exodus/">Exodus</a>
+    <a href="/bible/leviticus/">Leviticus</a>
+    <a href="/bible/numbers/">Numbers</a>
+    <a href="/bible/deuteronomy/">Deuteronomy</a>
+    <a href="/bible/joshua/">Joshua</a>
+    <a href="/bible/judges/">Judges</a>
+    <a href="/bible/ruth/">Ruth</a>
+    <a href="/bible/1-samuel/">1 Samuel</a>
+    <a href="/bible/2-samuel/">2 Samuel</a>
+    <a href="/bible/1-kings/">1 Kings</a>
+    <a href="/bible/2-kings/">2 Kings</a>
+    <a href="/bible/1-chronicles/">1 Chronicles</a>
+    <a href="/bible/2-chronicles/">2 Chronicles</a>
+    <a href="/bible/ezra/">Ezra</a>
+    <a href="/bible/nehemiah/">Nehemiah</a>
+    <a href="/bible/esther/">Esther</a>
+    <a href="/bible/job/">Job</a>
+    <a href="/bible/psalms/">Psalms</a>
+    <a href="/bible/proverbs/">Proverbs</a>
+    <a href="/bible/ecclesiastes/">Ecclesiastes</a>
+    <a href="/bible/song-of-solomon/">Song of Solomon</a>
+    <a href="/bible/isaiah/">Isaiah</a>
+    <a href="/bible/jeremiah/">Jeremiah</a>
+    <a href="/bible/lamentations/">Lamentations</a>
+    <a href="/bible/ezekiel/">Ezekiel</a>
+    <a href="/bible/daniel/">Daniel</a>
+    <a href="/bible/hosea/">Hosea</a>
+    <a href="/bible/joel/">Joel</a>
+    <a href="/bible/amos/">Amos</a>
+    <a href="/bible/obadiah/">Obadiah</a>
+    <a href="/bible/jonah/">Jonah</a>
+    <a href="/bible/micah/">Micah</a>
+    <a href="/bible/nahum/">Nahum</a>
+    <a href="/bible/habakkuk/">Habakkuk</a>
+    <a href="/bible/zephaniah/">Zephaniah</a>
+    <a href="/bible/haggai/">Haggai</a>
+    <a href="/bible/zechariah/">Zechariah</a>
+    <a href="/bible/malachi/">Malachi</a>
+  </div>
+
+  <h2>New Testament</h2>
+  <div class="book-grid">
+    <a href="/bible/matthew/">Matthew</a>
+    <a href="/bible/mark/">Mark</a>
+    <a href="/bible/luke/">Luke</a>
+    <a href="/bible/john/">John</a>
+    <a href="/bible/acts/">Acts</a>
+    <a href="/bible/romans/">Romans</a>
+    <a href="/bible/1-corinthians/">1 Corinthians</a>
+    <a href="/bible/2-corinthians/">2 Corinthians</a>
+    <a href="/bible/galatians/">Galatians</a>
+    <a href="/bible/ephesians/">Ephesians</a>
+    <a href="/bible/philippians/">Philippians</a>
+    <a href="/bible/colossians/">Colossians</a>
+    <a href="/bible/1-thessalonians/">1 Thessalonians</a>
+    <a href="/bible/2-thessalonians/">2 Thessalonians</a>
+    <a href="/bible/1-timothy/">1 Timothy</a>
+    <a href="/bible/2-timothy/">2 Timothy</a>
+    <a href="/bible/titus/">Titus</a>
+    <a href="/bible/philemon/">Philemon</a>
+    <a href="/bible/hebrews/">Hebrews</a>
+    <a href="/bible/james/">James</a>
+    <a href="/bible/1-peter/">1 Peter</a>
+    <a href="/bible/2-peter/">2 Peter</a>
+    <a href="/bible/1-john/">1 John</a>
+    <a href="/bible/2-john/">2 John</a>
+    <a href="/bible/3-john/">3 John</a>
+    <a href="/bible/jude/">Jude</a>
+    <a href="/bible/revelation/">Revelation</a>
+  </div>
+</main>
+<footer>
+  <p>The Holy Bible, King James Version — Public Domain.<br>
+  Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>
+</footer>
+</body>
+</html>
