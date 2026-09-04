@@ -54,6 +54,11 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
   bool _loading = true;
   String? _error;
   bool _isAiQuiz = false;
+  /// Per-question answers preserved through to the score screen so the
+  /// "View corrections" review can show what the user picked vs what
+  /// the correct answer was — the loop that makes quizzes actually
+  /// teach ("This is how people learn" — user feedback).
+  final List<String?> _userAnswers = [];
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -304,6 +309,11 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
     setState(() {
       _selectedAnswer = answer;
       _answered = true;
+      // Preserve this answer for the corrections review page.
+      while (_userAnswers.length <= _currentIndex) {
+        _userAnswers.add(null);
+      }
+      _userAnswers[_currentIndex] = answer;
       if (answer == _questions[_currentIndex].correctAnswer) {
         _score++;
         _scaleController.forward().then((_) => _scaleController.reverse());
@@ -342,8 +352,59 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
       _answered = false;
       _questions = [];
       _isAiQuiz = false;
+      _userAnswers.clear();
     });
     _loadQuestions();
+  }
+
+  /// Jump to the next chapter of the same book on the Read tab so users
+  /// can keep progressing after a quiz. Uses the existing deep-link
+  /// pattern (setBook + setChapter + tabIndex + popUntil root).
+  void _goToNextChapter() {
+    ref.read(readingLocationProvider.notifier).setBook(widget.book);
+    ref.read(readingLocationProvider.notifier).setChapter(widget.chapter + 1);
+    ref.read(highlightVerseProvider.notifier).state = 1;
+    ref.read(tabIndexProvider.notifier).set(1);
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  /// Open the corrections review sheet — shows every question with the
+  /// user's answer (green/red), the correct answer, and a tappable
+  /// verse-reference chip that opens the reference chapter with the
+  /// verse highlighted. The learning loop the user asked for.
+  void _showCorrections() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.85,
+        minChildSize: 0.4,
+        maxChildSize: 0.95,
+        builder: (_, ctrl) => _CorrectionsSheet(
+          questions: _questions,
+          userAnswers: _userAnswers,
+          scrollController: ctrl,
+          onOpenRef: (ref0) => _openReference(sheetCtx, ref0),
+        ),
+      ),
+    );
+  }
+
+  /// Deep-link into the Read tab at a specific verse reference. Called
+  /// from every verse-ref chip in the corrections review.
+  void _openReference(BuildContext sheetCtx, String verseRef) {
+    final parsed = VerseRef.tryParse(verseRef);
+    if (parsed == null) return;
+    ref.read(readingLocationProvider.notifier).setBook(parsed.book);
+    ref.read(readingLocationProvider.notifier).setChapter(parsed.chapter);
+    ref.read(highlightVerseProvider.notifier).state = parsed.verse;
+    ref.read(tabIndexProvider.notifier).set(1);
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   @override
@@ -724,21 +785,344 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
-            FilledButton.icon(
-              style: FilledButton.styleFrom(backgroundColor: primaryBrown),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try again'),
-              onPressed: _retry,
+            // ── View corrections (primary study action) ──
+            // Sits ABOVE "Try again" per user feedback: "This is how
+            // people learn" — see which questions you missed, what
+            // the correct answer was, and tap the verse chip to open
+            // the reference chapter with the verse highlighted.
+            SizedBox(
+              width: 260,
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(backgroundColor: gold, foregroundColor: primaryBrown),
+                icon: const Icon(Icons.fact_check),
+                label: const Text('View corrections'),
+                onPressed: _questions.isEmpty ? null : _showCorrections,
+              ),
             ),
             const SizedBox(height: 12),
-            OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(foregroundColor: primaryBrown),
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('Back to reading'),
-              onPressed: () => Navigator.pop(context),
+            SizedBox(
+              width: 260,
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(backgroundColor: primaryBrown),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Try again'),
+                onPressed: _retry,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: 260,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(foregroundColor: primaryBrown),
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('Back to reading'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            const SizedBox(height: 8),
+            // ── Next chapter (progression button, per user request) ──
+            SizedBox(
+              width: 260,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(foregroundColor: primaryBrown),
+                icon: const Icon(Icons.chevron_right),
+                label: Text('Next chapter (${widget.book} ${widget.chapter + 1})'),
+                onPressed: _goToNextChapter,
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Bottom-sheet review of every quiz question with green/red feedback
+/// on the user's answer, the correct answer surfaced, and a tappable
+/// verse-reference chip that opens the source chapter. The teaching
+/// loop the user asked for.
+class _CorrectionsSheet extends StatelessWidget {
+  const _CorrectionsSheet({
+    required this.questions,
+    required this.userAnswers,
+    required this.scrollController,
+    required this.onOpenRef,
+  });
+
+  final List<_QuizQuestion> questions;
+  final List<String?> userAnswers;
+  final ScrollController scrollController;
+  final ValueChanged<String> onOpenRef;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryBrown = const Color(0xFF5D4037);
+    final correctCount = questions.where((q) {
+      final i = questions.indexOf(q);
+      return i < userAnswers.length && userAnswers[i] == q.correctAnswer;
+    }).length;
+
+    return Column(
+      children: [
+        // Drag handle
+        Padding(
+          padding: const EdgeInsets.only(top: 10, bottom: 6),
+          child: Container(
+            width: 42,
+            height: 4,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+          child: Row(
+            children: [
+              Icon(Icons.fact_check, color: BrandColors.gold, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Corrections',
+                  style: GoogleFonts.cormorantGaramond(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: primaryBrown,
+                  ),
+                ),
+              ),
+              Text(
+                '$correctCount / ${questions.length} correct',
+                style: GoogleFonts.lora(
+                  fontSize: 13,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            controller: scrollController,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+            itemCount: questions.length,
+            itemBuilder: (_, i) {
+              final q = questions[i];
+              final chose = i < userAnswers.length ? userAnswers[i] : null;
+              final wasRight = chose == q.correctAnswer;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 14),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: theme.cardColor,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: wasRight
+                          ? const Color(0xFF4CAF50).withValues(alpha: 0.4)
+                          : const Color(0xFFE57373).withValues(alpha: 0.4),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: wasRight
+                                  ? const Color(0xFF4CAF50)
+                                  : const Color(0xFFE57373),
+                            ),
+                            child: Icon(
+                              wasRight ? Icons.check : Icons.close,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Question ${i + 1}',
+                            style: GoogleFonts.lora(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        q.question,
+                        style: GoogleFonts.lora(
+                          fontSize: 15,
+                          height: 1.4,
+                          fontWeight: FontWeight.w600,
+                          color: primaryBrown,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      if (chose == null) ...[
+                        Text(
+                          'Not answered',
+                          style: GoogleFonts.lora(
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ] else if (!wasRight) ...[
+                        _AnswerRow(
+                          label: 'You picked',
+                          text: chose,
+                          color: const Color(0xFFE57373),
+                          icon: Icons.close,
+                        ),
+                        const SizedBox(height: 4),
+                      ],
+                      _AnswerRow(
+                        label: 'Correct answer',
+                        text: q.correctAnswer,
+                        color: const Color(0xFF4CAF50),
+                        icon: Icons.check,
+                      ),
+                      if (q.explanation != null &&
+                          q.explanation!.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: BrandColors.gold.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: BrandColors.gold.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.auto_awesome,
+                                  size: 14, color: BrandColors.gold),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  q.explanation!,
+                                  style: GoogleFonts.lora(
+                                    fontSize: 12,
+                                    fontStyle: FontStyle.italic,
+                                    height: 1.4,
+                                    color: primaryBrown,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      if (q.verseRef.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        // ── Verse-reference chip → opens the chapter ──
+                        InkWell(
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: () => onOpenRef(q.verseRef),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: BrandColors.gold.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: BrandColors.gold.withValues(alpha: 0.4),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.menu_book,
+                                    size: 14,
+                                    color: BrandColors.brownDeep),
+                                const SizedBox(width: 6),
+                                Text(
+                                  q.verseRef,
+                                  style: GoogleFonts.lora(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: BrandColors.brownDeep,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(Icons.arrow_forward,
+                                    size: 12,
+                                    color: BrandColors.brownDeep),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AnswerRow extends StatelessWidget {
+  const _AnswerRow({
+    required this.label,
+    required this.text,
+    required this.color,
+    required this.icon,
+  });
+  final String label;
+  final String text;
+  final Color color;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            '$label:',
+            style: GoogleFonts.lora(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.lora(
+                fontSize: 13,
+                color: const Color(0xFF3E2723),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

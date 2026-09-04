@@ -2318,12 +2318,21 @@ class _ChapterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Reported overflow on narrow phones (iPhone 17 sim, 393 px wide):
-    // Chapter label was colliding with the translation chip because the
-    // Row content totaled ~494 px. Compact mode shrinks chevrons/kebab,
-    // drops the "Chapter " prefix, and trims paddings to fit comfortably
-    // on phones ≤400 px wide. ≥400 px keeps the spacious layout.
-    final isNarrow = MediaQuery.of(context).size.width < 420;
+    // Use LayoutBuilder rather than MediaQuery so the breakpoint reflects
+    // the ACTUAL width the bar has to work with, not the viewport (which
+    // Chrome iOS reports oddly with dpr + address bar). Also bumped the
+    // threshold to 500 px because mobile browsers commonly land in the
+    // 420–500 range with the URL bar shown, and the bar's minimum fit is
+    // ~449 px when the "Chapter" prefix is included.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 500;
+        return _buildBar(context, theme, isNarrow);
+      },
+    );
+  }
+
+  Widget _buildBar(BuildContext context, ThemeData theme, bool isNarrow) {
     return Padding(
       padding: EdgeInsets.symmetric(
           horizontal: isNarrow ? 4 : 8, vertical: 6),
@@ -2336,7 +2345,12 @@ class _ChapterBar extends StatelessWidget {
                 isNarrow ? VisualDensity.compact : VisualDensity.standard,
             onPressed: chapter > 1 ? onPrev : null,
           ),
-          Expanded(
+          // Chapter picker gets Flexible (not Expanded) so it SHRINKS
+          // when the row is tight instead of forcing overflow into the
+          // translation chip. FittedBox auto-scales the label down to
+          // fit whatever space remains — never overlaps siblings.
+          Flexible(
+            fit: FlexFit.loose,
             child: Center(
               child: TextButton(
                 style: isNarrow
@@ -2405,23 +2419,26 @@ class _ChapterBar extends StatelessWidget {
                   );
                   if (picked != null) onPick(picked);
                 },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      // Drop the "Chapter " prefix on narrow phones —
-                      // saves ~55 px which the translation chip needs.
-                      // On wide screens keep the full label for clarity.
-                      isNarrow
-                          ? '$chapter / $max'
-                          : 'Chapter $chapter / $max',
-                      style: TextStyle(
-                          fontSize: isNarrow ? 14 : 16,
-                          fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(Icons.grid_view, size: isNarrow ? 14 : 16),
-                  ],
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        // Drop the "Chapter " prefix on narrow phones —
+                        // saves ~55 px which the translation chip needs.
+                        // On wide screens keep the full label for clarity.
+                        isNarrow
+                            ? '$chapter/$max'
+                            : 'Chapter $chapter / $max',
+                        style: TextStyle(
+                            fontSize: isNarrow ? 14 : 16,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(Icons.grid_view, size: isNarrow ? 14 : 16),
+                    ],
+                  ),
                 ),
               ),
             ),
