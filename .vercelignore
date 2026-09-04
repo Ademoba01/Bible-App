@@ -1,29 +1,15 @@
-# Ignore everything except what's needed
-.dart_tool
-.idea
-.gradle
-android
-ios
-linux
-macos
-windows
-test
-lib
-.git
-*.dart
-*.lock
-.packages
-.metadata
-build/app
-build/linux
-build/macos
-build/windows
-build/speech_to_text
-build/flutter_*
-build/cloud_*
-build/firebase_*
-build/shared_*
-build/google_*
-build/path_provider*
-node_modules
-.firebase
+# Deploy only the Flutter web build output. Everything else is
+# ignored, including the massive build/ios / build/android trees
+# that previously timed out Vercel's file scanner (a "build/ios 2"
+# variant with a broken FirebaseCoreInternal symlink hung indefinitely).
+#
+# Vercel supports negation patterns like git — ignore everything,
+# then re-include only build/web and the api/ folder (needed for
+# the Vercel Functions declared in vercel.json).
+*
+!build/
+build/*
+!build/web/
+!api/
+!vercel.json
+!.vercel/
