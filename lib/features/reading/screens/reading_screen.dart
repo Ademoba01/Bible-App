@@ -491,10 +491,13 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
         // phones (which the user reported as the "OVERFLOWED BY" yellow
         // tape on iOS). Compact mode = icon only, still taps to home.
         title: const RhemaTitle(compact: true),
-        // Compact leading — just the book name (no chapter; the chapter
-        // is huge in the bar below). Halves the width budget so the
-        // RhemaTitle icon stays cleanly centered.
-        leadingWidth: 96,
+        // Compact leading — book name only. Width bumped 96 → 140 so
+        // longer names like "Ecclesiastes" / "Lamentations" / "Song of
+        // Solomon" / "1 Thessalonians" render in full instead of the
+        // "Ecclesia…" truncation the user reported. FittedBox scales
+        // down when the name is still too wide for the budget so the
+        // RhemaTitle icon stays cleanly centered regardless.
+        leadingWidth: 140,
         leading: Padding(
           padding: const EdgeInsets.only(left: 4),
           child: TextButton(
@@ -511,19 +514,20 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
                 ref.read(readingLocationProvider.notifier).setBook(picked);
               }
             },
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
                     loc.book,
-                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                         fontSize: 13, fontWeight: FontWeight.w700),
                   ),
-                ),
-                const Icon(Icons.arrow_drop_down, size: 16),
-              ],
+                  const Icon(Icons.arrow_drop_down, size: 16),
+                ],
+              ),
             ),
           ),
         ),
@@ -1488,11 +1492,26 @@ class _VerseListState extends State<_VerseList> {
         children: [
           Container(
         color: isDark ? const Color(0xFF2B1E19) : BrandColors.parchment,
-        child: ListView.builder(
+        // Pull-to-refresh: drag past the top edge and release to
+        // re-fetch this book's chapters. Local-asset app so this is
+        // cheap, but the gesture is what users expect after seeing a
+        // stale render (cached JSON, off-by-one chapter, or the
+        // previous verse position lingering from a fast tab switch).
+        // AlwaysScrollableScrollPhysics on the inner ListView means
+        // the indicator triggers even for a 14-verse chapter.
+        child: RefreshIndicator(
+          color: BrandColors.gold,
+          onRefresh: () async {
+            // ignore: unused_result
+            ref.refresh(currentBookChaptersProvider);
+            await ref.read(currentBookChaptersProvider.future);
+          },
+          child: ListView.builder(
       controller: scrollController,
       // BouncingScrollPhysics: iOS-style fling + edge bounce on swipe.
       // AlwaysScrollableScrollPhysics keeps the surface interactive
-      // when the chapter is short (e.g. 3 John has 14 verses).
+      // when the chapter is short (e.g. 3 John has 14 verses) and is
+      // required for RefreshIndicator to fire on short chapters.
       physics: const BouncingScrollPhysics(
         parent: AlwaysScrollableScrollPhysics(),
       ),
@@ -1901,7 +1920,8 @@ class _VerseListState extends State<_VerseList> {
         return verseWidget;
       },
     ),
-    ),
+        ), // close RefreshIndicator
+      ),
         // ── Floating selection action bar ──
         if (_selectionMode && _selectedVerses.isNotEmpty)
           Positioned(
