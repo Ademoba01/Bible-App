@@ -389,6 +389,8 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
           questions: _questions,
           userAnswers: _userAnswers,
           scrollController: ctrl,
+          book: widget.book,
+          chapter: widget.chapter,
           onOpenRef: (ref0) => _openReference(sheetCtx, ref0),
         ),
       ),
@@ -397,12 +399,36 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
 
   /// Deep-link into the Read tab at a specific verse reference. Called
   /// from every verse-ref chip in the corrections review.
+  ///
+  /// The chip's `verseRef` is stored as a bare verse number ("17") in
+  /// most cases (see the QuizQuestion constructors above) — not a full
+  /// "Book Chapter:Verse" reference. Previous version fed the raw
+  /// string to VerseRef.tryParse, which returned null on a bare number
+  /// and silently no-op'd, so tapping the chip felt broken. Fall back
+  /// to the current book+chapter when parsing fails or the input is
+  /// numeric.
   void _openReference(BuildContext sheetCtx, String verseRef) {
-    final parsed = VerseRef.tryParse(verseRef);
-    if (parsed == null) return;
-    ref.read(readingLocationProvider.notifier).setBook(parsed.book);
-    ref.read(readingLocationProvider.notifier).setChapter(parsed.chapter);
-    ref.read(highlightVerseProvider.notifier).state = parsed.verse;
+    String targetBook = widget.book;
+    int targetChapter = widget.chapter;
+    int? targetVerse;
+
+    final full = VerseRef.tryParse(verseRef);
+    if (full != null) {
+      targetBook = full.book;
+      targetChapter = full.chapter;
+      targetVerse = full.verse;
+    } else {
+      // Bare verse number ("17") or "17-18" range — pull the first
+      // integer as the highlight target and keep the current book+chapter.
+      final digits = RegExp(r'\d+').firstMatch(verseRef)?.group(0);
+      if (digits == null) return;
+      targetVerse = int.tryParse(digits);
+      if (targetVerse == null) return;
+    }
+
+    ref.read(readingLocationProvider.notifier).setBook(targetBook);
+    ref.read(readingLocationProvider.notifier).setChapter(targetChapter);
+    ref.read(highlightVerseProvider.notifier).state = targetVerse;
     ref.read(tabIndexProvider.notifier).set(1);
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
@@ -847,12 +873,16 @@ class _CorrectionsSheet extends StatelessWidget {
     required this.userAnswers,
     required this.scrollController,
     required this.onOpenRef,
+    required this.book,
+    required this.chapter,
   });
 
   final List<_QuizQuestion> questions;
   final List<String?> userAnswers;
   final ScrollController scrollController;
   final ValueChanged<String> onOpenRef;
+  final String book;
+  final int chapter;
 
   @override
   Widget build(BuildContext context) {
@@ -1030,41 +1060,54 @@ class _CorrectionsSheet extends StatelessWidget {
                       if (q.verseRef.isNotEmpty) ...[
                         const SizedBox(height: 10),
                         // ── Verse-reference chip → opens the chapter ──
-                        InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: () => onOpenRef(q.verseRef),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: BrandColors.gold.withValues(alpha: 0.15),
+                        // Label is the full canonical reference so it
+                        // is obvious where the tap goes ("Ecclesiastes
+                        // 3:17" rather than a bare "17" — previous
+                        // version was a mystery number).
+                        Builder(
+                          builder: (_) {
+                            final chipLabel = q.verseRef.contains(':')
+                                ? q.verseRef
+                                : '$book $chapter:${q.verseRef}';
+                            return InkWell(
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: BrandColors.gold.withValues(alpha: 0.4),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.menu_book,
-                                    size: 14,
-                                    color: BrandColors.brownDeep),
-                                const SizedBox(width: 6),
-                                Text(
-                                  q.verseRef,
-                                  style: GoogleFonts.lora(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: BrandColors.brownDeep,
+                              onTap: () => onOpenRef(q.verseRef),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color:
+                                      BrandColors.gold.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: BrandColors.gold
+                                        .withValues(alpha: 0.4),
                                   ),
                                 ),
-                                const SizedBox(width: 4),
-                                Icon(Icons.arrow_forward,
-                                    size: 12,
-                                    color: BrandColors.brownDeep),
-                              ],
-                            ),
-                          ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.menu_book,
+                                        size: 14,
+                                        color: BrandColors.brownDeep),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Open $chipLabel',
+                                      style: GoogleFonts.lora(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: BrandColors.brownDeep,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Icon(Icons.arrow_forward,
+                                        size: 12,
+                                        color: BrandColors.brownDeep),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ],
