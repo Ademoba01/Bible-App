@@ -59,6 +59,10 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
   /// the correct answer was — the loop that makes quizzes actually
   /// teach ("This is how people learn" — user feedback).
   final List<String?> _userAnswers = [];
+  /// The chapter's verses, kept around after _loadQuestions so the
+  /// corrections chip can pop up the referenced verse text in place
+  /// instead of tearing the user out of the quiz to the Read tab.
+  List<Verse> _verses = [];
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -138,6 +142,9 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
         });
         return;
       }
+
+      // Held for the corrections chip popup — see _openReference.
+      _verses = verses;
 
       // Try AI quiz if online mode is active
       if (settings.useOnlineAi) {
@@ -397,16 +404,19 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
     );
   }
 
-  /// Deep-link into the Read tab at a specific verse reference. Called
-  /// from every verse-ref chip in the corrections review.
+  /// Pop up the referenced verse's text right on top of the
+  /// corrections sheet. User feedback: navigating to the Read tab tore
+  /// them out of their study loop; they want the verse RIGHT THERE
+  /// while they're reviewing what they missed, then to keep scrolling
+  /// through the other corrections.
   ///
   /// The chip's `verseRef` is stored as a bare verse number ("17") in
-  /// most cases (see the QuizQuestion constructors above) — not a full
-  /// "Book Chapter:Verse" reference. Previous version fed the raw
-  /// string to VerseRef.tryParse, which returned null on a bare number
-  /// and silently no-op'd, so tapping the chip felt broken. Fall back
-  /// to the current book+chapter when parsing fails or the input is
-  /// numeric.
+  /// the standard offline quiz (see the QuizQuestion constructors) —
+  /// the AI quiz may emit a full "Book Ch:V" reference. Handle both.
+  /// If the referenced verse isn't in the currently-loaded chapter
+  /// (e.g. an AI quiz that cites a cross-book reference), fall back
+  /// to the old deep-link behavior — the popup can't help without
+  /// the verse text.
   void _openReference(BuildContext sheetCtx, String verseRef) {
     String targetBook = widget.book;
     int targetChapter = widget.chapter;
@@ -418,19 +428,119 @@ class _ChapterQuizScreenState extends ConsumerState<ChapterQuizScreen>
       targetChapter = full.chapter;
       targetVerse = full.verse;
     } else {
-      // Bare verse number ("17") or "17-18" range — pull the first
-      // integer as the highlight target and keep the current book+chapter.
       final digits = RegExp(r'\d+').firstMatch(verseRef)?.group(0);
       if (digits == null) return;
       targetVerse = int.tryParse(digits);
       if (targetVerse == null) return;
     }
 
+    // In-chapter case: look up the verse text and pop up. Cross-book
+    // or cross-chapter case: no local text available, deep-link like
+    // before so the user still gets somewhere useful.
+    final inThisChapter = targetBook == widget.book &&
+        targetChapter == widget.chapter;
+    if (inThisChapter) {
+      Verse? verse;
+      for (final v in _verses) {
+        if (v.number == targetVerse) {
+          verse = v;
+          break;
+        }
+      }
+      if (verse != null) {
+        _showVersePopup(
+          '${widget.book} ${widget.chapter}:${verse.number}',
+          verse.text,
+        );
+        return;
+      }
+    }
+
+    // Fallback deep-link (AI-generated cross-refs, or a verse number
+    // that isn't in the loaded list).
     ref.read(readingLocationProvider.notifier).setBook(targetBook);
     ref.read(readingLocationProvider.notifier).setChapter(targetChapter);
     ref.read(highlightVerseProvider.notifier).state = targetVerse;
     ref.read(tabIndexProvider.notifier).set(1);
     Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  /// Small verse popup shown on top of the corrections sheet. Matches
+  /// the visual language of the reading-screen verse dialog (parchment
+  /// card, gold hairline) but stripped down: reference header, verse
+  /// text, one close button. Deliberately no Copy/Share/Highlight
+  /// actions — this is a study peek, not a full verse-action menu; if
+  /// the user wants those, they can hit "Back to reading" and tap the
+  /// verse in the Read tab.
+  void _showVersePopup(String reference, String verseText) {
+    final theme = Theme.of(context);
+    showDialog(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (dialogCtx) => Center(
+        child: Container(
+          width: 380,
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: BrandColors.gold.withValues(alpha: 0.35)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.menu_book,
+                          size: 18, color: BrandColors.brownDeep),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          reference,
+                          style: GoogleFonts.lora(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: BrandColors.brownDeep,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    verseText,
+                    style: BrandColors.verseStyle(size: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.of(dialogCtx).pop(),
+                      style: TextButton.styleFrom(
+                          foregroundColor: BrandColors.brownDeep),
+                      child: const Text('Close'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -1092,17 +1202,13 @@ class _CorrectionsSheet extends StatelessWidget {
                                         color: BrandColors.brownDeep),
                                     const SizedBox(width: 6),
                                     Text(
-                                      'Open $chipLabel',
+                                      chipLabel,
                                       style: GoogleFonts.lora(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w700,
                                         color: BrandColors.brownDeep,
                                       ),
                                     ),
-                                    const SizedBox(width: 4),
-                                    Icon(Icons.arrow_forward,
-                                        size: 12,
-                                        color: BrandColors.brownDeep),
                                   ],
                                 ),
                               ),
