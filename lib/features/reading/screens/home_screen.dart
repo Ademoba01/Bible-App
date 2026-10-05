@@ -833,6 +833,39 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     FocusScope.of(context).unfocus();
   }
 
+  /// Load a key-verse reference's text and show it in the existing
+  /// verse preview popup. User feedback: tapping these chips used to
+  /// yank the user into the Read tab; now the verse just floats over
+  /// the search so they can scan several key verses on the topic
+  /// without losing their search context.
+  Future<void> _showKeyVersePopup(String refStr) async {
+    final parsed = VerseRef.tryParse(refStr);
+    if (parsed == null) return;
+    final theme = Theme.of(context);
+    try {
+      final repo = ref.read(bibleRepositoryProvider);
+      final translation = ref.read(settingsProvider).translation;
+      final chapters =
+          await repo.loadBook(parsed.book, translationId: translation);
+      final chapterIdx =
+          (parsed.chapter - 1).clamp(0, chapters.length - 1);
+      final chapter = chapters[chapterIdx];
+      Verse? verse;
+      for (final v in chapter.verses) {
+        if (v.number == parsed.verse) {
+          verse = v;
+          break;
+        }
+      }
+      if (!mounted) return;
+      if (verse == null) return;
+      _showVersePreview(parsed, verse.text, theme);
+    } catch (_) {
+      // Load failure (missing translation, etc.) — silently no-op so a
+      // broken chip never crashes the search.
+    }
+  }
+
   /// Shows a centered verse preview popup with copy, share, read full chapter.
   void _showVersePreview(VerseRef verseRef, String text, ThemeData theme) {
     final translation = ref.read(settingsProvider).translation;
@@ -1361,17 +1394,13 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                                 backgroundColor: BrandColors.gold.withOpacity(0.12),
                                 side: BorderSide(color: BrandColors.gold.withOpacity(0.3)),
                                 visualDensity: VisualDensity.compact,
-                                onPressed: () {
-                                  // Parse "Book chapter:verse" and navigate
-                                  final parsed = VerseRef.tryParse(ref);
-                                  if (parsed != null) {
-                                    this.ref.read(readingLocationProvider.notifier).setBook(parsed.book);
-                                    this.ref.read(readingLocationProvider.notifier).setChapter(parsed.chapter);
-                                    this.ref.read(highlightVerseProvider.notifier).state = parsed.verse;
-                                    this.ref.read(tabIndexProvider.notifier).set(1);
-                                    _clearSearch();
-                                  }
-                                },
+                                // Was: navigate to the Read tab + clear
+                                // search. User feedback: that tore them
+                                // away from the search context. Now:
+                                // peek the verse in a popup over the
+                                // search, same as the quiz corrections
+                                // sheet pattern.
+                                onPressed: () => _showKeyVersePopup(ref),
                               );
                             }).toList(),
                           ),
