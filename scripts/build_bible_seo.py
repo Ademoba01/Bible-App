@@ -258,9 +258,14 @@ def render_chapter_page(
 <meta property="og:description" content="{esc(description)}">
 <meta property="og:url" content="{canonical}">
 <meta property="og:site_name" content="Rhema Study Bible">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://rhemabibles.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Rhema Study Bible — read, study, share scripture">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{esc(ref)} (KJV)">
 <meta name="twitter:description" content="{esc(description)}">
+<meta name="twitter:image" content="https://rhemabibles.com/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700;800&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -322,6 +327,14 @@ def render_book_page(book_name: str, book_slug: str, chapters: dict, testament: 
 <meta property="og:description" content="{esc(description)}">
 <meta property="og:url" content="{canonical}">
 <meta property="og:site_name" content="Rhema Study Bible">
+<meta property="og:image" content="https://rhemabibles.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Rhema Study Bible — read, study, share scripture">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{esc(book_name)} (KJV) — All Chapters">
+<meta name="twitter:description" content="{esc(description)}">
+<meta name="twitter:image" content="https://rhemabibles.com/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700;800&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -374,6 +387,14 @@ def render_index(books: list) -> str:
 <meta property="og:description" content="{esc(description)}">
 <meta property="og:url" content="{canonical}">
 <meta property="og:site_name" content="Rhema Study Bible">
+<meta property="og:image" content="https://rhemabibles.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Rhema Study Bible — read, study, share scripture">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The King James Bible Online (KJV)">
+<meta name="twitter:description" content="{esc(description)}">
+<meta name="twitter:image" content="https://rhemabibles.com/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700;800&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">

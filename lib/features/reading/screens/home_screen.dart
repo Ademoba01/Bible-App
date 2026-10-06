@@ -102,14 +102,14 @@ class HomeScreen extends ConsumerWidget {
 }
 
 /// Inline expandable chat overlay — bubble expands into a chat panel within the screen.
-class _InlineChatOverlay extends StatefulWidget {
+class _InlineChatOverlay extends ConsumerStatefulWidget {
   const _InlineChatOverlay();
 
   @override
-  State<_InlineChatOverlay> createState() => _InlineChatOverlayState();
+  ConsumerState<_InlineChatOverlay> createState() => _InlineChatOverlayState();
 }
 
-class _InlineChatOverlayState extends State<_InlineChatOverlay>
+class _InlineChatOverlayState extends ConsumerState<_InlineChatOverlay>
     with SingleTickerProviderStateMixin {
   bool _isOpen = false;
   final _controller = TextEditingController();
@@ -217,6 +217,13 @@ class _InlineChatOverlayState extends State<_InlineChatOverlay>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final bottomPad = MediaQuery.of(context).padding.bottom;
+    // Hide the floating chat bubble on the Read tab. The FAB sat at
+    // right:16 / bottom:8+safeArea and permanently covered the right
+    // edge of the verse text (confirmed "should" clipped in John 3:15).
+    // Users value uninterrupted reading more than always-on chat
+    // discoverability — still accessible from every other tab.
+    final tabIndex = ref.watch(tabIndexProvider);
+    if (tabIndex == 1) return const SizedBox.shrink();
 
     return Positioned(
       right: 16,
@@ -953,7 +960,16 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                         label: Text('Share', style: GoogleFonts.lora(fontSize: 13)),
                         onPressed: () {
                           Navigator.pop(ctx);
-                          // Share functionality would go here
+                          // Wires the dead stub (prior TODO) to the same
+                          // VerseCardRenderer flow the VotD and Similar
+                          // Verses screens already use — generates the
+                          // branded 4:5 verse card and opens the
+                          // platform share sheet.
+                          VerseCardRenderer.shareVerseCard(
+                            context: context,
+                            verseText: text,
+                            reference: '${verseRef.id} ($versionName)',
+                          );
                         },
                       ),
                       TextButton.icon(
@@ -1479,27 +1495,24 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
             //    word is the highlight on mobile, ahead of Quick Actions) ──
             GestureDetector(
               onTap: () {
-                // Navigate to the verse in context
+                // Was: setBook + setChapter + switch to Read tab — tore
+                // the user out of Home for a 1-tap peek. User feedback
+                // on key-verses chips ("should just be a bubble")
+                // applies identically here. Now: pop _showVersePreview
+                // with the VotD text (Copy / Share / Read-full-chapter
+                // / highlight actions already inside it). Streak +
+                // personalization still fire so the morning-ritual
+                // loop is unchanged.
                 final verseRef = VerseRef.tryParse(
                   _currentVotD.$1.replaceAll(RegExp(r'-\d+$'), ''),
                 );
                 if (verseRef != null) {
-                  ref.read(readingLocationProvider.notifier).setBook(verseRef.book);
-                  ref.read(readingLocationProvider.notifier).setChapter(verseRef.chapter);
-                  ref.read(tabIndexProvider.notifier).set(1);
-                  // Tell the personalization service we read this ref.
                   ref
                       .read(personalizationServiceProvider)
                       .recordReadVerse(_currentVotD.$1);
-                  // ── Streak credit on VotD tap ──
-                  // Per E2 review: previously only chapter render counted
-                  // toward streak. Daily-verse-only users got zero credit
-                  // for opening the app and reading the verse, breaking
-                  // the morning-ritual loop. Now any tap on the VotD card
-                  // counts as the day's read.
                   ref.read(streakProvider.notifier).recordToday();
+                  _showVersePreview(verseRef, _currentVotD.$2, theme);
                 }
-                // Gentle sign-up nudge for unauthenticated users
                 _maybeShowSignUpNudge(context, ref);
               },
               child: Container(
@@ -1987,7 +2000,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
         : _daysSinceLastVisit == 0
             ? 'Welcome back to $brand'
             : _daysSinceLastVisit == 1
-                ? 'Welcome back — see you yesterday\'s chapter waiting'
+                ? "Welcome back — yesterday's chapter is waiting"
                 : _daysSinceLastVisit < 7
                     ? "Welcome back — it's been $_daysSinceLastVisit days"
                     : _daysSinceLastVisit < 30
@@ -2397,7 +2410,10 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
           () => showKidsPortal(context, () {
             widget.ref.read(settingsProvider.notifier).setKidsMode(true);
           })),
-      _TileData(Icons.spa_rounded, 'Prayer Wall', Colors.deepPurple,
+      // Labels shortened so none truncate at compact-mode widths
+      // (iPhone SE/mini give each tile ~68px; "Prayer Wall",
+      // "Reading Plan", and "Preach to Me" were ellipsizing).
+      _TileData(Icons.spa_rounded, 'Prayer', Colors.deepPurple,
           () => pushSubRoute(context, widget.ref,
               route: SubRoute.prayer,
               builder: (_) => const PrayerWallScreen())),
@@ -2406,12 +2422,12 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
               route: SubRoute.codex,
               fadeSlide: false,
               builder: (_) => const CodexScreen())),
-      _TileData(Icons.fact_check_rounded, 'Reading Plan',
+      _TileData(Icons.fact_check_rounded, 'Plan',
           const Color(0xFF6B5B95),
           () => pushSubRoute(context, widget.ref,
               route: SubRoute.readingPlan,
               builder: (_) => const ReadingPlanScreen())),
-      _TileData(Icons.record_voice_over, 'Preach to Me',
+      _TileData(Icons.record_voice_over, 'Preach',
           const Color(0xFFD4A843),
           () => pushSubRoute(context, widget.ref,
               route: SubRoute.preachTopic,

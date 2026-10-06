@@ -38,6 +38,13 @@ class BrandColors {
   // verse text doesn't fatigue the eye in long reading sessions.
   static const redLetter = Color(0xFFC8222B);
   static const blueLetter = Color(0xFF1E40AF);
+  // Dark-mode variants — the base redLetter (#C8222B) contrasts ~2.7:1
+  // and blueLetter (#1E40AF) ~2.0:1 on dark brown #2B1E19, both failing
+  // WCAG AA. Previous comment claimed otherwise; it was wrong. These
+  // lighter tints read legibly on the parchment-dark background without
+  // losing their rubric/royal character.
+  static const redLetterDark = Color(0xFFFF8A80);
+  static const blueLetterDark = Color(0xFF93C5FD);
 
   /// Typography helpers — call these instead of inline GoogleFonts so the
   /// app's verse rendering is consistent and easy to retune in one place.

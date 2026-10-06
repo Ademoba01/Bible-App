@@ -191,7 +191,7 @@ class _CrossReferencesSheet extends ConsumerWidget {
                         ),
                         onTap: parsed == null
                             ? null
-                            : () => _jumpTo(context, ref, parsed),
+                            : () => _peek(context, ref, parsed),
                       );
                     },
                   );
@@ -211,6 +211,119 @@ class _CrossReferencesSheet extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Peek the referenced verse in a parchment bubble ON TOP of the
+  /// cross-refs sheet. User feedback: tapping a cross-ref was popping
+  /// the sheet AND teleporting away, which lost the user's place when
+  /// they were scanning 4-5 TSK refs in a row. Now it stays in the
+  /// sheet; the bubble has a "Read full chapter" button that still
+  /// does the teleport (the escape hatch) for users who want to leave.
+  void _peek(BuildContext context, WidgetRef ref, VerseRef target) async {
+    HapticFeedback.lightImpact();
+    final theme = Theme.of(context);
+    final repo = ref.read(bibleRepositoryProvider);
+    final translation = ref.read(settingsProvider).translation;
+    String? verseText;
+    try {
+      final chapters =
+          await repo.loadBook(target.book, translationId: translation);
+      final chapter =
+          chapters[(target.chapter - 1).clamp(0, chapters.length - 1)];
+      for (final v in chapter.verses) {
+        if (v.number == target.verse) {
+          verseText = v.text;
+          break;
+        }
+      }
+    } catch (_) {
+      // Load failed — fall through to the teleport fallback below.
+    }
+    if (!context.mounted) return;
+    if (verseText == null) {
+      _jumpTo(context, ref, target);
+      return;
+    }
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (dialogCtx) => Center(
+        child: Container(
+          width: 380,
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(20),
+            border:
+                Border.all(color: BrandColors.gold.withValues(alpha: 0.35)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.menu_book,
+                          size: 18, color: BrandColors.brownDeep),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          target.id,
+                          style: GoogleFonts.lora(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: BrandColors.brownDeep,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    verseText!,
+                    style: BrandColors.verseStyle(size: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: () {
+                          Navigator.of(dialogCtx).pop();
+                          _jumpTo(context, ref, target);
+                        },
+                        style: TextButton.styleFrom(
+                            foregroundColor: BrandColors.brownDeep),
+                        icon: const Icon(Icons.open_in_new, size: 16),
+                        label: const Text('Read full chapter'),
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () => Navigator.of(dialogCtx).pop(),
+                        style: TextButton.styleFrom(
+                            foregroundColor: BrandColors.brownDeep),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

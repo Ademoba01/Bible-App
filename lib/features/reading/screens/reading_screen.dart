@@ -506,12 +506,29 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
               padding: const EdgeInsets.symmetric(horizontal: 6),
             ),
             onPressed: () async {
-              final picked = await Navigator.push<String>(
+              // Walks Book → Chapter → Verse and comes back with a
+              // tuple. Previously only returned a book name, so landing
+              // was always chapter 1 verse 1 and the user then had to
+              // open the chapter picker separately. Now the picker
+              // lands the reader exactly where they chose: setBook +
+              // setChapter + highlight the verse (highlightVerseProvider
+              // triggers the gold-fade + pixel-accurate auto-scroll via
+              // _handleHighlight above).
+              final picked = await Navigator.push<VersePickResult>(
                 context,
                 FadeSlideRoute(page: const BooksScreen()),
               );
               if (picked != null) {
-                ref.read(readingLocationProvider.notifier).setBook(picked);
+                ref.read(readingLocationProvider.notifier).setBook(picked.book);
+                ref
+                    .read(readingLocationProvider.notifier)
+                    .setChapter(picked.chapter);
+                // verse==1 from the "Read whole chapter" shortcut skips
+                // the highlight (feels right — nothing to call out).
+                if (picked.verse > 1) {
+                  ref.read(highlightVerseProvider.notifier).state =
+                      picked.verse;
+                }
               }
             },
             child: FittedBox(
@@ -961,6 +978,14 @@ class _VerseListState extends State<_VerseList> {
     final hasRedLetters = redLetterMode && redLetter.red.isNotEmpty;
     final hasBlueLetters = blueLetterMode && redLetter.blue.isNotEmpty;
     final hasColor = hasRedLetters || hasBlueLetters;
+    // Dark-mode variants: base redLetter / blueLetter fail WCAG AA on
+    // the dark-brown parchment. Branch here once so every colorFor()
+    // call below picks the legible tint automatically.
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final redLetterColor =
+        isDarkMode ? BrandColors.redLetterDark : BrandColors.redLetter;
+    final blueLetterColor =
+        isDarkMode ? BrandColors.blueLetterDark : BrandColors.blueLetter;
     // ── Translation fallback for red/blue letters ──
     // The redletter_kjv.json dataset stores word-INDEX ranges aligned
     // to KJV verse text. When the user reads a non-KJV translation
@@ -1033,13 +1058,13 @@ class _VerseListState extends State<_VerseList> {
       // Whole-verse fallback for non-aligned translations (red wins
       // over blue when the verse has both — matches printed-Bible
       // conventions where Christ's words override divine speech).
-      if (wholeVerseRed) return BrandColors.redLetter;
-      if (wholeVerseBlue) return BrandColors.blueLetter;
+      if (wholeVerseRed) return redLetterColor;
+      if (wholeVerseBlue) return blueLetterColor;
       final fullChar = charInRaw + renderOffset;
       if (fullChar < 0 || fullChar >= wordIdxAtChar.length) return null;
       final w = wordIdxAtChar[fullChar];
-      if (hasRedLetters && redLetter.isRed(w)) return BrandColors.redLetter;
-      if (hasBlueLetters && redLetter.isBlue(w)) return BrandColors.blueLetter;
+      if (hasRedLetters && redLetter.isRed(w)) return redLetterColor;
+      if (hasBlueLetters && redLetter.isBlue(w)) return blueLetterColor;
       return null;
     }
 
@@ -1692,10 +1717,14 @@ class _VerseListState extends State<_VerseList> {
                               final entry = redLetterSvc.forVerse(
                                   book, chapterNum, v.number);
                               if (redLetterMode && entry.isRed(0)) {
-                                return BrandColors.redLetter;
+                                return isDark
+                                    ? BrandColors.redLetterDark
+                                    : BrandColors.redLetter;
                               }
                               if (blueLetterMode && entry.isBlue(0)) {
-                                return BrandColors.blueLetter;
+                                return isDark
+                                    ? BrandColors.blueLetterDark
+                                    : BrandColors.blueLetter;
                               }
                             }
                             return isDark

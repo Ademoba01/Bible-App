@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../data/models.dart';
 import '../../state/providers.dart';
 import '../../widgets/lottie_or_fallback.dart';
+import 'kids_authored_data.dart';
 
 /// A quiz question for kids mode.
 class _KidsQuizQuestion {
@@ -139,7 +140,45 @@ class _KidsQuizScreenState extends ConsumerState<KidsQuizScreen>
         return;
       }
 
-      final questions = _generateKidsQuestions(verses);
+      // Prefer the hand-authored kid-grade questions from
+      // assets/kids/quiz_bank.json whose verseRef falls inside this
+      // story's verse range. Review flag: previous code only ran the
+      // auto-generator which asked 5-year-olds to fill blanks in
+      // archaic KJV. The authored bank has real kid-friendly
+      // questions with explanations.
+      final authoredAsync =
+          await ref.read(authoredKidsQuestionsProvider.future);
+      final matched = authoredAsync.where((q) {
+        if (q.verseRef.isEmpty) return false;
+        // Match either exact "Book Ch:Verse" or "Book Ch" prefix so
+        // that chapter-level questions apply across the whole range.
+        final refLower = q.verseRef.toLowerCase();
+        final bookLower = widget.book.toLowerCase();
+        if (!refLower.startsWith(bookLower)) return false;
+        final chMatch = RegExp(r'(\d+)').firstMatch(refLower);
+        if (chMatch == null) return true;
+        final ch = int.tryParse(chMatch.group(1)!) ?? -1;
+        return ch == widget.chapter;
+      }).toList();
+
+      final List<_KidsQuizQuestion> questions = [];
+      // Authored first — these are the quality ones.
+      for (final q in matched.take(3)) {
+        questions.add(_KidsQuizQuestion(
+          question: q.question,
+          correctAnswer: q.correctAnswer,
+          options: q.options,
+        ));
+      }
+      // Backfill with auto-generated so the quiz is always 3 Q's.
+      if (questions.length < 3) {
+        final gen = _generateKidsQuestions(verses);
+        for (final g in gen) {
+          if (questions.length >= 3) break;
+          questions.add(g);
+        }
+      }
+
       setState(() {
         _questions = questions;
         _loading = false;

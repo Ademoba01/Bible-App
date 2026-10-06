@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 import '../settings/voice_settings.dart';
+import 'kids_authored_data.dart';
 import 'kids_stories.dart';
 import 'kids_stories_nt.dart';
 import 'kids_story_data.dart';
@@ -332,7 +333,12 @@ class _KidsHomeScreenState extends ConsumerState<KidsHomeScreen> {
                                     )),
                                 const SizedBox(height: 2),
                                 Text(
-                                    '${kIllustratedStories.length} stories with pictures & audio!',
+                                    // Review flag: previous copy claimed
+                                    // "with pictures & audio!" but no
+                                    // illustrations ship yet and audio is
+                                    // flutter_tts. Demoted until Priority
+                                    // 1 of the Illuminations brief lands.
+                                    '${kIllustratedStories.length} picture-book Bible stories',
                                     style: GoogleFonts.fredoka(
                                       fontSize: 12,
                                       color:
@@ -736,11 +742,22 @@ class _KidsSettingsSheetState extends State<_KidsSettingsSheet> {
 
 // ── Animated Stories List Screen ──
 
-class _AnimatedStoriesListScreen extends StatelessWidget {
+class _AnimatedStoriesListScreen extends ConsumerWidget {
   const _AnimatedStoriesListScreen();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Merge in the hand-authored stories from assets/kids/stories.json
+    // (previously orphaned — review agent 5 flag). Authored stories
+    // render FIRST so users see the better-written content on open;
+    // when the loader is still pending or empty, falls back to the
+    // existing const list unchanged.
+    final authoredAsync = ref.watch(authoredKidsStoriesProvider);
+    final authored = authoredAsync.maybeWhen(
+      data: (list) => list,
+      orElse: () => const <IllustratedStory>[],
+    );
+    final stories = [...authored, ...kIllustratedStories];
     return Scaffold(
       appBar: AppBar(
         title: Text('Animated Stories',
@@ -750,9 +767,9 @@ class _AnimatedStoriesListScreen extends StatelessWidget {
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: kIllustratedStories.length,
+        itemCount: stories.length,
         itemBuilder: (context, i) {
-          final story = kIllustratedStories[i];
+          final story = stories[i];
           final color = Color(story.color);
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),

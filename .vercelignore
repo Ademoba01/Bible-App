@@ -1,15 +1,33 @@
-# Deploy only the Flutter web build output. Everything else is
-# ignored, including the massive build/ios / build/android trees
-# that previously timed out Vercel's file scanner (a "build/ios 2"
-# variant with a broken FirebaseCoreInternal symlink hung indefinitely).
+# Ignore everything except what's needed for the Vercel deploy
+# (Flutter web build output + api/ serverless functions +
+# assets/bibles JSON that the functions reference).
 #
-# Vercel supports negation patterns like git — ignore everything,
-# then re-include only build/web and the api/ folder (needed for
-# the Vercel Functions declared in vercel.json).
-*
-!build/
+# Previous rewrite tried an allow-list approach with `*` at the top,
+# but that filtered out api/*.js in ways I couldn't fully control —
+# Vercel's `functions` config kept failing with "pattern api/**/*.js
+# doesn't match any Serverless Functions". Deny-list is the proven
+# recipe; just needs to be exhaustive.
+.dart_tool
+.idea
+.gradle
+android
+ios
+linux
+macos
+windows
+test
+lib
+.git
+*.dart
+*.lock
+.packages
+.metadata
+node_modules
+.firebase
+# Every build/<plugin> subtree can be huge and none of it needs to
+# ship to Vercel. Xcode leaves "build/ios 2" DerivedData variants
+# with broken symlinks that timed out the previous deploy. Only
+# build/web needs to ship — ignore every other subdir and negate
+# just web.
 build/*
-!build/web/
-!api/
-!vercel.json
-!.vercel/
+!build/web
