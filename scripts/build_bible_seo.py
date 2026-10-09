@@ -209,7 +209,12 @@ def render_chapter_page(
 
     open_app_url = f"{SITE}/?book={book_name.replace(' ', '%20')}&chapter={chapter_num}"
 
-    # JSON-LD BibleTranslation / CreativeWork
+    # JSON-LD: a Chapter whose hasPart is every verse as a Quotation
+    # with its exact text and a #vN deep-link. This is what AI search
+    # engines (Perplexity, ChatGPT, Google AI Overviews) key on when
+    # they want to QUOTE scripture — before this they only saw the
+    # Chapter wrapper and had no structured handle on individual
+    # verses, so citations fell back to prose summaries.
     ldjson = json.dumps(
         {
             "@context": "https://schema.org",
@@ -225,6 +230,18 @@ def render_chapter_page(
                 "url": f"{SITE}/bible/{book_slug}/",
             },
             "publisher": {"@type": "Organization", "name": "Rhema Study Bible"},
+            "hasPart": [
+                {
+                    "@type": "Quotation",
+                    "position": vn,
+                    "name": f"{ref}:{vn}",
+                    "text": text,
+                    "url": f"{canonical}#v{vn}",
+                    "inLanguage": "en",
+                    "citation": f"{ref}:{vn} (KJV)",
+                }
+                for vn, text in verses
+            ],
         },
         separators=(",", ":"),
     )

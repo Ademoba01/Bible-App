@@ -258,8 +258,49 @@
 <body>
   <!-- SEO content for search engines and AI crawlers (hidden from visual users) -->
   <div class="seo-content" role="main">
-    <h1>Rhema Study Bible</h1>
+    <h1>Rhema Study Bible — Read the Bible Online</h1>
     <p><strong>The Bible that listens and speaks your language.</strong></p>
+    <p><em>66 books · 1,189 chapters · 31,102 verses · King James Version · AI-powered search</em></p>
+
+    <!-- Direct Bible navigation. User-reported SEO problem: Google's AI
+         summary of rhemabibles.com said "no direct links to specific
+         verses provided on the main page" because the previous root
+         markup described the app but linked to zero scripture. Each
+         book here deep-links into the static /bible/{slug}/{N}/ pages
+         that already carry per-verse #vN anchors — so crawlers and
+         LLMs can quote and link any verse directly. -->
+    <h2>Browse the Bible</h2>
+    <p><a href="/bible/">Full Bible index</a> · 66 books · every chapter linked below</p>
+
+    <h3>Popular Verses</h3>
+    <ul>
+      <li><a href="/bible/john/3/#v16">John 3:16</a> — For God so loved the world…</li>
+      <li><a href="/bible/psalms/23/#v1">Psalm 23:1</a> — The LORD is my shepherd…</li>
+      <li><a href="/bible/romans/8/#v28">Romans 8:28</a> — All things work together for good…</li>
+      <li><a href="/bible/jeremiah/29/#v11">Jeremiah 29:11</a> — I know the plans I have for you…</li>
+      <li><a href="/bible/philippians/4/#v13">Philippians 4:13</a> — I can do all things through Christ…</li>
+      <li><a href="/bible/proverbs/3/#v5">Proverbs 3:5-6</a> — Trust in the LORD with all your heart…</li>
+      <li><a href="/bible/isaiah/40/#v31">Isaiah 40:31</a> — They that wait upon the LORD shall renew their strength…</li>
+      <li><a href="/bible/matthew/28/#v19">Matthew 28:19</a> — Go ye therefore, and teach all nations…</li>
+      <li><a href="/bible/deuteronomy/28/#v23">Deuteronomy 28:23</a> — Heaven of brass and earth of iron…</li>
+      <li><a href="/bible/1corinthians/13/#v4">1 Corinthians 13:4</a> — Charity suffereth long, and is kind…</li>
+      <li><a href="/bible/genesis/1/#v1">Genesis 1:1</a> — In the beginning God created…</li>
+      <li><a href="/bible/revelation/21/#v4">Revelation 21:4</a> — He shall wipe away all tears…</li>
+    </ul>
+
+    <h3>Old Testament</h3>
+    <ul>
+      <li><a href="/bible/genesis/">Genesis</a></li><li><a href="/bible/exodus/">Exodus</a></li><li><a href="/bible/leviticus/">Leviticus</a></li><li><a href="/bible/numbers/">Numbers</a></li><li><a href="/bible/deuteronomy/">Deuteronomy</a></li><li><a href="/bible/joshua/">Joshua</a></li><li><a href="/bible/judges/">Judges</a></li><li><a href="/bible/ruth/">Ruth</a></li><li><a href="/bible/1samuel/">1 Samuel</a></li><li><a href="/bible/2samuel/">2 Samuel</a></li><li><a href="/bible/1kings/">1 Kings</a></li><li><a href="/bible/2kings/">2 Kings</a></li><li><a href="/bible/1chronicles/">1 Chronicles</a></li><li><a href="/bible/2chronicles/">2 Chronicles</a></li><li><a href="/bible/ezra/">Ezra</a></li><li><a href="/bible/nehemiah/">Nehemiah</a></li><li><a href="/bible/esther/">Esther</a></li><li><a href="/bible/job/">Job</a></li><li><a href="/bible/psalms/">Psalms</a></li><li><a href="/bible/proverbs/">Proverbs</a></li><li><a href="/bible/ecclesiastes/">Ecclesiastes</a></li><li><a href="/bible/songofsolomon/">Song of Solomon</a></li><li><a href="/bible/isaiah/">Isaiah</a></li><li><a href="/bible/jeremiah/">Jeremiah</a></li><li><a href="/bible/lamentations/">Lamentations</a></li><li><a href="/bible/ezekiel/">Ezekiel</a></li><li><a href="/bible/daniel/">Daniel</a></li><li><a href="/bible/hosea/">Hosea</a></li><li><a href="/bible/joel/">Joel</a></li><li><a href="/bible/amos/">Amos</a></li><li><a href="/bible/obadiah/">Obadiah</a></li><li><a href="/bible/jonah/">Jonah</a></li><li><a href="/bible/micah/">Micah</a></li><li><a href="/bible/nahum/">Nahum</a></li><li><a href="/bible/habakkuk/">Habakkuk</a></li><li><a href="/bible/zephaniah/">Zephaniah</a></li><li><a href="/bible/haggai/">Haggai</a></li><li><a href="/bible/zechariah/">Zechariah</a></li><li><a href="/bible/malachi/">Malachi</a></li>
+    </ul>
+
+    <h3>New Testament</h3>
+    <ul>
+      <li><a href="/bible/matthew/">Matthew</a></li><li><a href="/bible/mark/">Mark</a></li><li><a href="/bible/luke/">Luke</a></li><li><a href="/bible/john/">John</a></li><li><a href="/bible/acts/">Acts</a></li><li><a href="/bible/romans/">Romans</a></li><li><a href="/bible/1corinthians/">1 Corinthians</a></li><li><a href="/bible/2corinthians/">2 Corinthians</a></li><li><a href="/bible/galatians/">Galatians</a></li><li><a href="/bible/ephesians/">Ephesians</a></li><li><a href="/bible/philippians/">Philippians</a></li><li><a href="/bible/colossians/">Colossians</a></li><li><a href="/bible/1thessalonians/">1 Thessalonians</a></li><li><a href="/bible/2thessalonians/">2 Thessalonians</a></li><li><a href="/bible/1timothy/">1 Timothy</a></li><li><a href="/bible/2timothy/">2 Timothy</a></li><li><a href="/bible/titus/">Titus</a></li><li><a href="/bible/philemon/">Philemon</a></li><li><a href="/bible/hebrews/">Hebrews</a></li><li><a href="/bible/james/">James</a></li><li><a href="/bible/1peter/">1 Peter</a></li><li><a href="/bible/2peter/">2 Peter</a></li><li><a href="/bible/1john/">1 John</a></li><li><a href="/bible/2john/">2 John</a></li><li><a href="/bible/3john/">3 John</a></li><li><a href="/bible/jude/">Jude</a></li><li><a href="/bible/revelation/">Revelation</a></li>
+    </ul>
+
+    <p>Every chapter page carries the full King James text with deep-linkable verses, e.g. <a href="/bible/john/3/#v16">John 3:16</a> or <a href="/bible/deuteronomy/28/#v23">Deuteronomy 28:23</a>. Share any link — recipients land directly on the verse.</p>
+
+    <h2>About Rhema Study Bible</h2>
     <p>Rhema Study Bible is a free, open-source Bible companion app available on iOS, Android, and Web. No subscriptions, no paywalls — every feature is free for everyone.</p>
 
     <h2>Features</h2>
