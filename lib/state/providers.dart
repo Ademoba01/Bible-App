@@ -654,6 +654,14 @@ final streakProvider =
 /// and highlight it with an animated gold background.
 final highlightVerseProvider = StateProvider<int?>((ref) => null);
 
+/// Pending search query fed from the URL (?q=…). HomeScreen listens
+/// for a non-null value on build, writes it into its search controller,
+/// kicks off _runSearch(), and then clears the provider. Used by the
+/// marketing SEO landing's `<form action="/" method="get">` so a user
+/// typing a question into the no-JS fallback lands straight into
+/// search results in the Flutter app.
+final pendingSearchQueryProvider = StateProvider<String?>((ref) => null);
+
 /// Preserved Similar-Verses context. When the user taps "Read full
 /// chapter" from a similar-verses result, the source verse is saved
 /// here so the floating "Back to Similar Verses" chip on the Read

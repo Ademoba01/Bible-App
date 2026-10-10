@@ -101,6 +101,11 @@ void _applyDeepLinkFromUrl(WidgetRef ref) {
   final chapterStr = params['chapter'];
   final verseStr = params['verse'];
   final tab = params['tab'];
+  // ?q=<natural-language question> — the marketing SEO landing's
+  // `<form action="/" method="get">` posts here. We stash the query
+  // in pendingSearchQueryProvider; HomeScreen picks it up on first
+  // build, prefills the search bar, runs the search.
+  final searchQuery = params['q'];
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (book != null && book.isNotEmpty) {
@@ -114,8 +119,13 @@ void _applyDeepLinkFromUrl(WidgetRef ref) {
     if (verse != null && verse > 0) {
       ref.read(highlightVerseProvider.notifier).state = verse;
     }
+    if (searchQuery != null && searchQuery.trim().isNotEmpty) {
+      ref.read(pendingSearchQueryProvider.notifier).state =
+          searchQuery.trim();
+    }
     // Switch to read tab if a verse-level deep link came in. Otherwise
-    // honour an explicit ?tab= param.
+    // honour an explicit ?tab= param. Search queries stay on Home
+    // (where the search bar lives).
     int? tabIdx;
     if (tab != null) {
       switch (tab) {
@@ -127,6 +137,9 @@ void _applyDeepLinkFromUrl(WidgetRef ref) {
     }
     if (tabIdx == null && (book != null || chapter != null)) {
       tabIdx = 1;
+    }
+    if (tabIdx == null && searchQuery != null && searchQuery.trim().isNotEmpty) {
+      tabIdx = 0;
     }
     if (tabIdx != null) {
       ref.read(tabIndexProvider.notifier).set(tabIdx);

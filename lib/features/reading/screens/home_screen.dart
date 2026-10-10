@@ -558,6 +558,28 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     _daysSinceLastVisit = settingsNotifier.daysSinceLastVisit;
     // Record this visit immediately so the next session shows "Welcome back".
     settingsNotifier.recordVisit();
+
+    // Pending search query from the marketing SEO landing's /?q=…
+    // form. main.dart's _applyDeepLinkFromUrl stashes the trimmed
+    // query in pendingSearchQueryProvider; we drain it here, prefill
+    // the search bar, flip the search surface open, and kick off a
+    // debounced search as if the user had typed it themselves.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final pending = ref.read(pendingSearchQueryProvider);
+      if (pending != null && pending.isNotEmpty) {
+        _searchCtrl.text = pending;
+        _searchCtrl.selection = TextSelection.fromPosition(
+          TextPosition(offset: pending.length),
+        );
+        setState(() {
+          _searchActive = true;
+          _searchLoading = true;
+        });
+        _runSearch();
+        ref.read(pendingSearchQueryProvider.notifier).state = null;
+      }
+    });
   }
 
   Future<void> _loadStoredMood() async {
