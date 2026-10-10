@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":31,"name":"Isaiah 31","url":"https://rhemabibles.com/bible/isaiah/31/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Isaiah","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/isaiah/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Isaiah 31:1","text":"Woe to them that go down to Egypt for help; and stay on horses, and trust in chariots, because they are many; and in horsemen, because they are very strong; but they look not unto the Holy One of Israel, neither seek the LORD!","url":"https://rhemabibles.com/bible/isaiah/31/#v1","inLanguage":"en","citation":"Isaiah 31:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Isaiah 31:2","text":"Yet he also is wise, and will bring evil, and will not call back his words: but will arise against the house of the evildoers, and against the help of them that work iniquity.","url":"https://rhemabibles.com/bible/isaiah/31/#v2","inLanguage":"en","citation":"Isaiah 31:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Isaiah 31:3","text":"Now the Egyptians are men, and not God; and their horses flesh, and not spirit. When the LORD shall stretch out his hand, both he that helpeth shall fall, and he that is holpen shall fall down, and they all shall fail together.","url":"https://rhemabibles.com/bible/isaiah/31/#v3","inLanguage":"en","citation":"Isaiah 31:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Isaiah 31:4","text":"For thus hath the LORD spoken unto me, Like as the lion and the young lion roaring on his prey, when a multitude of shepherds is called forth against him, he will not be afraid of their voice, nor abase himself for the noise of them: so shall the LORD of hosts come down to fight for mount Zion, and for the hill thereof.","url":"https://rhemabibles.com/bible/isaiah/31/#v4","inLanguage":"en","citation":"Isaiah 31:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Isaiah 31:5","text":"As birds flying, so will the LORD of hosts defend Jerusalem; defending also he will deliver it; and passing over he will preserve it.","url":"https://rhemabibles.com/bible/isaiah/31/#v5","inLanguage":"en","citation":"Isaiah 31:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Isaiah 31:6","text":"Turn ye unto him from whom the children of Israel have deeply revolted.","url":"https://rhemabibles.com/bible/isaiah/31/#v6","inLanguage":"en","citation":"Isaiah 31:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Isaiah 31:7","text":"For in that day every man shall cast away his idols of silver, and his idols of gold, which your own hands have made unto you for a sin.","url":"https://rhemabibles.com/bible/isaiah/31/#v7","inLanguage":"en","citation":"Isaiah 31:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Isaiah 31:8","text":"Then shall the Assyrian fall with the sword, not of a mighty man; and the sword, not of a mean man, shall devour him: but he shall flee from the sword, and his young men shall be discomfited.","url":"https://rhemabibles.com/bible/isaiah/31/#v8","inLanguage":"en","citation":"Isaiah 31:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Isaiah 31:9","text":"And he shall pass over to his strong hold for fear, and his princes shall be afraid of the ensign, saith the LORD, whose fire is in Zion, and his furnace in Jerusalem.","url":"https://rhemabibles.com/bible/isaiah/31/#v9","inLanguage":"en","citation":"Isaiah 31:9 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,15 +97,15 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Woe to them that go down to Egypt for help; and stay on horses, and trust in chariots, because they are many; and in horsemen, because they are very strong; but they look not unto the Holy One of Israel, neither seek the LORD!</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Yet he also is wise, and will bring evil, and will not call back his words: but will arise against the house of the evildoers, and against the help of them that work iniquity.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Now the Egyptians are men, and not God; and their horses flesh, and not spirit. When the LORD shall stretch out his hand, both he that helpeth shall fall, and he that is holpen shall fall down, and they all shall fail together.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>For thus hath the LORD spoken unto me, Like as the lion and the young lion roaring on his prey, when a multitude of shepherds is called forth against him, he will not be afraid of their voice, nor abase himself for the noise of them: so shall the LORD of hosts come down to fight for mount Zion, and for the hill thereof.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>As birds flying, so will the LORD of hosts defend Jerusalem; defending also he will deliver it; and passing over he will preserve it.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Turn ye unto him from whom the children of Israel have deeply revolted.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>For in that day every man shall cast away his idols of silver, and his idols of gold, which your own hands have made unto you for a sin.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Then shall the Assyrian fall with the sword, not of a mighty man; and the sword, not of a mean man, shall devour him: but he shall flee from the sword, and his young men shall be discomfited.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And he shall pass over to his strong hold for fear, and his princes shall be afraid of the ensign, saith the LORD, whose fire is in Zion, and his furnace in Jerusalem.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Woe to them that go down to Egypt for help; and stay on horses, and trust in chariots, because they are many; and in horsemen, because they are very strong; but they look not unto the Holy One of Israel, neither seek the LORD!<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=31&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Yet he also is wise, and will bring evil, and will not call back his words: but will arise against the house of the evildoers, and against the help of them that work iniquity.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=31&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Now the Egyptians are men, and not God; and their horses flesh, and not spirit. When the LORD shall stretch out his hand, both he that helpeth shall fall, and he that is holpen shall fall down, and they all shall fail together.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=31&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>For thus hath the LORD spoken unto me, Like as the lion and the young lion roaring on his prey, when a multitude of shepherds is called forth against him, he will not be afraid of their voice, nor abase himself for the noise of them: so shall the LORD of hosts come down to fight for mount Zion, and for the hill thereof.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=31&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>As birds flying, so will the LORD of hosts defend Jerusalem; defending also he will deliver it; and passing over he will preserve it.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=31&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Turn ye unto him from whom the children of Israel have deeply revolted.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=31&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>For in that day every man shall cast away his idols of silver, and his idols of gold, which your own hands have made unto you for a sin.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=31&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Then shall the Assyrian fall with the sword, not of a mighty man; and the sword, not of a mean man, shall devour him: but he shall flee from the sword, and his young men shall be discomfited.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=31&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And he shall pass over to his strong hold for fear, and his princes shall be afraid of the ensign, saith the LORD, whose fire is in Zion, and his furnace in Jerusalem.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=31&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -109,6 +116,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Isaiah&chapter=31" rel="noopener">Open Isaiah 31 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Isaiah&chapter=31";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

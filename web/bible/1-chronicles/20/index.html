@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":20,"name":"1 Chronicles 20","url":"https://rhemabibles.com/bible/1-chronicles/20/","inLanguage":"en","isPartOf":{"@type":"Book","name":"1 Chronicles","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/1-chronicles/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"1 Chronicles 20:1","text":"And it came to pass, that after the year was expired, at the time that kings go out to battle, Joab led forth the power of the army, and wasted the country of the children of Ammon, and came and besieged Rabbah. But David tarried at Jerusalem. And Joab smote Rabbah, and destroyed it.","url":"https://rhemabibles.com/bible/1-chronicles/20/#v1","inLanguage":"en","citation":"1 Chronicles 20:1 (KJV)"},{"@type":"Quotation","position":2,"name":"1 Chronicles 20:2","text":"And David took the crown of their king from off his head, and found it to weigh a talent of gold, and there were precious stones in it; and it was set upon David\u2019s head: and he brought also exceeding much spoil out of the city.","url":"https://rhemabibles.com/bible/1-chronicles/20/#v2","inLanguage":"en","citation":"1 Chronicles 20:2 (KJV)"},{"@type":"Quotation","position":3,"name":"1 Chronicles 20:3","text":"And he brought out the people that were in it, and cut them with saws, and with harrows of iron, and with axes. Even so dealt David with all the cities of the children of Ammon. And David and all the people returned to Jerusalem.","url":"https://rhemabibles.com/bible/1-chronicles/20/#v3","inLanguage":"en","citation":"1 Chronicles 20:3 (KJV)"},{"@type":"Quotation","position":4,"name":"1 Chronicles 20:4","text":"And it came to pass after this, that there arose war at Gezer with the Philistines; at which time Sibbechai the Hushathite slew Sippai, that was of the children of the giant: and they were subdued.","url":"https://rhemabibles.com/bible/1-chronicles/20/#v4","inLanguage":"en","citation":"1 Chronicles 20:4 (KJV)"},{"@type":"Quotation","position":5,"name":"1 Chronicles 20:5","text":"And there was war again with the Philistines; and Elhanan the son of Jair slew Lahmi the brother of Goliath the Gittite, whose spear staff was like a weaver\u2019s beam.","url":"https://rhemabibles.com/bible/1-chronicles/20/#v5","inLanguage":"en","citation":"1 Chronicles 20:5 (KJV)"},{"@type":"Quotation","position":6,"name":"1 Chronicles 20:6","text":"And yet again there was war at Gath, where was a man of great stature, whose fingers and toes were four and twenty, six on each hand, and six on each foot and he also was the son of the giant.","url":"https://rhemabibles.com/bible/1-chronicles/20/#v6","inLanguage":"en","citation":"1 Chronicles 20:6 (KJV)"},{"@type":"Quotation","position":7,"name":"1 Chronicles 20:7","text":"But when he defied Israel, Jonathan the son of Shimea David\u2019s brother slew him.","url":"https://rhemabibles.com/bible/1-chronicles/20/#v7","inLanguage":"en","citation":"1 Chronicles 20:7 (KJV)"},{"@type":"Quotation","position":8,"name":"1 Chronicles 20:8","text":"These were born unto the giant in Gath; and they fell by the hand of David, and by the hand of his servants.","url":"https://rhemabibles.com/bible/1-chronicles/20/#v8","inLanguage":"en","citation":"1 Chronicles 20:8 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,14 +97,14 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>And it came to pass, that after the year was expired, at the time that kings go out to battle, Joab led forth the power of the army, and wasted the country of the children of Ammon, and came and besieged Rabbah. But David tarried at Jerusalem. And Joab smote Rabbah, and destroyed it.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And David took the crown of their king from off his head, and found it to weigh a talent of gold, and there were precious stones in it; and it was set upon David’s head: and he brought also exceeding much spoil out of the city.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>And he brought out the people that were in it, and cut them with saws, and with harrows of iron, and with axes. Even so dealt David with all the cities of the children of Ammon. And David and all the people returned to Jerusalem.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And it came to pass after this, that there arose war at Gezer with the Philistines; at which time Sibbechai the Hushathite slew Sippai, that was of the children of the giant: and they were subdued.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>And there was war again with the Philistines; and Elhanan the son of Jair slew Lahmi the brother of Goliath the Gittite, whose spear staff was like a weaver’s beam.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>And yet again there was war at Gath, where was a man of great stature, whose fingers and toes were four and twenty, six on each hand, and six on each foot and he also was the son of the giant.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>But when he defied Israel, Jonathan the son of Shimea David’s brother slew him.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>These were born unto the giant in Gath; and they fell by the hand of David, and by the hand of his servants.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>And it came to pass, that after the year was expired, at the time that kings go out to battle, Joab led forth the power of the army, and wasted the country of the children of Ammon, and came and besieged Rabbah. But David tarried at Jerusalem. And Joab smote Rabbah, and destroyed it.<a class="verse-open" href="https://rhemabibles.com/?book=1%20Chronicles&chapter=20&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And David took the crown of their king from off his head, and found it to weigh a talent of gold, and there were precious stones in it; and it was set upon David’s head: and he brought also exceeding much spoil out of the city.<a class="verse-open" href="https://rhemabibles.com/?book=1%20Chronicles&chapter=20&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>And he brought out the people that were in it, and cut them with saws, and with harrows of iron, and with axes. Even so dealt David with all the cities of the children of Ammon. And David and all the people returned to Jerusalem.<a class="verse-open" href="https://rhemabibles.com/?book=1%20Chronicles&chapter=20&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And it came to pass after this, that there arose war at Gezer with the Philistines; at which time Sibbechai the Hushathite slew Sippai, that was of the children of the giant: and they were subdued.<a class="verse-open" href="https://rhemabibles.com/?book=1%20Chronicles&chapter=20&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>And there was war again with the Philistines; and Elhanan the son of Jair slew Lahmi the brother of Goliath the Gittite, whose spear staff was like a weaver’s beam.<a class="verse-open" href="https://rhemabibles.com/?book=1%20Chronicles&chapter=20&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>And yet again there was war at Gath, where was a man of great stature, whose fingers and toes were four and twenty, six on each hand, and six on each foot and he also was the son of the giant.<a class="verse-open" href="https://rhemabibles.com/?book=1%20Chronicles&chapter=20&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>But when he defied Israel, Jonathan the son of Shimea David’s brother slew him.<a class="verse-open" href="https://rhemabibles.com/?book=1%20Chronicles&chapter=20&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>These were born unto the giant in Gath; and they fell by the hand of David, and by the hand of his servants.<a class="verse-open" href="https://rhemabibles.com/?book=1%20Chronicles&chapter=20&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -108,6 +115,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=1%20Chronicles&chapter=20" rel="noopener">Open 1 Chronicles 20 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=1%20Chronicles&chapter=20";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

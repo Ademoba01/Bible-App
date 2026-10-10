@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":39,"name":"Isaiah 39","url":"https://rhemabibles.com/bible/isaiah/39/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Isaiah","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/isaiah/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Isaiah 39:1","text":"At that time Merodachbaladan, the son of Baladan, king of Babylon, sent letters and a present to Hezekiah: for he had heard that he had been sick, and was recovered.","url":"https://rhemabibles.com/bible/isaiah/39/#v1","inLanguage":"en","citation":"Isaiah 39:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Isaiah 39:2","text":"And Hezekiah was glad of them, and shewed them the house of his precious things, the silver, and the gold, and the spices, and the precious ointment, and all the house of his armour, and all that was found in his treasures: there was nothing in his house, nor in all his dominion, that Hezekiah shewed them not.","url":"https://rhemabibles.com/bible/isaiah/39/#v2","inLanguage":"en","citation":"Isaiah 39:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Isaiah 39:3","text":"Then came Isaiah the prophet unto king Hezekiah, and said unto him, What said these men? and from whence came they unto thee? And Hezekiah said, They are come from a far country unto me, even from Babylon.","url":"https://rhemabibles.com/bible/isaiah/39/#v3","inLanguage":"en","citation":"Isaiah 39:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Isaiah 39:4","text":"Then said he, What have they seen in thine house? And Hezekiah answered, All that is in mine house have they seen: there is nothing among my treasures that I have not shewed them.","url":"https://rhemabibles.com/bible/isaiah/39/#v4","inLanguage":"en","citation":"Isaiah 39:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Isaiah 39:5","text":"Then said Isaiah to Hezekiah, Hear the word of the LORD of hosts:","url":"https://rhemabibles.com/bible/isaiah/39/#v5","inLanguage":"en","citation":"Isaiah 39:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Isaiah 39:6","text":"Behold, the days come, that all that is in thine house, and that which thy fathers have laid up in store until this day, shall be carried to Babylon: nothing shall be left, saith the LORD.","url":"https://rhemabibles.com/bible/isaiah/39/#v6","inLanguage":"en","citation":"Isaiah 39:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Isaiah 39:7","text":"And of thy sons that shall issue from thee, which thou shalt beget, shall they take away; and they shall be eunuchs in the palace of the king of Babylon.","url":"https://rhemabibles.com/bible/isaiah/39/#v7","inLanguage":"en","citation":"Isaiah 39:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Isaiah 39:8","text":"Then said Hezekiah to Isaiah, Good is the word of the LORD which thou hast spoken. He said moreover, For there shall be peace and truth in my days.","url":"https://rhemabibles.com/bible/isaiah/39/#v8","inLanguage":"en","citation":"Isaiah 39:8 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,14 +97,14 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>At that time Merodachbaladan, the son of Baladan, king of Babylon, sent letters and a present to Hezekiah: for he had heard that he had been sick, and was recovered.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And Hezekiah was glad of them, and shewed them the house of his precious things, the silver, and the gold, and the spices, and the precious ointment, and all the house of his armour, and all that was found in his treasures: there was nothing in his house, nor in all his dominion, that Hezekiah shewed them not.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Then came Isaiah the prophet unto king Hezekiah, and said unto him, What said these men? and from whence came they unto thee? And Hezekiah said, They are come from a far country unto me, even from Babylon.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>Then said he, What have they seen in thine house? And Hezekiah answered, All that is in mine house have they seen: there is nothing among my treasures that I have not shewed them.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Then said Isaiah to Hezekiah, Hear the word of the LORD of hosts:</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Behold, the days come, that all that is in thine house, and that which thy fathers have laid up in store until this day, shall be carried to Babylon: nothing shall be left, saith the LORD.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>And of thy sons that shall issue from thee, which thou shalt beget, shall they take away; and they shall be eunuchs in the palace of the king of Babylon.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Then said Hezekiah to Isaiah, Good is the word of the LORD which thou hast spoken. He said moreover, For there shall be peace and truth in my days.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>At that time Merodachbaladan, the son of Baladan, king of Babylon, sent letters and a present to Hezekiah: for he had heard that he had been sick, and was recovered.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=39&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And Hezekiah was glad of them, and shewed them the house of his precious things, the silver, and the gold, and the spices, and the precious ointment, and all the house of his armour, and all that was found in his treasures: there was nothing in his house, nor in all his dominion, that Hezekiah shewed them not.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=39&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Then came Isaiah the prophet unto king Hezekiah, and said unto him, What said these men? and from whence came they unto thee? And Hezekiah said, They are come from a far country unto me, even from Babylon.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=39&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>Then said he, What have they seen in thine house? And Hezekiah answered, All that is in mine house have they seen: there is nothing among my treasures that I have not shewed them.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=39&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Then said Isaiah to Hezekiah, Hear the word of the LORD of hosts:<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=39&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Behold, the days come, that all that is in thine house, and that which thy fathers have laid up in store until this day, shall be carried to Babylon: nothing shall be left, saith the LORD.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=39&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>And of thy sons that shall issue from thee, which thou shalt beget, shall they take away; and they shall be eunuchs in the palace of the king of Babylon.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=39&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Then said Hezekiah to Isaiah, Good is the word of the LORD which thou hast spoken. He said moreover, For there shall be peace and truth in my days.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=39&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -108,6 +115,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Isaiah&chapter=39" rel="noopener">Open Isaiah 39 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Isaiah&chapter=39";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

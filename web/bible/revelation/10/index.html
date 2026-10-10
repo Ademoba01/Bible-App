@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":10,"name":"Revelation 10","url":"https://rhemabibles.com/bible/revelation/10/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Revelation","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/revelation/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Revelation 10:1","text":"And I saw another mighty angel come down from heaven, clothed with a cloud: and a rainbow was upon his head, and his face was as it were the sun, and his feet as pillars of fire:","url":"https://rhemabibles.com/bible/revelation/10/#v1","inLanguage":"en","citation":"Revelation 10:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Revelation 10:2","text":"And he had in his hand a little book open: and he set his right foot upon the sea, and his left foot on the earth,","url":"https://rhemabibles.com/bible/revelation/10/#v2","inLanguage":"en","citation":"Revelation 10:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Revelation 10:3","text":"And cried with a loud voice, as when a lion roareth: and when he had cried, seven thunders uttered their voices.","url":"https://rhemabibles.com/bible/revelation/10/#v3","inLanguage":"en","citation":"Revelation 10:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Revelation 10:4","text":"And when the seven thunders had uttered their voices, I was about to write: and I heard a voice from heaven saying unto me, Seal up those things which the seven thunders uttered, and write them not.","url":"https://rhemabibles.com/bible/revelation/10/#v4","inLanguage":"en","citation":"Revelation 10:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Revelation 10:5","text":"And the angel which I saw stand upon the sea and upon the earth lifted up his hand to heaven,","url":"https://rhemabibles.com/bible/revelation/10/#v5","inLanguage":"en","citation":"Revelation 10:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Revelation 10:6","text":"And sware by him that liveth for ever and ever, who created heaven, and the things that therein are, and the earth, and the things that therein are, and the sea, and the things which are therein, that there should be time no longer:","url":"https://rhemabibles.com/bible/revelation/10/#v6","inLanguage":"en","citation":"Revelation 10:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Revelation 10:7","text":"But in the days of the voice of the seventh angel, when he shall begin to sound, the mystery of God should be finished, as he hath declared to his servants the prophets.","url":"https://rhemabibles.com/bible/revelation/10/#v7","inLanguage":"en","citation":"Revelation 10:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Revelation 10:8","text":"And the voice which I heard from heaven spake unto me again, and said, Go and take the little book which is open in the hand of the angel which standeth upon the sea and upon the earth.","url":"https://rhemabibles.com/bible/revelation/10/#v8","inLanguage":"en","citation":"Revelation 10:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Revelation 10:9","text":"And I went unto the angel, and said unto him, Give me the little book. And he said unto me, Take it, and eat it up; and it shall make thy belly bitter, but it shall be in thy mouth sweet as honey.","url":"https://rhemabibles.com/bible/revelation/10/#v9","inLanguage":"en","citation":"Revelation 10:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Revelation 10:10","text":"And I took the little book out of the angel\u2019s hand, and ate it up; and it was in my mouth sweet as honey: and as soon as I had eaten it, my belly was bitter.","url":"https://rhemabibles.com/bible/revelation/10/#v10","inLanguage":"en","citation":"Revelation 10:10 (KJV)"},{"@type":"Quotation","position":11,"name":"Revelation 10:11","text":"And he said unto me, Thou must prophesy again before many peoples, and nations, and tongues, and kings.","url":"https://rhemabibles.com/bible/revelation/10/#v11","inLanguage":"en","citation":"Revelation 10:11 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,17 +97,17 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>And I saw another mighty angel come down from heaven, clothed with a cloud: and a rainbow was upon his head, and his face was as it were the sun, and his feet as pillars of fire:</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And he had in his hand a little book open: and he set his right foot upon the sea, and his left foot on the earth,</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>And cried with a loud voice, as when a lion roareth: and when he had cried, seven thunders uttered their voices.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And when the seven thunders had uttered their voices, I was about to write: and I heard a voice from heaven saying unto me, Seal up those things which the seven thunders uttered, and write them not.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>And the angel which I saw stand upon the sea and upon the earth lifted up his hand to heaven,</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>And sware by him that liveth for ever and ever, who created heaven, and the things that therein are, and the earth, and the things that therein are, and the sea, and the things which are therein, that there should be time no longer:</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>But in the days of the voice of the seventh angel, when he shall begin to sound, the mystery of God should be finished, as he hath declared to his servants the prophets.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>And the voice which I heard from heaven spake unto me again, and said, Go and take the little book which is open in the hand of the angel which standeth upon the sea and upon the earth.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And I went unto the angel, and said unto him, Give me the little book. And he said unto me, Take it, and eat it up; and it shall make thy belly bitter, but it shall be in thy mouth sweet as honey.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>And I took the little book out of the angel’s hand, and ate it up; and it was in my mouth sweet as honey: and as soon as I had eaten it, my belly was bitter.</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>And he said unto me, Thou must prophesy again before many peoples, and nations, and tongues, and kings.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>And I saw another mighty angel come down from heaven, clothed with a cloud: and a rainbow was upon his head, and his face was as it were the sun, and his feet as pillars of fire:<a class="verse-open" href="https://rhemabibles.com/?book=Revelation&chapter=10&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And he had in his hand a little book open: and he set his right foot upon the sea, and his left foot on the earth,<a class="verse-open" href="https://rhemabibles.com/?book=Revelation&chapter=10&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>And cried with a loud voice, as when a lion roareth: and when he had cried, seven thunders uttered their voices.<a class="verse-open" href="https://rhemabibles.com/?book=Revelation&chapter=10&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And when the seven thunders had uttered their voices, I was about to write: and I heard a voice from heaven saying unto me, Seal up those things which the seven thunders uttered, and write them not.<a class="verse-open" href="https://rhemabibles.com/?book=Revelation&chapter=10&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>And the angel which I saw stand upon the sea and upon the earth lifted up his hand to heaven,<a class="verse-open" href="https://rhemabibles.com/?book=Revelation&chapter=10&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>And sware by him that liveth for ever and ever, who created heaven, and the things that therein are, and the earth, and the things that therein are, and the sea, and the things which are therein, that there should be time no longer:<a class="verse-open" href="https://rhemabibles.com/?book=Revelation&chapter=10&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>But in the days of the voice of the seventh angel, when he shall begin to sound, the mystery of God should be finished, as he hath declared to his servants the prophets.<a class="verse-open" href="https://rhemabibles.com/?book=Revelation&chapter=10&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>And the voice which I heard from heaven spake unto me again, and said, Go and take the little book which is open in the hand of the angel which standeth upon the sea and upon the earth.<a class="verse-open" href="https://rhemabibles.com/?book=Revelation&chapter=10&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And I went unto the angel, and said unto him, Give me the little book. And he said unto me, Take it, and eat it up; and it shall make thy belly bitter, but it shall be in thy mouth sweet as honey.<a class="verse-open" href="https://rhemabibles.com/?book=Revelation&chapter=10&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>And I took the little book out of the angel’s hand, and ate it up; and it was in my mouth sweet as honey: and as soon as I had eaten it, my belly was bitter.<a class="verse-open" href="https://rhemabibles.com/?book=Revelation&chapter=10&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>And he said unto me, Thou must prophesy again before many peoples, and nations, and tongues, and kings.<a class="verse-open" href="https://rhemabibles.com/?book=Revelation&chapter=10&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -111,6 +118,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Revelation&chapter=10" rel="noopener">Open Revelation 10 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Revelation&chapter=10";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

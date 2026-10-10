@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":27,"name":"2 Chronicles 27","url":"https://rhemabibles.com/bible/2-chronicles/27/","inLanguage":"en","isPartOf":{"@type":"Book","name":"2 Chronicles","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/2-chronicles/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"2 Chronicles 27:1","text":"Jotham was twenty and five years old when he began to reign, and he reigned sixteen years in Jerusalem. His mother\u2019s name also was Jerushah, the daughter of Zadok.","url":"https://rhemabibles.com/bible/2-chronicles/27/#v1","inLanguage":"en","citation":"2 Chronicles 27:1 (KJV)"},{"@type":"Quotation","position":2,"name":"2 Chronicles 27:2","text":"And he did that which was right in the sight of the LORD, according to all that his father Uzziah did: howbeit he entered not into the temple of the LORD. And the people did yet corruptly.","url":"https://rhemabibles.com/bible/2-chronicles/27/#v2","inLanguage":"en","citation":"2 Chronicles 27:2 (KJV)"},{"@type":"Quotation","position":3,"name":"2 Chronicles 27:3","text":"He built the high gate of the house of the LORD, and on the wall of Ophel he built much.","url":"https://rhemabibles.com/bible/2-chronicles/27/#v3","inLanguage":"en","citation":"2 Chronicles 27:3 (KJV)"},{"@type":"Quotation","position":4,"name":"2 Chronicles 27:4","text":"Moreover he built cities in the mountains of Judah, and in the forests he built castles and towers.","url":"https://rhemabibles.com/bible/2-chronicles/27/#v4","inLanguage":"en","citation":"2 Chronicles 27:4 (KJV)"},{"@type":"Quotation","position":5,"name":"2 Chronicles 27:5","text":"He fought also with the king of the Ammonites, and prevailed against them. And the children of Ammon gave him the same year an hundred talents of silver, and ten thousand measures of wheat, and ten thousand of barley. So much did the children of Ammon pay unto him, both the second year, and the third.","url":"https://rhemabibles.com/bible/2-chronicles/27/#v5","inLanguage":"en","citation":"2 Chronicles 27:5 (KJV)"},{"@type":"Quotation","position":6,"name":"2 Chronicles 27:6","text":"So Jotham became mighty, because he prepared his ways before the LORD his God.","url":"https://rhemabibles.com/bible/2-chronicles/27/#v6","inLanguage":"en","citation":"2 Chronicles 27:6 (KJV)"},{"@type":"Quotation","position":7,"name":"2 Chronicles 27:7","text":"Now the rest of the acts of Jotham, and all his wars, and his ways, lo, they are written in the book of the kings of Israel and Judah.","url":"https://rhemabibles.com/bible/2-chronicles/27/#v7","inLanguage":"en","citation":"2 Chronicles 27:7 (KJV)"},{"@type":"Quotation","position":8,"name":"2 Chronicles 27:8","text":"He was five and twenty years old when he began to reign, and reigned sixteen years in Jerusalem.","url":"https://rhemabibles.com/bible/2-chronicles/27/#v8","inLanguage":"en","citation":"2 Chronicles 27:8 (KJV)"},{"@type":"Quotation","position":9,"name":"2 Chronicles 27:9","text":"And Jotham slept with his fathers, and they buried him in the city of David: and Ahaz his son reigned in his stead.","url":"https://rhemabibles.com/bible/2-chronicles/27/#v9","inLanguage":"en","citation":"2 Chronicles 27:9 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,15 +97,15 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Jotham was twenty and five years old when he began to reign, and he reigned sixteen years in Jerusalem. His mother’s name also was Jerushah, the daughter of Zadok.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And he did that which was right in the sight of the LORD, according to all that his father Uzziah did: howbeit he entered not into the temple of the LORD. And the people did yet corruptly.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>He built the high gate of the house of the LORD, and on the wall of Ophel he built much.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>Moreover he built cities in the mountains of Judah, and in the forests he built castles and towers.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>He fought also with the king of the Ammonites, and prevailed against them. And the children of Ammon gave him the same year an hundred talents of silver, and ten thousand measures of wheat, and ten thousand of barley. So much did the children of Ammon pay unto him, both the second year, and the third.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>So Jotham became mighty, because he prepared his ways before the LORD his God.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Now the rest of the acts of Jotham, and all his wars, and his ways, lo, they are written in the book of the kings of Israel and Judah.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>He was five and twenty years old when he began to reign, and reigned sixteen years in Jerusalem.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And Jotham slept with his fathers, and they buried him in the city of David: and Ahaz his son reigned in his stead.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Jotham was twenty and five years old when he began to reign, and he reigned sixteen years in Jerusalem. His mother’s name also was Jerushah, the daughter of Zadok.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Chronicles&chapter=27&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And he did that which was right in the sight of the LORD, according to all that his father Uzziah did: howbeit he entered not into the temple of the LORD. And the people did yet corruptly.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Chronicles&chapter=27&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>He built the high gate of the house of the LORD, and on the wall of Ophel he built much.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Chronicles&chapter=27&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>Moreover he built cities in the mountains of Judah, and in the forests he built castles and towers.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Chronicles&chapter=27&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>He fought also with the king of the Ammonites, and prevailed against them. And the children of Ammon gave him the same year an hundred talents of silver, and ten thousand measures of wheat, and ten thousand of barley. So much did the children of Ammon pay unto him, both the second year, and the third.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Chronicles&chapter=27&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>So Jotham became mighty, because he prepared his ways before the LORD his God.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Chronicles&chapter=27&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Now the rest of the acts of Jotham, and all his wars, and his ways, lo, they are written in the book of the kings of Israel and Judah.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Chronicles&chapter=27&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>He was five and twenty years old when he began to reign, and reigned sixteen years in Jerusalem.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Chronicles&chapter=27&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And Jotham slept with his fathers, and they buried him in the city of David: and Ahaz his son reigned in his stead.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Chronicles&chapter=27&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -109,6 +116,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=2%20Chronicles&chapter=27" rel="noopener">Open 2 Chronicles 27 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=2%20Chronicles&chapter=27";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

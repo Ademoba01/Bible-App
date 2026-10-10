@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":56,"name":"Isaiah 56","url":"https://rhemabibles.com/bible/isaiah/56/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Isaiah","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/isaiah/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Isaiah 56:1","text":"Thus saith the LORD, Keep ye judgment, and do justice: for my salvation is near to come, and my righteousness to be revealed.","url":"https://rhemabibles.com/bible/isaiah/56/#v1","inLanguage":"en","citation":"Isaiah 56:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Isaiah 56:2","text":"Blessed is the man that doeth this, and the son of man that layeth hold on it; that keepeth the sabbath from polluting it, and keepeth his hand from doing any evil.","url":"https://rhemabibles.com/bible/isaiah/56/#v2","inLanguage":"en","citation":"Isaiah 56:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Isaiah 56:3","text":"Neither let the son of the stranger, that hath joined himself to the LORD, speak, saying, The LORD hath utterly separated me from his people: neither let the eunuch say, Behold, I am a dry tree.","url":"https://rhemabibles.com/bible/isaiah/56/#v3","inLanguage":"en","citation":"Isaiah 56:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Isaiah 56:4","text":"For thus saith the LORD unto the eunuchs that keep my sabbaths, and choose the things that please me, and take hold of my covenant;","url":"https://rhemabibles.com/bible/isaiah/56/#v4","inLanguage":"en","citation":"Isaiah 56:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Isaiah 56:5","text":"Even unto them will I give in mine house and within my walls a place and a name better than of sons and of daughters: I will give them an everlasting name, that shall not be cut off.","url":"https://rhemabibles.com/bible/isaiah/56/#v5","inLanguage":"en","citation":"Isaiah 56:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Isaiah 56:6","text":"Also the sons of the stranger, that join themselves to the LORD, to serve him, and to love the name of the LORD, to be his servants, every one that keepeth the sabbath from polluting it, and taketh hold of my covenant;","url":"https://rhemabibles.com/bible/isaiah/56/#v6","inLanguage":"en","citation":"Isaiah 56:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Isaiah 56:7","text":"Even them will I bring to my holy mountain, and make them joyful in my house of prayer: their burnt offerings and their sacrifices shall be accepted upon mine altar; for mine house shall be called an house of prayer for all people.","url":"https://rhemabibles.com/bible/isaiah/56/#v7","inLanguage":"en","citation":"Isaiah 56:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Isaiah 56:8","text":"The Lord GOD, which gathereth the outcasts of Israel saith, Yet will I gather others to him, beside those that are gathered unto him.","url":"https://rhemabibles.com/bible/isaiah/56/#v8","inLanguage":"en","citation":"Isaiah 56:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Isaiah 56:9","text":"All ye beasts of the field, come to devour, yea, all ye beasts in the forest.","url":"https://rhemabibles.com/bible/isaiah/56/#v9","inLanguage":"en","citation":"Isaiah 56:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Isaiah 56:10","text":"His watchmen are blind: they are all ignorant, they are all dumb dogs, they cannot bark; sleeping, lying down, loving to slumber.","url":"https://rhemabibles.com/bible/isaiah/56/#v10","inLanguage":"en","citation":"Isaiah 56:10 (KJV)"},{"@type":"Quotation","position":11,"name":"Isaiah 56:11","text":"Yea, they are greedy dogs which can never have enough, and they are shepherds that cannot understand: they all look to their own way, every one for his gain, from his quarter.","url":"https://rhemabibles.com/bible/isaiah/56/#v11","inLanguage":"en","citation":"Isaiah 56:11 (KJV)"},{"@type":"Quotation","position":12,"name":"Isaiah 56:12","text":"Come ye, say they, I will fetch wine, and we will fill ourselves with strong drink; and to morrow shall be as this day, and much more abundant.","url":"https://rhemabibles.com/bible/isaiah/56/#v12","inLanguage":"en","citation":"Isaiah 56:12 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,18 +97,18 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Thus saith the LORD, Keep ye judgment, and do justice: for my salvation is near to come, and my righteousness to be revealed.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Blessed is the man that doeth this, and the son of man that layeth hold on it; that keepeth the sabbath from polluting it, and keepeth his hand from doing any evil.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Neither let the son of the stranger, that hath joined himself to the LORD, speak, saying, The LORD hath utterly separated me from his people: neither let the eunuch say, Behold, I am a dry tree.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>For thus saith the LORD unto the eunuchs that keep my sabbaths, and choose the things that please me, and take hold of my covenant;</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Even unto them will I give in mine house and within my walls a place and a name better than of sons and of daughters: I will give them an everlasting name, that shall not be cut off.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Also the sons of the stranger, that join themselves to the LORD, to serve him, and to love the name of the LORD, to be his servants, every one that keepeth the sabbath from polluting it, and taketh hold of my covenant;</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Even them will I bring to my holy mountain, and make them joyful in my house of prayer: their burnt offerings and their sacrifices shall be accepted upon mine altar; for mine house shall be called an house of prayer for all people.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>The Lord GOD, which gathereth the outcasts of Israel saith, Yet will I gather others to him, beside those that are gathered unto him.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>All ye beasts of the field, come to devour, yea, all ye beasts in the forest.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>His watchmen are blind: they are all ignorant, they are all dumb dogs, they cannot bark; sleeping, lying down, loving to slumber.</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Yea, they are greedy dogs which can never have enough, and they are shepherds that cannot understand: they all look to their own way, every one for his gain, from his quarter.</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Come ye, say they, I will fetch wine, and we will fill ourselves with strong drink; and to morrow shall be as this day, and much more abundant.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Thus saith the LORD, Keep ye judgment, and do justice: for my salvation is near to come, and my righteousness to be revealed.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=56&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Blessed is the man that doeth this, and the son of man that layeth hold on it; that keepeth the sabbath from polluting it, and keepeth his hand from doing any evil.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=56&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Neither let the son of the stranger, that hath joined himself to the LORD, speak, saying, The LORD hath utterly separated me from his people: neither let the eunuch say, Behold, I am a dry tree.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=56&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>For thus saith the LORD unto the eunuchs that keep my sabbaths, and choose the things that please me, and take hold of my covenant;<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=56&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Even unto them will I give in mine house and within my walls a place and a name better than of sons and of daughters: I will give them an everlasting name, that shall not be cut off.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=56&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Also the sons of the stranger, that join themselves to the LORD, to serve him, and to love the name of the LORD, to be his servants, every one that keepeth the sabbath from polluting it, and taketh hold of my covenant;<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=56&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Even them will I bring to my holy mountain, and make them joyful in my house of prayer: their burnt offerings and their sacrifices shall be accepted upon mine altar; for mine house shall be called an house of prayer for all people.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=56&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>The Lord GOD, which gathereth the outcasts of Israel saith, Yet will I gather others to him, beside those that are gathered unto him.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=56&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>All ye beasts of the field, come to devour, yea, all ye beasts in the forest.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=56&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>His watchmen are blind: they are all ignorant, they are all dumb dogs, they cannot bark; sleeping, lying down, loving to slumber.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=56&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Yea, they are greedy dogs which can never have enough, and they are shepherds that cannot understand: they all look to their own way, every one for his gain, from his quarter.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=56&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Come ye, say they, I will fetch wine, and we will fill ourselves with strong drink; and to morrow shall be as this day, and much more abundant.<a class="verse-open" href="https://rhemabibles.com/?book=Isaiah&chapter=56&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -112,6 +119,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Isaiah&chapter=56" rel="noopener">Open Isaiah 56 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Isaiah&chapter=56";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

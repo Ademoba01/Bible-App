@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":1,"name":"Nehemiah 1","url":"https://rhemabibles.com/bible/nehemiah/1/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Nehemiah","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/nehemiah/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Nehemiah 1:1","text":"The words of Nehemiah the son of Hachaliah. And it came to pass in the month Chisleu, in the twentieth year, as I was in Shushan the palace,","url":"https://rhemabibles.com/bible/nehemiah/1/#v1","inLanguage":"en","citation":"Nehemiah 1:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Nehemiah 1:2","text":"That Hanani, one of my brethren, came, he and certain men of Judah; and I asked them concerning the Jews that had escaped, which were left of the captivity, and concerning Jerusalem.","url":"https://rhemabibles.com/bible/nehemiah/1/#v2","inLanguage":"en","citation":"Nehemiah 1:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Nehemiah 1:3","text":"And they said unto me, The remnant that are left of the captivity there in the province are in great affliction and reproach: the wall of Jerusalem also is broken down, and the gates thereof are burned with fire.","url":"https://rhemabibles.com/bible/nehemiah/1/#v3","inLanguage":"en","citation":"Nehemiah 1:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Nehemiah 1:4","text":"And it came to pass, when I heard these words, that I sat down and wept, and mourned certain days, and fasted, and prayed before the God of heaven,","url":"https://rhemabibles.com/bible/nehemiah/1/#v4","inLanguage":"en","citation":"Nehemiah 1:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Nehemiah 1:5","text":"And said, I beseech thee, O LORD God of heaven, the great and terrible God, that keepeth covenant and mercy for them that love him and observe his commandments:","url":"https://rhemabibles.com/bible/nehemiah/1/#v5","inLanguage":"en","citation":"Nehemiah 1:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Nehemiah 1:6","text":"Let thine ear now be attentive, and thine eyes open, that thou mayest hear the prayer of thy servant, which I pray before thee now, day and night, for the children of Israel thy servants, and confess the sins of the children of Israel, which we have sinned against thee: both I and my father\u2019s house have sinned.","url":"https://rhemabibles.com/bible/nehemiah/1/#v6","inLanguage":"en","citation":"Nehemiah 1:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Nehemiah 1:7","text":"We have dealt very corruptly against thee, and have not kept the commandments, nor the statutes, nor the judgments, which thou commandedst thy servant Moses.","url":"https://rhemabibles.com/bible/nehemiah/1/#v7","inLanguage":"en","citation":"Nehemiah 1:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Nehemiah 1:8","text":"Remember, I beseech thee, the word that thou commandedst thy servant Moses, saying, If ye transgress, I will scatter you abroad among the nations:","url":"https://rhemabibles.com/bible/nehemiah/1/#v8","inLanguage":"en","citation":"Nehemiah 1:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Nehemiah 1:9","text":"But if ye turn unto me, and keep my commandments, and do them; though there were of you cast out unto the uttermost part of the heaven, yet will I gather them from thence, and will bring them unto the place that I have chosen to set my name there.","url":"https://rhemabibles.com/bible/nehemiah/1/#v9","inLanguage":"en","citation":"Nehemiah 1:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Nehemiah 1:10","text":"Now these are thy servants and thy people, whom thou hast redeemed by thy great power, and by thy strong hand.","url":"https://rhemabibles.com/bible/nehemiah/1/#v10","inLanguage":"en","citation":"Nehemiah 1:10 (KJV)"},{"@type":"Quotation","position":11,"name":"Nehemiah 1:11","text":"O LORD, I beseech thee, let now thine ear be attentive to the prayer of thy servant, and to the prayer of thy servants, who desire to fear thy name: and prosper, I pray thee, thy servant this day, and grant him mercy in the sight of this man. For I was the king\u2019s cupbearer.","url":"https://rhemabibles.com/bible/nehemiah/1/#v11","inLanguage":"en","citation":"Nehemiah 1:11 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,17 +97,17 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>The words of Nehemiah the son of Hachaliah. And it came to pass in the month Chisleu, in the twentieth year, as I was in Shushan the palace,</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>That Hanani, one of my brethren, came, he and certain men of Judah; and I asked them concerning the Jews that had escaped, which were left of the captivity, and concerning Jerusalem.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>And they said unto me, The remnant that are left of the captivity there in the province are in great affliction and reproach: the wall of Jerusalem also is broken down, and the gates thereof are burned with fire.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And it came to pass, when I heard these words, that I sat down and wept, and mourned certain days, and fasted, and prayed before the God of heaven,</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>And said, I beseech thee, O LORD God of heaven, the great and terrible God, that keepeth covenant and mercy for them that love him and observe his commandments:</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Let thine ear now be attentive, and thine eyes open, that thou mayest hear the prayer of thy servant, which I pray before thee now, day and night, for the children of Israel thy servants, and confess the sins of the children of Israel, which we have sinned against thee: both I and my father’s house have sinned.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>We have dealt very corruptly against thee, and have not kept the commandments, nor the statutes, nor the judgments, which thou commandedst thy servant Moses.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Remember, I beseech thee, the word that thou commandedst thy servant Moses, saying, If ye transgress, I will scatter you abroad among the nations:</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>But if ye turn unto me, and keep my commandments, and do them; though there were of you cast out unto the uttermost part of the heaven, yet will I gather them from thence, and will bring them unto the place that I have chosen to set my name there.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>Now these are thy servants and thy people, whom thou hast redeemed by thy great power, and by thy strong hand.</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>O LORD, I beseech thee, let now thine ear be attentive to the prayer of thy servant, and to the prayer of thy servants, who desire to fear thy name: and prosper, I pray thee, thy servant this day, and grant him mercy in the sight of this man. For I was the king’s cupbearer.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>The words of Nehemiah the son of Hachaliah. And it came to pass in the month Chisleu, in the twentieth year, as I was in Shushan the palace,<a class="verse-open" href="https://rhemabibles.com/?book=Nehemiah&chapter=1&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>That Hanani, one of my brethren, came, he and certain men of Judah; and I asked them concerning the Jews that had escaped, which were left of the captivity, and concerning Jerusalem.<a class="verse-open" href="https://rhemabibles.com/?book=Nehemiah&chapter=1&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>And they said unto me, The remnant that are left of the captivity there in the province are in great affliction and reproach: the wall of Jerusalem also is broken down, and the gates thereof are burned with fire.<a class="verse-open" href="https://rhemabibles.com/?book=Nehemiah&chapter=1&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And it came to pass, when I heard these words, that I sat down and wept, and mourned certain days, and fasted, and prayed before the God of heaven,<a class="verse-open" href="https://rhemabibles.com/?book=Nehemiah&chapter=1&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>And said, I beseech thee, O LORD God of heaven, the great and terrible God, that keepeth covenant and mercy for them that love him and observe his commandments:<a class="verse-open" href="https://rhemabibles.com/?book=Nehemiah&chapter=1&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Let thine ear now be attentive, and thine eyes open, that thou mayest hear the prayer of thy servant, which I pray before thee now, day and night, for the children of Israel thy servants, and confess the sins of the children of Israel, which we have sinned against thee: both I and my father’s house have sinned.<a class="verse-open" href="https://rhemabibles.com/?book=Nehemiah&chapter=1&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>We have dealt very corruptly against thee, and have not kept the commandments, nor the statutes, nor the judgments, which thou commandedst thy servant Moses.<a class="verse-open" href="https://rhemabibles.com/?book=Nehemiah&chapter=1&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Remember, I beseech thee, the word that thou commandedst thy servant Moses, saying, If ye transgress, I will scatter you abroad among the nations:<a class="verse-open" href="https://rhemabibles.com/?book=Nehemiah&chapter=1&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>But if ye turn unto me, and keep my commandments, and do them; though there were of you cast out unto the uttermost part of the heaven, yet will I gather them from thence, and will bring them unto the place that I have chosen to set my name there.<a class="verse-open" href="https://rhemabibles.com/?book=Nehemiah&chapter=1&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>Now these are thy servants and thy people, whom thou hast redeemed by thy great power, and by thy strong hand.<a class="verse-open" href="https://rhemabibles.com/?book=Nehemiah&chapter=1&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>O LORD, I beseech thee, let now thine ear be attentive to the prayer of thy servant, and to the prayer of thy servants, who desire to fear thy name: and prosper, I pray thee, thy servant this day, and grant him mercy in the sight of this man. For I was the king’s cupbearer.<a class="verse-open" href="https://rhemabibles.com/?book=Nehemiah&chapter=1&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -111,6 +118,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Nehemiah&chapter=1" rel="noopener">Open Nehemiah 1 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Nehemiah&chapter=1";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":5,"name":"Hosea 5","url":"https://rhemabibles.com/bible/hosea/5/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Hosea","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/hosea/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Hosea 5:1","text":"Hear ye this, O priests; and hearken, ye house of Israel; and give ye ear, O house of the king; for judgment is toward you, because ye have been a snare on Mizpah, and a net spread upon Tabor.","url":"https://rhemabibles.com/bible/hosea/5/#v1","inLanguage":"en","citation":"Hosea 5:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Hosea 5:2","text":"And the revolters are profound to make slaughter, though I have been a rebuker of them all.","url":"https://rhemabibles.com/bible/hosea/5/#v2","inLanguage":"en","citation":"Hosea 5:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Hosea 5:3","text":"I know Ephraim, and Israel is not hid from me: for now, O Ephraim, thou committest whoredom, and Israel is defiled.","url":"https://rhemabibles.com/bible/hosea/5/#v3","inLanguage":"en","citation":"Hosea 5:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Hosea 5:4","text":"They will not frame their doings to turn unto their God: for the spirit of whoredoms is in the midst of them, and they have not known the LORD.","url":"https://rhemabibles.com/bible/hosea/5/#v4","inLanguage":"en","citation":"Hosea 5:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Hosea 5:5","text":"And the pride of Israel doth testify to his face: therefore shall Israel and Ephraim fall in their iniquity; Judah also shall fall with them.","url":"https://rhemabibles.com/bible/hosea/5/#v5","inLanguage":"en","citation":"Hosea 5:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Hosea 5:6","text":"They shall go with their flocks and with their herds to seek the LORD; but they shall not find him; he hath withdrawn himself from them.","url":"https://rhemabibles.com/bible/hosea/5/#v6","inLanguage":"en","citation":"Hosea 5:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Hosea 5:7","text":"They have dealt treacherously against the LORD: for they have begotten strange children: now shall a month devour them with their portions.","url":"https://rhemabibles.com/bible/hosea/5/#v7","inLanguage":"en","citation":"Hosea 5:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Hosea 5:8","text":"Blow ye the cornet in Gibeah, and the trumpet in Ramah: cry aloud at Bethaven, after thee, O Benjamin.","url":"https://rhemabibles.com/bible/hosea/5/#v8","inLanguage":"en","citation":"Hosea 5:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Hosea 5:9","text":"Ephraim shall be desolate in the day of rebuke: among the tribes of Israel have I made known that which shall surely be.","url":"https://rhemabibles.com/bible/hosea/5/#v9","inLanguage":"en","citation":"Hosea 5:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Hosea 5:10","text":"The princes of Judah were like them that remove the bound: therefore I will pour out my wrath upon them like water.","url":"https://rhemabibles.com/bible/hosea/5/#v10","inLanguage":"en","citation":"Hosea 5:10 (KJV)"},{"@type":"Quotation","position":11,"name":"Hosea 5:11","text":"Ephraim is oppressed and broken in judgment, because he willingly walked after the commandment.","url":"https://rhemabibles.com/bible/hosea/5/#v11","inLanguage":"en","citation":"Hosea 5:11 (KJV)"},{"@type":"Quotation","position":12,"name":"Hosea 5:12","text":"Therefore will I be unto Ephraim as a moth, and to the house of Judah as rottenness.","url":"https://rhemabibles.com/bible/hosea/5/#v12","inLanguage":"en","citation":"Hosea 5:12 (KJV)"},{"@type":"Quotation","position":13,"name":"Hosea 5:13","text":"When Ephraim saw his sickness, and Judah saw his wound, then went Ephraim to the Assyrian, and sent to king Jareb: yet could he not heal you, nor cure you of your wound.","url":"https://rhemabibles.com/bible/hosea/5/#v13","inLanguage":"en","citation":"Hosea 5:13 (KJV)"},{"@type":"Quotation","position":14,"name":"Hosea 5:14","text":"For I will be unto Ephraim as a lion, and as a young lion to the house of Judah: I, even I, will tear and go away; I will take away, and none shall rescue him.","url":"https://rhemabibles.com/bible/hosea/5/#v14","inLanguage":"en","citation":"Hosea 5:14 (KJV)"},{"@type":"Quotation","position":15,"name":"Hosea 5:15","text":"I will go and return to my place, till they acknowledge their offence, and seek my face: in their affliction they will seek me early.","url":"https://rhemabibles.com/bible/hosea/5/#v15","inLanguage":"en","citation":"Hosea 5:15 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,21 +97,21 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Hear ye this, O priests; and hearken, ye house of Israel; and give ye ear, O house of the king; for judgment is toward you, because ye have been a snare on Mizpah, and a net spread upon Tabor.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And the revolters are profound to make slaughter, though I have been a rebuker of them all.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>I know Ephraim, and Israel is not hid from me: for now, O Ephraim, thou committest whoredom, and Israel is defiled.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>They will not frame their doings to turn unto their God: for the spirit of whoredoms is in the midst of them, and they have not known the LORD.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>And the pride of Israel doth testify to his face: therefore shall Israel and Ephraim fall in their iniquity; Judah also shall fall with them.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>They shall go with their flocks and with their herds to seek the LORD; but they shall not find him; he hath withdrawn himself from them.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>They have dealt treacherously against the LORD: for they have begotten strange children: now shall a month devour them with their portions.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Blow ye the cornet in Gibeah, and the trumpet in Ramah: cry aloud at Bethaven, after thee, O Benjamin.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>Ephraim shall be desolate in the day of rebuke: among the tribes of Israel have I made known that which shall surely be.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>The princes of Judah were like them that remove the bound: therefore I will pour out my wrath upon them like water.</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Ephraim is oppressed and broken in judgment, because he willingly walked after the commandment.</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Therefore will I be unto Ephraim as a moth, and to the house of Judah as rottenness.</span>
-      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>When Ephraim saw his sickness, and Judah saw his wound, then went Ephraim to the Assyrian, and sent to king Jareb: yet could he not heal you, nor cure you of your wound.</span>
-      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>For I will be unto Ephraim as a lion, and as a young lion to the house of Judah: I, even I, will tear and go away; I will take away, and none shall rescue him.</span>
-      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>I will go and return to my place, till they acknowledge their offence, and seek my face: in their affliction they will seek me early.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Hear ye this, O priests; and hearken, ye house of Israel; and give ye ear, O house of the king; for judgment is toward you, because ye have been a snare on Mizpah, and a net spread upon Tabor.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And the revolters are profound to make slaughter, though I have been a rebuker of them all.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>I know Ephraim, and Israel is not hid from me: for now, O Ephraim, thou committest whoredom, and Israel is defiled.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>They will not frame their doings to turn unto their God: for the spirit of whoredoms is in the midst of them, and they have not known the LORD.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>And the pride of Israel doth testify to his face: therefore shall Israel and Ephraim fall in their iniquity; Judah also shall fall with them.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>They shall go with their flocks and with their herds to seek the LORD; but they shall not find him; he hath withdrawn himself from them.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>They have dealt treacherously against the LORD: for they have begotten strange children: now shall a month devour them with their portions.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Blow ye the cornet in Gibeah, and the trumpet in Ramah: cry aloud at Bethaven, after thee, O Benjamin.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>Ephraim shall be desolate in the day of rebuke: among the tribes of Israel have I made known that which shall surely be.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>The princes of Judah were like them that remove the bound: therefore I will pour out my wrath upon them like water.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Ephraim is oppressed and broken in judgment, because he willingly walked after the commandment.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Therefore will I be unto Ephraim as a moth, and to the house of Judah as rottenness.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>When Ephraim saw his sickness, and Judah saw his wound, then went Ephraim to the Assyrian, and sent to king Jareb: yet could he not heal you, nor cure you of your wound.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=13" rel="noopener" aria-label="Open verse 13 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>For I will be unto Ephraim as a lion, and as a young lion to the house of Judah: I, even I, will tear and go away; I will take away, and none shall rescue him.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=14" rel="noopener" aria-label="Open verse 14 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>I will go and return to my place, till they acknowledge their offence, and seek my face: in their affliction they will seek me early.<a class="verse-open" href="https://rhemabibles.com/?book=Hosea&chapter=5&verse=15" rel="noopener" aria-label="Open verse 15 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -115,6 +122,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Hosea&chapter=5" rel="noopener">Open Hosea 5 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Hosea&chapter=5";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

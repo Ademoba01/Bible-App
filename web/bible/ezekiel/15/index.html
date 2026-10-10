@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":15,"name":"Ezekiel 15","url":"https://rhemabibles.com/bible/ezekiel/15/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Ezekiel","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/ezekiel/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Ezekiel 15:1","text":"And the word of the LORD came unto me, saying,","url":"https://rhemabibles.com/bible/ezekiel/15/#v1","inLanguage":"en","citation":"Ezekiel 15:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Ezekiel 15:2","text":"Son of man, What is the vine tree more than any tree, or than a branch which is among the trees of the forest?","url":"https://rhemabibles.com/bible/ezekiel/15/#v2","inLanguage":"en","citation":"Ezekiel 15:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Ezekiel 15:3","text":"Shall wood be taken thereof to do any work? or will men take a pin of it to hang any vessel thereon?","url":"https://rhemabibles.com/bible/ezekiel/15/#v3","inLanguage":"en","citation":"Ezekiel 15:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Ezekiel 15:4","text":"Behold, it is cast into the fire for fuel; the fire devoureth both the ends of it, and the midst of it is burned. Is it meet for any work?","url":"https://rhemabibles.com/bible/ezekiel/15/#v4","inLanguage":"en","citation":"Ezekiel 15:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Ezekiel 15:5","text":"Behold, when it was whole, it was meet for no work: how much less shall it be meet yet for any work, when the fire hath devoured it, and it is burned?","url":"https://rhemabibles.com/bible/ezekiel/15/#v5","inLanguage":"en","citation":"Ezekiel 15:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Ezekiel 15:6","text":"Therefore thus saith the Lord GOD; As the vine tree among the trees of the forest, which I have given to the fire for fuel, so will I give the inhabitants of Jerusalem.","url":"https://rhemabibles.com/bible/ezekiel/15/#v6","inLanguage":"en","citation":"Ezekiel 15:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Ezekiel 15:7","text":"And I will set my face against them; they shall go out from one fire, and another fire shall devour them; and ye shall know that I am the LORD, when I set my face against them.","url":"https://rhemabibles.com/bible/ezekiel/15/#v7","inLanguage":"en","citation":"Ezekiel 15:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Ezekiel 15:8","text":"And I will make the land desolate, because they have committed a trespass, saith the Lord GOD.","url":"https://rhemabibles.com/bible/ezekiel/15/#v8","inLanguage":"en","citation":"Ezekiel 15:8 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,14 +97,14 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>And the word of the LORD came unto me, saying,</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Son of man, What is the vine tree more than any tree, or than a branch which is among the trees of the forest?</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Shall wood be taken thereof to do any work? or will men take a pin of it to hang any vessel thereon?</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>Behold, it is cast into the fire for fuel; the fire devoureth both the ends of it, and the midst of it is burned. Is it meet for any work?</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Behold, when it was whole, it was meet for no work: how much less shall it be meet yet for any work, when the fire hath devoured it, and it is burned?</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Therefore thus saith the Lord GOD; As the vine tree among the trees of the forest, which I have given to the fire for fuel, so will I give the inhabitants of Jerusalem.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>And I will set my face against them; they shall go out from one fire, and another fire shall devour them; and ye shall know that I am the LORD, when I set my face against them.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>And I will make the land desolate, because they have committed a trespass, saith the Lord GOD.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>And the word of the LORD came unto me, saying,<a class="verse-open" href="https://rhemabibles.com/?book=Ezekiel&chapter=15&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Son of man, What is the vine tree more than any tree, or than a branch which is among the trees of the forest?<a class="verse-open" href="https://rhemabibles.com/?book=Ezekiel&chapter=15&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Shall wood be taken thereof to do any work? or will men take a pin of it to hang any vessel thereon?<a class="verse-open" href="https://rhemabibles.com/?book=Ezekiel&chapter=15&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>Behold, it is cast into the fire for fuel; the fire devoureth both the ends of it, and the midst of it is burned. Is it meet for any work?<a class="verse-open" href="https://rhemabibles.com/?book=Ezekiel&chapter=15&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Behold, when it was whole, it was meet for no work: how much less shall it be meet yet for any work, when the fire hath devoured it, and it is burned?<a class="verse-open" href="https://rhemabibles.com/?book=Ezekiel&chapter=15&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Therefore thus saith the Lord GOD; As the vine tree among the trees of the forest, which I have given to the fire for fuel, so will I give the inhabitants of Jerusalem.<a class="verse-open" href="https://rhemabibles.com/?book=Ezekiel&chapter=15&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>And I will set my face against them; they shall go out from one fire, and another fire shall devour them; and ye shall know that I am the LORD, when I set my face against them.<a class="verse-open" href="https://rhemabibles.com/?book=Ezekiel&chapter=15&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>And I will make the land desolate, because they have committed a trespass, saith the Lord GOD.<a class="verse-open" href="https://rhemabibles.com/?book=Ezekiel&chapter=15&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -108,6 +115,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Ezekiel&chapter=15" rel="noopener">Open Ezekiel 15 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Ezekiel&chapter=15";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

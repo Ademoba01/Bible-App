@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":3,"name":"2 Timothy 3","url":"https://rhemabibles.com/bible/2-timothy/3/","inLanguage":"en","isPartOf":{"@type":"Book","name":"2 Timothy","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/2-timothy/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"2 Timothy 3:1","text":"This know also, that in the last days perilous times shall come.","url":"https://rhemabibles.com/bible/2-timothy/3/#v1","inLanguage":"en","citation":"2 Timothy 3:1 (KJV)"},{"@type":"Quotation","position":2,"name":"2 Timothy 3:2","text":"For men shall be lovers of their own selves, covetous, boasters, proud, blasphemers, disobedient to parents, unthankful, unholy,","url":"https://rhemabibles.com/bible/2-timothy/3/#v2","inLanguage":"en","citation":"2 Timothy 3:2 (KJV)"},{"@type":"Quotation","position":3,"name":"2 Timothy 3:3","text":"Without natural affection, trucebreakers, false accusers, incontinent, fierce, despisers of those that are good,","url":"https://rhemabibles.com/bible/2-timothy/3/#v3","inLanguage":"en","citation":"2 Timothy 3:3 (KJV)"},{"@type":"Quotation","position":4,"name":"2 Timothy 3:4","text":"Traitors, heady, highminded, lovers of pleasures more than lovers of God;","url":"https://rhemabibles.com/bible/2-timothy/3/#v4","inLanguage":"en","citation":"2 Timothy 3:4 (KJV)"},{"@type":"Quotation","position":5,"name":"2 Timothy 3:5","text":"Having a form of godliness, but denying the power thereof: from such turn away.","url":"https://rhemabibles.com/bible/2-timothy/3/#v5","inLanguage":"en","citation":"2 Timothy 3:5 (KJV)"},{"@type":"Quotation","position":6,"name":"2 Timothy 3:6","text":"For of this sort are they which creep into houses, and lead captive silly women laden with sins, led away with divers lusts,","url":"https://rhemabibles.com/bible/2-timothy/3/#v6","inLanguage":"en","citation":"2 Timothy 3:6 (KJV)"},{"@type":"Quotation","position":7,"name":"2 Timothy 3:7","text":"Ever learning, and never able to come to the knowledge of the truth.","url":"https://rhemabibles.com/bible/2-timothy/3/#v7","inLanguage":"en","citation":"2 Timothy 3:7 (KJV)"},{"@type":"Quotation","position":8,"name":"2 Timothy 3:8","text":"Now as Jannes and Jambres withstood Moses, so do these also resist the truth: men of corrupt minds, reprobate concerning the faith.","url":"https://rhemabibles.com/bible/2-timothy/3/#v8","inLanguage":"en","citation":"2 Timothy 3:8 (KJV)"},{"@type":"Quotation","position":9,"name":"2 Timothy 3:9","text":"But they shall proceed no further: for their folly shall be manifest unto all men, as theirs also was.","url":"https://rhemabibles.com/bible/2-timothy/3/#v9","inLanguage":"en","citation":"2 Timothy 3:9 (KJV)"},{"@type":"Quotation","position":10,"name":"2 Timothy 3:10","text":"But thou hast fully known my doctrine, manner of life, purpose, faith, longsuffering, charity, patience,","url":"https://rhemabibles.com/bible/2-timothy/3/#v10","inLanguage":"en","citation":"2 Timothy 3:10 (KJV)"},{"@type":"Quotation","position":11,"name":"2 Timothy 3:11","text":"Persecutions, afflictions, which came unto me at Antioch, at Iconium, at Lystra; what persecutions I endured: but out of them all the Lord delivered me.","url":"https://rhemabibles.com/bible/2-timothy/3/#v11","inLanguage":"en","citation":"2 Timothy 3:11 (KJV)"},{"@type":"Quotation","position":12,"name":"2 Timothy 3:12","text":"Yea, and all that will live godly in Christ Jesus shall suffer persecution.","url":"https://rhemabibles.com/bible/2-timothy/3/#v12","inLanguage":"en","citation":"2 Timothy 3:12 (KJV)"},{"@type":"Quotation","position":13,"name":"2 Timothy 3:13","text":"But evil men and seducers shall wax worse and worse, deceiving, and being deceived.","url":"https://rhemabibles.com/bible/2-timothy/3/#v13","inLanguage":"en","citation":"2 Timothy 3:13 (KJV)"},{"@type":"Quotation","position":14,"name":"2 Timothy 3:14","text":"But continue thou in the things which thou hast learned and hast been assured of, knowing of whom thou hast learned them;","url":"https://rhemabibles.com/bible/2-timothy/3/#v14","inLanguage":"en","citation":"2 Timothy 3:14 (KJV)"},{"@type":"Quotation","position":15,"name":"2 Timothy 3:15","text":"And that from a child thou hast known the holy scriptures, which are able to make thee wise unto salvation through faith which is in Christ Jesus.","url":"https://rhemabibles.com/bible/2-timothy/3/#v15","inLanguage":"en","citation":"2 Timothy 3:15 (KJV)"},{"@type":"Quotation","position":16,"name":"2 Timothy 3:16","text":"All scripture is given by inspiration of God, and is profitable for doctrine, for reproof, for correction, for instruction in righteousness:","url":"https://rhemabibles.com/bible/2-timothy/3/#v16","inLanguage":"en","citation":"2 Timothy 3:16 (KJV)"},{"@type":"Quotation","position":17,"name":"2 Timothy 3:17","text":"That the man of God may be perfect, throughly furnished unto all good works.","url":"https://rhemabibles.com/bible/2-timothy/3/#v17","inLanguage":"en","citation":"2 Timothy 3:17 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,23 +97,23 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>This know also, that in the last days perilous times shall come.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>For men shall be lovers of their own selves, covetous, boasters, proud, blasphemers, disobedient to parents, unthankful, unholy,</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Without natural affection, trucebreakers, false accusers, incontinent, fierce, despisers of those that are good,</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>Traitors, heady, highminded, lovers of pleasures more than lovers of God;</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Having a form of godliness, but denying the power thereof: from such turn away.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>For of this sort are they which creep into houses, and lead captive silly women laden with sins, led away with divers lusts,</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Ever learning, and never able to come to the knowledge of the truth.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Now as Jannes and Jambres withstood Moses, so do these also resist the truth: men of corrupt minds, reprobate concerning the faith.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>But they shall proceed no further: for their folly shall be manifest unto all men, as theirs also was.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>But thou hast fully known my doctrine, manner of life, purpose, faith, longsuffering, charity, patience,</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Persecutions, afflictions, which came unto me at Antioch, at Iconium, at Lystra; what persecutions I endured: but out of them all the Lord delivered me.</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Yea, and all that will live godly in Christ Jesus shall suffer persecution.</span>
-      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>But evil men and seducers shall wax worse and worse, deceiving, and being deceived.</span>
-      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>But continue thou in the things which thou hast learned and hast been assured of, knowing of whom thou hast learned them;</span>
-      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>And that from a child thou hast known the holy scriptures, which are able to make thee wise unto salvation through faith which is in Christ Jesus.</span>
-      <span class="verse" id="v16"><span class="verse-num"><a href="#v16" aria-label="Verse 16">16</a></span>All scripture is given by inspiration of God, and is profitable for doctrine, for reproof, for correction, for instruction in righteousness:</span>
-      <span class="verse" id="v17"><span class="verse-num"><a href="#v17" aria-label="Verse 17">17</a></span>That the man of God may be perfect, throughly furnished unto all good works.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>This know also, that in the last days perilous times shall come.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>For men shall be lovers of their own selves, covetous, boasters, proud, blasphemers, disobedient to parents, unthankful, unholy,<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Without natural affection, trucebreakers, false accusers, incontinent, fierce, despisers of those that are good,<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>Traitors, heady, highminded, lovers of pleasures more than lovers of God;<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Having a form of godliness, but denying the power thereof: from such turn away.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>For of this sort are they which creep into houses, and lead captive silly women laden with sins, led away with divers lusts,<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Ever learning, and never able to come to the knowledge of the truth.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Now as Jannes and Jambres withstood Moses, so do these also resist the truth: men of corrupt minds, reprobate concerning the faith.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>But they shall proceed no further: for their folly shall be manifest unto all men, as theirs also was.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>But thou hast fully known my doctrine, manner of life, purpose, faith, longsuffering, charity, patience,<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Persecutions, afflictions, which came unto me at Antioch, at Iconium, at Lystra; what persecutions I endured: but out of them all the Lord delivered me.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Yea, and all that will live godly in Christ Jesus shall suffer persecution.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>But evil men and seducers shall wax worse and worse, deceiving, and being deceived.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=13" rel="noopener" aria-label="Open verse 13 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>But continue thou in the things which thou hast learned and hast been assured of, knowing of whom thou hast learned them;<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=14" rel="noopener" aria-label="Open verse 14 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>And that from a child thou hast known the holy scriptures, which are able to make thee wise unto salvation through faith which is in Christ Jesus.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=15" rel="noopener" aria-label="Open verse 15 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v16"><span class="verse-num"><a href="#v16" aria-label="Verse 16">16</a></span>All scripture is given by inspiration of God, and is profitable for doctrine, for reproof, for correction, for instruction in righteousness:<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=16" rel="noopener" aria-label="Open verse 16 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v17"><span class="verse-num"><a href="#v17" aria-label="Verse 17">17</a></span>That the man of God may be perfect, throughly furnished unto all good works.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3&verse=17" rel="noopener" aria-label="Open verse 17 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -117,6 +124,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=2%20Timothy&chapter=3" rel="noopener">Open 2 Timothy 3 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=2%20Timothy&chapter=3";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

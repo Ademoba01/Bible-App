@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":26,"name":"Job 26","url":"https://rhemabibles.com/bible/job/26/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Job","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/job/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Job 26:1","text":"But Job answered and said,","url":"https://rhemabibles.com/bible/job/26/#v1","inLanguage":"en","citation":"Job 26:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Job 26:2","text":"How hast thou helped him that is without power? how savest thou the arm that hath no strength?","url":"https://rhemabibles.com/bible/job/26/#v2","inLanguage":"en","citation":"Job 26:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Job 26:3","text":"How hast thou counselled him that hath no wisdom? and how hast thou plentifully declared the thing as it is?","url":"https://rhemabibles.com/bible/job/26/#v3","inLanguage":"en","citation":"Job 26:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Job 26:4","text":"To whom hast thou uttered words? and whose spirit came from thee?","url":"https://rhemabibles.com/bible/job/26/#v4","inLanguage":"en","citation":"Job 26:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Job 26:5","text":"Dead things are formed from under the waters, and the inhabitants thereof.","url":"https://rhemabibles.com/bible/job/26/#v5","inLanguage":"en","citation":"Job 26:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Job 26:6","text":"Hell is naked before him, and destruction hath no covering.","url":"https://rhemabibles.com/bible/job/26/#v6","inLanguage":"en","citation":"Job 26:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Job 26:7","text":"He stretcheth out the north over the empty place, and hangeth the earth upon nothing.","url":"https://rhemabibles.com/bible/job/26/#v7","inLanguage":"en","citation":"Job 26:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Job 26:8","text":"He bindeth up the waters in his thick clouds; and the cloud is not rent under them.","url":"https://rhemabibles.com/bible/job/26/#v8","inLanguage":"en","citation":"Job 26:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Job 26:9","text":"He holdeth back the face of his throne, and spreadeth his cloud upon it.","url":"https://rhemabibles.com/bible/job/26/#v9","inLanguage":"en","citation":"Job 26:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Job 26:10","text":"He hath compassed the waters with bounds, until the day and night come to an end.","url":"https://rhemabibles.com/bible/job/26/#v10","inLanguage":"en","citation":"Job 26:10 (KJV)"},{"@type":"Quotation","position":11,"name":"Job 26:11","text":"The pillars of heaven tremble and are astonished at his reproof.","url":"https://rhemabibles.com/bible/job/26/#v11","inLanguage":"en","citation":"Job 26:11 (KJV)"},{"@type":"Quotation","position":12,"name":"Job 26:12","text":"He divideth the sea with his power, and by his understanding he smiteth through the proud.","url":"https://rhemabibles.com/bible/job/26/#v12","inLanguage":"en","citation":"Job 26:12 (KJV)"},{"@type":"Quotation","position":13,"name":"Job 26:13","text":"By his spirit he hath garnished the heavens; his hand hath formed the crooked serpent.","url":"https://rhemabibles.com/bible/job/26/#v13","inLanguage":"en","citation":"Job 26:13 (KJV)"},{"@type":"Quotation","position":14,"name":"Job 26:14","text":"Lo, these are parts of his ways: but how little a portion is heard of him? but the thunder of his power who can understand?","url":"https://rhemabibles.com/bible/job/26/#v14","inLanguage":"en","citation":"Job 26:14 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,20 +97,20 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>But Job answered and said,</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>How hast thou helped him that is without power? how savest thou the arm that hath no strength?</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>How hast thou counselled him that hath no wisdom? and how hast thou plentifully declared the thing as it is?</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>To whom hast thou uttered words? and whose spirit came from thee?</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Dead things are formed from under the waters, and the inhabitants thereof.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Hell is naked before him, and destruction hath no covering.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>He stretcheth out the north over the empty place, and hangeth the earth upon nothing.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>He bindeth up the waters in his thick clouds; and the cloud is not rent under them.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>He holdeth back the face of his throne, and spreadeth his cloud upon it.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>He hath compassed the waters with bounds, until the day and night come to an end.</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>The pillars of heaven tremble and are astonished at his reproof.</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>He divideth the sea with his power, and by his understanding he smiteth through the proud.</span>
-      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>By his spirit he hath garnished the heavens; his hand hath formed the crooked serpent.</span>
-      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>Lo, these are parts of his ways: but how little a portion is heard of him? but the thunder of his power who can understand?</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>But Job answered and said,<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>How hast thou helped him that is without power? how savest thou the arm that hath no strength?<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>How hast thou counselled him that hath no wisdom? and how hast thou plentifully declared the thing as it is?<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>To whom hast thou uttered words? and whose spirit came from thee?<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Dead things are formed from under the waters, and the inhabitants thereof.<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Hell is naked before him, and destruction hath no covering.<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>He stretcheth out the north over the empty place, and hangeth the earth upon nothing.<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>He bindeth up the waters in his thick clouds; and the cloud is not rent under them.<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>He holdeth back the face of his throne, and spreadeth his cloud upon it.<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>He hath compassed the waters with bounds, until the day and night come to an end.<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>The pillars of heaven tremble and are astonished at his reproof.<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>He divideth the sea with his power, and by his understanding he smiteth through the proud.<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>By his spirit he hath garnished the heavens; his hand hath formed the crooked serpent.<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=13" rel="noopener" aria-label="Open verse 13 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>Lo, these are parts of his ways: but how little a portion is heard of him? but the thunder of his power who can understand?<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=26&verse=14" rel="noopener" aria-label="Open verse 14 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -114,6 +121,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Job&chapter=26" rel="noopener">Open Job 26 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Job&chapter=26";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

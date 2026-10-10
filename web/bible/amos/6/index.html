@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":6,"name":"Amos 6","url":"https://rhemabibles.com/bible/amos/6/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Amos","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/amos/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Amos 6:1","text":"Woe to them that are at ease in Zion, and trust in the mountain of Samaria, which are named chief of the nations, to whom the house of Israel came!","url":"https://rhemabibles.com/bible/amos/6/#v1","inLanguage":"en","citation":"Amos 6:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Amos 6:2","text":"Pass ye unto Calneh, and see; and from thence go ye to Hamath the great: then go down to Gath of the Philistines: be they better than these kingdoms? or their border greater than your border?","url":"https://rhemabibles.com/bible/amos/6/#v2","inLanguage":"en","citation":"Amos 6:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Amos 6:3","text":"Ye that put far away the evil day, and cause the seat of violence to come near;","url":"https://rhemabibles.com/bible/amos/6/#v3","inLanguage":"en","citation":"Amos 6:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Amos 6:4","text":"That lie upon beds of ivory, and stretch themselves upon their couches, and eat the lambs out of the flock, and the calves out of the midst of the stall;","url":"https://rhemabibles.com/bible/amos/6/#v4","inLanguage":"en","citation":"Amos 6:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Amos 6:5","text":"That chant to the sound of the viol, and invent to themselves instruments of musick, like David;","url":"https://rhemabibles.com/bible/amos/6/#v5","inLanguage":"en","citation":"Amos 6:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Amos 6:6","text":"That drink wine in bowls, and anoint themselves with the chief ointments: but they are not grieved for the affliction of Joseph.","url":"https://rhemabibles.com/bible/amos/6/#v6","inLanguage":"en","citation":"Amos 6:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Amos 6:7","text":"Therefore now shall they go captive with the first that go captive, and the banquet of them that stretched themselves shall be removed.","url":"https://rhemabibles.com/bible/amos/6/#v7","inLanguage":"en","citation":"Amos 6:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Amos 6:8","text":"The Lord GOD hath sworn by himself, saith the LORD the God of hosts, I abhor the excellency of Jacob, and hate his palaces: therefore will I deliver up the city with all that is therein.","url":"https://rhemabibles.com/bible/amos/6/#v8","inLanguage":"en","citation":"Amos 6:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Amos 6:9","text":"And it shall come to pass, if there remain ten men in one house, that they shall die.","url":"https://rhemabibles.com/bible/amos/6/#v9","inLanguage":"en","citation":"Amos 6:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Amos 6:10","text":"And a man\u2019s uncle shall take him up, and he that burneth him, to bring out the bones out of the house, and shall say unto him that is by the sides of the house, Is there yet any with thee? and he shall say, No. Then shall he say, Hold thy tongue: for we may not make mention of the name of the LORD.","url":"https://rhemabibles.com/bible/amos/6/#v10","inLanguage":"en","citation":"Amos 6:10 (KJV)"},{"@type":"Quotation","position":11,"name":"Amos 6:11","text":"For, behold, the LORD commandeth, and he will smite the great house with breaches, and the little house with clefts.","url":"https://rhemabibles.com/bible/amos/6/#v11","inLanguage":"en","citation":"Amos 6:11 (KJV)"},{"@type":"Quotation","position":12,"name":"Amos 6:12","text":"Shall horses run upon the rock? will one plow there with oxen? for ye have turned judgment into gall, and the fruit of righteousness into hemlock:","url":"https://rhemabibles.com/bible/amos/6/#v12","inLanguage":"en","citation":"Amos 6:12 (KJV)"},{"@type":"Quotation","position":13,"name":"Amos 6:13","text":"Ye which rejoice in a thing of nought, which say, Have we not taken to us horns by our own strength?","url":"https://rhemabibles.com/bible/amos/6/#v13","inLanguage":"en","citation":"Amos 6:13 (KJV)"},{"@type":"Quotation","position":14,"name":"Amos 6:14","text":"But, behold, I will raise up against you a nation, O house of Israel, saith the LORD the God of hosts; and they shall afflict you from the entering in of Hemath unto the river of the wilderness.","url":"https://rhemabibles.com/bible/amos/6/#v14","inLanguage":"en","citation":"Amos 6:14 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,20 +97,20 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Woe to them that are at ease in Zion, and trust in the mountain of Samaria, which are named chief of the nations, to whom the house of Israel came!</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Pass ye unto Calneh, and see; and from thence go ye to Hamath the great: then go down to Gath of the Philistines: be they better than these kingdoms? or their border greater than your border?</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Ye that put far away the evil day, and cause the seat of violence to come near;</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>That lie upon beds of ivory, and stretch themselves upon their couches, and eat the lambs out of the flock, and the calves out of the midst of the stall;</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>That chant to the sound of the viol, and invent to themselves instruments of musick, like David;</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>That drink wine in bowls, and anoint themselves with the chief ointments: but they are not grieved for the affliction of Joseph.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Therefore now shall they go captive with the first that go captive, and the banquet of them that stretched themselves shall be removed.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>The Lord GOD hath sworn by himself, saith the LORD the God of hosts, I abhor the excellency of Jacob, and hate his palaces: therefore will I deliver up the city with all that is therein.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And it shall come to pass, if there remain ten men in one house, that they shall die.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>And a man’s uncle shall take him up, and he that burneth him, to bring out the bones out of the house, and shall say unto him that is by the sides of the house, Is there yet any with thee? and he shall say, No. Then shall he say, Hold thy tongue: for we may not make mention of the name of the LORD.</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>For, behold, the LORD commandeth, and he will smite the great house with breaches, and the little house with clefts.</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Shall horses run upon the rock? will one plow there with oxen? for ye have turned judgment into gall, and the fruit of righteousness into hemlock:</span>
-      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>Ye which rejoice in a thing of nought, which say, Have we not taken to us horns by our own strength?</span>
-      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>But, behold, I will raise up against you a nation, O house of Israel, saith the LORD the God of hosts; and they shall afflict you from the entering in of Hemath unto the river of the wilderness.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Woe to them that are at ease in Zion, and trust in the mountain of Samaria, which are named chief of the nations, to whom the house of Israel came!<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Pass ye unto Calneh, and see; and from thence go ye to Hamath the great: then go down to Gath of the Philistines: be they better than these kingdoms? or their border greater than your border?<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Ye that put far away the evil day, and cause the seat of violence to come near;<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>That lie upon beds of ivory, and stretch themselves upon their couches, and eat the lambs out of the flock, and the calves out of the midst of the stall;<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>That chant to the sound of the viol, and invent to themselves instruments of musick, like David;<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>That drink wine in bowls, and anoint themselves with the chief ointments: but they are not grieved for the affliction of Joseph.<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Therefore now shall they go captive with the first that go captive, and the banquet of them that stretched themselves shall be removed.<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>The Lord GOD hath sworn by himself, saith the LORD the God of hosts, I abhor the excellency of Jacob, and hate his palaces: therefore will I deliver up the city with all that is therein.<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And it shall come to pass, if there remain ten men in one house, that they shall die.<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>And a man’s uncle shall take him up, and he that burneth him, to bring out the bones out of the house, and shall say unto him that is by the sides of the house, Is there yet any with thee? and he shall say, No. Then shall he say, Hold thy tongue: for we may not make mention of the name of the LORD.<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>For, behold, the LORD commandeth, and he will smite the great house with breaches, and the little house with clefts.<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Shall horses run upon the rock? will one plow there with oxen? for ye have turned judgment into gall, and the fruit of righteousness into hemlock:<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>Ye which rejoice in a thing of nought, which say, Have we not taken to us horns by our own strength?<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=13" rel="noopener" aria-label="Open verse 13 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>But, behold, I will raise up against you a nation, O house of Israel, saith the LORD the God of hosts; and they shall afflict you from the entering in of Hemath unto the river of the wilderness.<a class="verse-open" href="https://rhemabibles.com/?book=Amos&chapter=6&verse=14" rel="noopener" aria-label="Open verse 14 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -114,6 +121,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Amos&chapter=6" rel="noopener">Open Amos 6 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Amos&chapter=6";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

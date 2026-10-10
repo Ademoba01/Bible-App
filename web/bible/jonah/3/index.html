@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":3,"name":"Jonah 3","url":"https://rhemabibles.com/bible/jonah/3/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Jonah","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/jonah/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Jonah 3:1","text":"And the word of the LORD came unto Jonah the second time, saying,","url":"https://rhemabibles.com/bible/jonah/3/#v1","inLanguage":"en","citation":"Jonah 3:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Jonah 3:2","text":"Arise, go unto Nineveh, that great city, and preach unto it the preaching that I bid thee.","url":"https://rhemabibles.com/bible/jonah/3/#v2","inLanguage":"en","citation":"Jonah 3:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Jonah 3:3","text":"So Jonah arose, and went unto Nineveh, according to the word of the LORD. Now Nineveh was an exceeding great city of three days\u2019 journey.","url":"https://rhemabibles.com/bible/jonah/3/#v3","inLanguage":"en","citation":"Jonah 3:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Jonah 3:4","text":"And Jonah began to enter into the city a day\u2019s journey, and he cried, and said, Yet forty days, and Nineveh shall be overthrown.","url":"https://rhemabibles.com/bible/jonah/3/#v4","inLanguage":"en","citation":"Jonah 3:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Jonah 3:5","text":"So the people of Nineveh believed God, and proclaimed a fast, and put on sackcloth, from the greatest of them even to the least of them.","url":"https://rhemabibles.com/bible/jonah/3/#v5","inLanguage":"en","citation":"Jonah 3:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Jonah 3:6","text":"For word came unto the king of Nineveh, and he arose from his throne, and he laid his robe from him, and covered him with sackcloth, and sat in ashes.","url":"https://rhemabibles.com/bible/jonah/3/#v6","inLanguage":"en","citation":"Jonah 3:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Jonah 3:7","text":"And he caused it to be proclaimed and published through Nineveh by the decree of the king and his nobles, saying, Let neither man nor beast, herd nor flock, taste any thing: let them not feed, nor drink water:","url":"https://rhemabibles.com/bible/jonah/3/#v7","inLanguage":"en","citation":"Jonah 3:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Jonah 3:8","text":"But let man and beast be covered with sackcloth, and cry mightily unto God: yea, let them turn every one from his evil way, and from the violence that is in their hands.","url":"https://rhemabibles.com/bible/jonah/3/#v8","inLanguage":"en","citation":"Jonah 3:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Jonah 3:9","text":"Who can tell if God will turn and repent, and turn away from his fierce anger, that we perish not?","url":"https://rhemabibles.com/bible/jonah/3/#v9","inLanguage":"en","citation":"Jonah 3:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Jonah 3:10","text":"And God saw their works, that they turned from their evil way; and God repented of the evil, that he had said that he would do unto them; and he did it not.","url":"https://rhemabibles.com/bible/jonah/3/#v10","inLanguage":"en","citation":"Jonah 3:10 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,16 +97,16 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>And the word of the LORD came unto Jonah the second time, saying,</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Arise, go unto Nineveh, that great city, and preach unto it the preaching that I bid thee.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>So Jonah arose, and went unto Nineveh, according to the word of the LORD. Now Nineveh was an exceeding great city of three days’ journey.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And Jonah began to enter into the city a day’s journey, and he cried, and said, Yet forty days, and Nineveh shall be overthrown.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>So the people of Nineveh believed God, and proclaimed a fast, and put on sackcloth, from the greatest of them even to the least of them.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>For word came unto the king of Nineveh, and he arose from his throne, and he laid his robe from him, and covered him with sackcloth, and sat in ashes.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>And he caused it to be proclaimed and published through Nineveh by the decree of the king and his nobles, saying, Let neither man nor beast, herd nor flock, taste any thing: let them not feed, nor drink water:</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>But let man and beast be covered with sackcloth, and cry mightily unto God: yea, let them turn every one from his evil way, and from the violence that is in their hands.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>Who can tell if God will turn and repent, and turn away from his fierce anger, that we perish not?</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>And God saw their works, that they turned from their evil way; and God repented of the evil, that he had said that he would do unto them; and he did it not.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>And the word of the LORD came unto Jonah the second time, saying,<a class="verse-open" href="https://rhemabibles.com/?book=Jonah&chapter=3&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Arise, go unto Nineveh, that great city, and preach unto it the preaching that I bid thee.<a class="verse-open" href="https://rhemabibles.com/?book=Jonah&chapter=3&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>So Jonah arose, and went unto Nineveh, according to the word of the LORD. Now Nineveh was an exceeding great city of three days’ journey.<a class="verse-open" href="https://rhemabibles.com/?book=Jonah&chapter=3&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And Jonah began to enter into the city a day’s journey, and he cried, and said, Yet forty days, and Nineveh shall be overthrown.<a class="verse-open" href="https://rhemabibles.com/?book=Jonah&chapter=3&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>So the people of Nineveh believed God, and proclaimed a fast, and put on sackcloth, from the greatest of them even to the least of them.<a class="verse-open" href="https://rhemabibles.com/?book=Jonah&chapter=3&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>For word came unto the king of Nineveh, and he arose from his throne, and he laid his robe from him, and covered him with sackcloth, and sat in ashes.<a class="verse-open" href="https://rhemabibles.com/?book=Jonah&chapter=3&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>And he caused it to be proclaimed and published through Nineveh by the decree of the king and his nobles, saying, Let neither man nor beast, herd nor flock, taste any thing: let them not feed, nor drink water:<a class="verse-open" href="https://rhemabibles.com/?book=Jonah&chapter=3&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>But let man and beast be covered with sackcloth, and cry mightily unto God: yea, let them turn every one from his evil way, and from the violence that is in their hands.<a class="verse-open" href="https://rhemabibles.com/?book=Jonah&chapter=3&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>Who can tell if God will turn and repent, and turn away from his fierce anger, that we perish not?<a class="verse-open" href="https://rhemabibles.com/?book=Jonah&chapter=3&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>And God saw their works, that they turned from their evil way; and God repented of the evil, that he had said that he would do unto them; and he did it not.<a class="verse-open" href="https://rhemabibles.com/?book=Jonah&chapter=3&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -110,6 +117,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Jonah&chapter=3" rel="noopener">Open Jonah 3 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Jonah&chapter=3";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

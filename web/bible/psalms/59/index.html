@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":59,"name":"Psalms 59","url":"https://rhemabibles.com/bible/psalms/59/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Psalms","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/psalms/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Psalms 59:1","text":"Deliver me from mine enemies, O my God: defend me from them that rise up against me.","url":"https://rhemabibles.com/bible/psalms/59/#v1","inLanguage":"en","citation":"Psalms 59:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Psalms 59:2","text":"Deliver me from the workers of iniquity, and save me from bloody men.","url":"https://rhemabibles.com/bible/psalms/59/#v2","inLanguage":"en","citation":"Psalms 59:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Psalms 59:3","text":"For, lo, they lie in wait for my soul: the mighty are gathered against me; not for my transgression, nor for my sin, O LORD.","url":"https://rhemabibles.com/bible/psalms/59/#v3","inLanguage":"en","citation":"Psalms 59:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Psalms 59:4","text":"They run and prepare themselves without my fault: awake to help me, and behold.","url":"https://rhemabibles.com/bible/psalms/59/#v4","inLanguage":"en","citation":"Psalms 59:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Psalms 59:5","text":"Thou therefore, O LORD God of hosts, the God of Israel, awake to visit all the heathen: be not merciful to any wicked transgressors. Selah.","url":"https://rhemabibles.com/bible/psalms/59/#v5","inLanguage":"en","citation":"Psalms 59:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Psalms 59:6","text":"They return at evening: they make a noise like a dog, and go round about the city.","url":"https://rhemabibles.com/bible/psalms/59/#v6","inLanguage":"en","citation":"Psalms 59:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Psalms 59:7","text":"Behold, they belch out with their mouth: swords are in their lips: for who, say they, doth hear?","url":"https://rhemabibles.com/bible/psalms/59/#v7","inLanguage":"en","citation":"Psalms 59:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Psalms 59:8","text":"But thou, O LORD, shalt laugh at them; thou shalt have all the heathen in derision.","url":"https://rhemabibles.com/bible/psalms/59/#v8","inLanguage":"en","citation":"Psalms 59:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Psalms 59:9","text":"Because of his strength will I wait upon thee: for God is my defence.","url":"https://rhemabibles.com/bible/psalms/59/#v9","inLanguage":"en","citation":"Psalms 59:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Psalms 59:10","text":"The God of my mercy shall prevent me: God shall let me see my desire upon mine enemies.","url":"https://rhemabibles.com/bible/psalms/59/#v10","inLanguage":"en","citation":"Psalms 59:10 (KJV)"},{"@type":"Quotation","position":11,"name":"Psalms 59:11","text":"Slay them not, lest my people forget: scatter them by thy power; and bring them down, O Lord our shield.","url":"https://rhemabibles.com/bible/psalms/59/#v11","inLanguage":"en","citation":"Psalms 59:11 (KJV)"},{"@type":"Quotation","position":12,"name":"Psalms 59:12","text":"For the sin of their mouth and the words of their lips let them even be taken in their pride: and for cursing and lying which they speak.","url":"https://rhemabibles.com/bible/psalms/59/#v12","inLanguage":"en","citation":"Psalms 59:12 (KJV)"},{"@type":"Quotation","position":13,"name":"Psalms 59:13","text":"Consume them in wrath, consume them, that they may not be: and let them know that God ruleth in Jacob unto the ends of the earth. Selah.","url":"https://rhemabibles.com/bible/psalms/59/#v13","inLanguage":"en","citation":"Psalms 59:13 (KJV)"},{"@type":"Quotation","position":14,"name":"Psalms 59:14","text":"And at evening let them return; and let them make a noise like a dog, and go round about the city.","url":"https://rhemabibles.com/bible/psalms/59/#v14","inLanguage":"en","citation":"Psalms 59:14 (KJV)"},{"@type":"Quotation","position":15,"name":"Psalms 59:15","text":"Let them wander up and down for meat, and grudge if they be not satisfied.","url":"https://rhemabibles.com/bible/psalms/59/#v15","inLanguage":"en","citation":"Psalms 59:15 (KJV)"},{"@type":"Quotation","position":16,"name":"Psalms 59:16","text":"But I will sing of thy power; yea, I will sing aloud of thy mercy in the morning: for thou hast been my defence and refuge in the day of my trouble.","url":"https://rhemabibles.com/bible/psalms/59/#v16","inLanguage":"en","citation":"Psalms 59:16 (KJV)"},{"@type":"Quotation","position":17,"name":"Psalms 59:17","text":"Unto thee, O my strength, will I sing: for God is my defence, and the God of my mercy.","url":"https://rhemabibles.com/bible/psalms/59/#v17","inLanguage":"en","citation":"Psalms 59:17 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,23 +97,23 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Deliver me from mine enemies, O my God: defend me from them that rise up against me.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Deliver me from the workers of iniquity, and save me from bloody men.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>For, lo, they lie in wait for my soul: the mighty are gathered against me; not for my transgression, nor for my sin, O LORD.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>They run and prepare themselves without my fault: awake to help me, and behold.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Thou therefore, O LORD God of hosts, the God of Israel, awake to visit all the heathen: be not merciful to any wicked transgressors. Selah.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>They return at evening: they make a noise like a dog, and go round about the city.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Behold, they belch out with their mouth: swords are in their lips: for who, say they, doth hear?</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>But thou, O LORD, shalt laugh at them; thou shalt have all the heathen in derision.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>Because of his strength will I wait upon thee: for God is my defence.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>The God of my mercy shall prevent me: God shall let me see my desire upon mine enemies.</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Slay them not, lest my people forget: scatter them by thy power; and bring them down, O Lord our shield.</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>For the sin of their mouth and the words of their lips let them even be taken in their pride: and for cursing and lying which they speak.</span>
-      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>Consume them in wrath, consume them, that they may not be: and let them know that God ruleth in Jacob unto the ends of the earth. Selah.</span>
-      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>And at evening let them return; and let them make a noise like a dog, and go round about the city.</span>
-      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>Let them wander up and down for meat, and grudge if they be not satisfied.</span>
-      <span class="verse" id="v16"><span class="verse-num"><a href="#v16" aria-label="Verse 16">16</a></span>But I will sing of thy power; yea, I will sing aloud of thy mercy in the morning: for thou hast been my defence and refuge in the day of my trouble.</span>
-      <span class="verse" id="v17"><span class="verse-num"><a href="#v17" aria-label="Verse 17">17</a></span>Unto thee, O my strength, will I sing: for God is my defence, and the God of my mercy.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Deliver me from mine enemies, O my God: defend me from them that rise up against me.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Deliver me from the workers of iniquity, and save me from bloody men.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>For, lo, they lie in wait for my soul: the mighty are gathered against me; not for my transgression, nor for my sin, O LORD.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>They run and prepare themselves without my fault: awake to help me, and behold.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Thou therefore, O LORD God of hosts, the God of Israel, awake to visit all the heathen: be not merciful to any wicked transgressors. Selah.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>They return at evening: they make a noise like a dog, and go round about the city.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Behold, they belch out with their mouth: swords are in their lips: for who, say they, doth hear?<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>But thou, O LORD, shalt laugh at them; thou shalt have all the heathen in derision.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>Because of his strength will I wait upon thee: for God is my defence.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>The God of my mercy shall prevent me: God shall let me see my desire upon mine enemies.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Slay them not, lest my people forget: scatter them by thy power; and bring them down, O Lord our shield.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>For the sin of their mouth and the words of their lips let them even be taken in their pride: and for cursing and lying which they speak.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>Consume them in wrath, consume them, that they may not be: and let them know that God ruleth in Jacob unto the ends of the earth. Selah.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=13" rel="noopener" aria-label="Open verse 13 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>And at evening let them return; and let them make a noise like a dog, and go round about the city.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=14" rel="noopener" aria-label="Open verse 14 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>Let them wander up and down for meat, and grudge if they be not satisfied.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=15" rel="noopener" aria-label="Open verse 15 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v16"><span class="verse-num"><a href="#v16" aria-label="Verse 16">16</a></span>But I will sing of thy power; yea, I will sing aloud of thy mercy in the morning: for thou hast been my defence and refuge in the day of my trouble.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=16" rel="noopener" aria-label="Open verse 16 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v17"><span class="verse-num"><a href="#v17" aria-label="Verse 17">17</a></span>Unto thee, O my strength, will I sing: for God is my defence, and the God of my mercy.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=59&verse=17" rel="noopener" aria-label="Open verse 17 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -117,6 +124,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Psalms&chapter=59" rel="noopener">Open Psalms 59 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Psalms&chapter=59";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

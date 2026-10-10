@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":90,"name":"Psalms 90","url":"https://rhemabibles.com/bible/psalms/90/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Psalms","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/psalms/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Psalms 90:1","text":"Lord, thou hast been our dwelling place in all generations.","url":"https://rhemabibles.com/bible/psalms/90/#v1","inLanguage":"en","citation":"Psalms 90:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Psalms 90:2","text":"Before the mountains were brought forth, or ever thou hadst formed the earth and the world, even from everlasting to everlasting, thou art God.","url":"https://rhemabibles.com/bible/psalms/90/#v2","inLanguage":"en","citation":"Psalms 90:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Psalms 90:3","text":"Thou turnest man to destruction; and sayest, Return, ye children of men.","url":"https://rhemabibles.com/bible/psalms/90/#v3","inLanguage":"en","citation":"Psalms 90:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Psalms 90:4","text":"For a thousand years in thy sight are but as yesterday when it is past, and as a watch in the night.","url":"https://rhemabibles.com/bible/psalms/90/#v4","inLanguage":"en","citation":"Psalms 90:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Psalms 90:5","text":"Thou carriest them away as with a flood; they are as a sleep: in the morning they are like grass which groweth up.","url":"https://rhemabibles.com/bible/psalms/90/#v5","inLanguage":"en","citation":"Psalms 90:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Psalms 90:6","text":"In the morning it flourisheth, and groweth up; in the evening it is cut down, and withereth.","url":"https://rhemabibles.com/bible/psalms/90/#v6","inLanguage":"en","citation":"Psalms 90:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Psalms 90:7","text":"For we are consumed by thine anger, and by thy wrath are we troubled.","url":"https://rhemabibles.com/bible/psalms/90/#v7","inLanguage":"en","citation":"Psalms 90:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Psalms 90:8","text":"Thou hast set our iniquities before thee, our secret sins in the light of thy countenance.","url":"https://rhemabibles.com/bible/psalms/90/#v8","inLanguage":"en","citation":"Psalms 90:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Psalms 90:9","text":"For all our days are passed away in thy wrath: we spend our years as a tale that is told.","url":"https://rhemabibles.com/bible/psalms/90/#v9","inLanguage":"en","citation":"Psalms 90:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Psalms 90:10","text":"The days of our years are threescore years and ten; and if by reason of strength they be fourscore years, yet is their strength labour and sorrow; for it is soon cut off, and we fly away.","url":"https://rhemabibles.com/bible/psalms/90/#v10","inLanguage":"en","citation":"Psalms 90:10 (KJV)"},{"@type":"Quotation","position":11,"name":"Psalms 90:11","text":"Who knoweth the power of thine anger? even according to thy fear, so is thy wrath.","url":"https://rhemabibles.com/bible/psalms/90/#v11","inLanguage":"en","citation":"Psalms 90:11 (KJV)"},{"@type":"Quotation","position":12,"name":"Psalms 90:12","text":"So teach us to number our days, that we may apply our hearts unto wisdom.","url":"https://rhemabibles.com/bible/psalms/90/#v12","inLanguage":"en","citation":"Psalms 90:12 (KJV)"},{"@type":"Quotation","position":13,"name":"Psalms 90:13","text":"Return, O LORD, how long? and let it repent thee concerning thy servants.","url":"https://rhemabibles.com/bible/psalms/90/#v13","inLanguage":"en","citation":"Psalms 90:13 (KJV)"},{"@type":"Quotation","position":14,"name":"Psalms 90:14","text":"O satisfy us early with thy mercy; that we may rejoice and be glad all our days.","url":"https://rhemabibles.com/bible/psalms/90/#v14","inLanguage":"en","citation":"Psalms 90:14 (KJV)"},{"@type":"Quotation","position":15,"name":"Psalms 90:15","text":"Make us glad according to the days wherein thou hast afflicted us, and the years wherein we have seen evil.","url":"https://rhemabibles.com/bible/psalms/90/#v15","inLanguage":"en","citation":"Psalms 90:15 (KJV)"},{"@type":"Quotation","position":16,"name":"Psalms 90:16","text":"Let thy work appear unto thy servants, and thy glory unto their children.","url":"https://rhemabibles.com/bible/psalms/90/#v16","inLanguage":"en","citation":"Psalms 90:16 (KJV)"},{"@type":"Quotation","position":17,"name":"Psalms 90:17","text":"And let the beauty of the LORD our God be upon us: and establish thou the work of our hands upon us; yea, the work of our hands establish thou it.","url":"https://rhemabibles.com/bible/psalms/90/#v17","inLanguage":"en","citation":"Psalms 90:17 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,23 +97,23 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Lord, thou hast been our dwelling place in all generations.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Before the mountains were brought forth, or ever thou hadst formed the earth and the world, even from everlasting to everlasting, thou art God.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Thou turnest man to destruction; and sayest, Return, ye children of men.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>For a thousand years in thy sight are but as yesterday when it is past, and as a watch in the night.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Thou carriest them away as with a flood; they are as a sleep: in the morning they are like grass which groweth up.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>In the morning it flourisheth, and groweth up; in the evening it is cut down, and withereth.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>For we are consumed by thine anger, and by thy wrath are we troubled.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Thou hast set our iniquities before thee, our secret sins in the light of thy countenance.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>For all our days are passed away in thy wrath: we spend our years as a tale that is told.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>The days of our years are threescore years and ten; and if by reason of strength they be fourscore years, yet is their strength labour and sorrow; for it is soon cut off, and we fly away.</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Who knoweth the power of thine anger? even according to thy fear, so is thy wrath.</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>So teach us to number our days, that we may apply our hearts unto wisdom.</span>
-      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>Return, O LORD, how long? and let it repent thee concerning thy servants.</span>
-      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>O satisfy us early with thy mercy; that we may rejoice and be glad all our days.</span>
-      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>Make us glad according to the days wherein thou hast afflicted us, and the years wherein we have seen evil.</span>
-      <span class="verse" id="v16"><span class="verse-num"><a href="#v16" aria-label="Verse 16">16</a></span>Let thy work appear unto thy servants, and thy glory unto their children.</span>
-      <span class="verse" id="v17"><span class="verse-num"><a href="#v17" aria-label="Verse 17">17</a></span>And let the beauty of the LORD our God be upon us: and establish thou the work of our hands upon us; yea, the work of our hands establish thou it.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Lord, thou hast been our dwelling place in all generations.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Before the mountains were brought forth, or ever thou hadst formed the earth and the world, even from everlasting to everlasting, thou art God.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Thou turnest man to destruction; and sayest, Return, ye children of men.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>For a thousand years in thy sight are but as yesterday when it is past, and as a watch in the night.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Thou carriest them away as with a flood; they are as a sleep: in the morning they are like grass which groweth up.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>In the morning it flourisheth, and groweth up; in the evening it is cut down, and withereth.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>For we are consumed by thine anger, and by thy wrath are we troubled.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Thou hast set our iniquities before thee, our secret sins in the light of thy countenance.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>For all our days are passed away in thy wrath: we spend our years as a tale that is told.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>The days of our years are threescore years and ten; and if by reason of strength they be fourscore years, yet is their strength labour and sorrow; for it is soon cut off, and we fly away.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Who knoweth the power of thine anger? even according to thy fear, so is thy wrath.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>So teach us to number our days, that we may apply our hearts unto wisdom.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>Return, O LORD, how long? and let it repent thee concerning thy servants.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=13" rel="noopener" aria-label="Open verse 13 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>O satisfy us early with thy mercy; that we may rejoice and be glad all our days.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=14" rel="noopener" aria-label="Open verse 14 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>Make us glad according to the days wherein thou hast afflicted us, and the years wherein we have seen evil.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=15" rel="noopener" aria-label="Open verse 15 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v16"><span class="verse-num"><a href="#v16" aria-label="Verse 16">16</a></span>Let thy work appear unto thy servants, and thy glory unto their children.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=16" rel="noopener" aria-label="Open verse 16 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v17"><span class="verse-num"><a href="#v17" aria-label="Verse 17">17</a></span>And let the beauty of the LORD our God be upon us: and establish thou the work of our hands upon us; yea, the work of our hands establish thou it.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=90&verse=17" rel="noopener" aria-label="Open verse 17 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -117,6 +124,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Psalms&chapter=90" rel="noopener">Open Psalms 90 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Psalms&chapter=90";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

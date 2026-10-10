@@ -113,10 +113,14 @@ BOOKS = [
 
 BASE_CSS = """
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -142,6 +146,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -246,10 +253,23 @@ def render_chapter_page(
         separators=(",", ":"),
     )
 
+    # Every verse carries both an in-page anchor (#vN) and a deep-link
+    # into the Flutter app that lands the reader exactly on that verse
+    # (highlightVerseProvider + auto-scroll — see main.dart). Previous
+    # chapter pages had one "Open in app" button that only passed book
+    # + chapter, so Google's AI card quoting "Hebrews 9:27" sent users
+    # to Hebrews 9:1 instead. Now the tiny "↗" after each verse number
+    # opens the app at THAT verse.
+    verse_app_base = f"{SITE}/?book={book_name.replace(' ', '%20')}&chapter={chapter_num}&verse="
     verse_lines = []
     for vn, text in verses:
         verse_lines.append(
-            f'<span class="verse" id="v{vn}"><span class="verse-num"><a href="#v{vn}" aria-label="Verse {vn}">{vn}</a></span>{esc(text)}</span>'
+            f'<span class="verse" id="v{vn}">'
+            f'<span class="verse-num"><a href="#v{vn}" aria-label="Verse {vn}">{vn}</a></span>'
+            f'{esc(text)}'
+            f'<a class="verse-open" href="{verse_app_base}{vn}" rel="noopener" '
+            f'aria-label="Open verse {vn} in the Rhema app" title="Open in app">↗</a>'
+            f'</span>'
         )
     verse_html = "\n      ".join(verse_lines)
 
@@ -315,6 +335,26 @@ def render_chapter_page(
 
   <a class="open-app" href="{open_app_url}" rel="noopener">Open {esc(ref)} in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {{
+  var baseUrl = "{open_app_url}";
+  function syncOpenAppLinks() {{
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {{
+      a.href = target;
+    }});
+  }}
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+}})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="{SITE}">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

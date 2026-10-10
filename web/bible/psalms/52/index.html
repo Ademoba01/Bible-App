@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":52,"name":"Psalms 52","url":"https://rhemabibles.com/bible/psalms/52/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Psalms","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/psalms/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Psalms 52:1","text":"Why boastest thou thyself in mischief, O mighty man? the goodness of God endureth continually.","url":"https://rhemabibles.com/bible/psalms/52/#v1","inLanguage":"en","citation":"Psalms 52:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Psalms 52:2","text":"Thy tongue deviseth mischiefs; like a sharp razor, working deceitfully.","url":"https://rhemabibles.com/bible/psalms/52/#v2","inLanguage":"en","citation":"Psalms 52:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Psalms 52:3","text":"Thou lovest evil more than good; and lying rather than to speak righteousness. Selah.","url":"https://rhemabibles.com/bible/psalms/52/#v3","inLanguage":"en","citation":"Psalms 52:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Psalms 52:4","text":"Thou lovest all devouring words, O thou deceitful tongue.","url":"https://rhemabibles.com/bible/psalms/52/#v4","inLanguage":"en","citation":"Psalms 52:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Psalms 52:5","text":"God shall likewise destroy thee for ever, he shall take thee away, and pluck thee out of thy dwelling place, and root thee out of the land of the living. Selah.","url":"https://rhemabibles.com/bible/psalms/52/#v5","inLanguage":"en","citation":"Psalms 52:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Psalms 52:6","text":"The righteous also shall see, and fear, and shall laugh at him:","url":"https://rhemabibles.com/bible/psalms/52/#v6","inLanguage":"en","citation":"Psalms 52:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Psalms 52:7","text":"Lo, this is the man that made not God his strength; but trusted in the abundance of his riches, and strengthened himself in his wickedness.","url":"https://rhemabibles.com/bible/psalms/52/#v7","inLanguage":"en","citation":"Psalms 52:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Psalms 52:8","text":"But I am like a green olive tree in the house of God: I trust in the mercy of God for ever and ever.","url":"https://rhemabibles.com/bible/psalms/52/#v8","inLanguage":"en","citation":"Psalms 52:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Psalms 52:9","text":"I will praise thee for ever, because thou hast done it: and I will wait on thy name; for it is good before thy saints.","url":"https://rhemabibles.com/bible/psalms/52/#v9","inLanguage":"en","citation":"Psalms 52:9 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,15 +97,15 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Why boastest thou thyself in mischief, O mighty man? the goodness of God endureth continually.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Thy tongue deviseth mischiefs; like a sharp razor, working deceitfully.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Thou lovest evil more than good; and lying rather than to speak righteousness. Selah.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>Thou lovest all devouring words, O thou deceitful tongue.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>God shall likewise destroy thee for ever, he shall take thee away, and pluck thee out of thy dwelling place, and root thee out of the land of the living. Selah.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>The righteous also shall see, and fear, and shall laugh at him:</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Lo, this is the man that made not God his strength; but trusted in the abundance of his riches, and strengthened himself in his wickedness.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>But I am like a green olive tree in the house of God: I trust in the mercy of God for ever and ever.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>I will praise thee for ever, because thou hast done it: and I will wait on thy name; for it is good before thy saints.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Why boastest thou thyself in mischief, O mighty man? the goodness of God endureth continually.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=52&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Thy tongue deviseth mischiefs; like a sharp razor, working deceitfully.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=52&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Thou lovest evil more than good; and lying rather than to speak righteousness. Selah.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=52&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>Thou lovest all devouring words, O thou deceitful tongue.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=52&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>God shall likewise destroy thee for ever, he shall take thee away, and pluck thee out of thy dwelling place, and root thee out of the land of the living. Selah.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=52&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>The righteous also shall see, and fear, and shall laugh at him:<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=52&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Lo, this is the man that made not God his strength; but trusted in the abundance of his riches, and strengthened himself in his wickedness.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=52&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>But I am like a green olive tree in the house of God: I trust in the mercy of God for ever and ever.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=52&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>I will praise thee for ever, because thou hast done it: and I will wait on thy name; for it is good before thy saints.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=52&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -109,6 +116,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Psalms&chapter=52" rel="noopener">Open Psalms 52 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Psalms&chapter=52";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

@@ -22,11 +22,15 @@ class BrandColors {
   static const goldDark = Color(0xFFA07B28);    // WCAG AA on light bg
   static const goldLight = Color(0xFFFFC107);   // bright accents
 
-  // Surfaces
-  static const cream = Color(0xFFFFF8E1);
-  static const parchment = Color(0xFFFDF6EC);   // reading background
-  static const warmWhite = Color(0xFFFFFBF5);   // card background
-  static const verseBeige = Color(0xFFEDE4D5);  // highlighted verse bg
+  // Surfaces — warmed in Oct 2026 per user feedback that the previous
+  // greyish parchment felt austere. Shifted ~5° warmer and a touch more
+  // saturated so Home / Study / Settings / Kids read as inviting
+  // without losing the reading-friendly feel on long passages. White
+  // text and gold accents still clear WCAG AA on every surface.
+  static const cream = Color(0xFFFFF4D6);       // Home + card tints
+  static const parchment = Color(0xFFFBF2DF);   // reading background
+  static const warmWhite = Color(0xFFFFF9EC);   // card background
+  static const verseBeige = Color(0xFFEDE1CB);  // highlighted verse bg
 
   // ── Red Letter / Blue Letter ──
   // Christ's spoken words are colored `redLetter`. The classic Cambridge

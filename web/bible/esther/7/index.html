@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":7,"name":"Esther 7","url":"https://rhemabibles.com/bible/esther/7/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Esther","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/esther/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Esther 7:1","text":"So the king and Haman came to banquet with Esther the queen.","url":"https://rhemabibles.com/bible/esther/7/#v1","inLanguage":"en","citation":"Esther 7:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Esther 7:2","text":"And the king said again unto Esther on the second day at the banquet of wine, What is thy petition, queen Esther? and it shall be granted thee: and what is thy request? and it shall be performed, even to the half of the kingdom.","url":"https://rhemabibles.com/bible/esther/7/#v2","inLanguage":"en","citation":"Esther 7:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Esther 7:3","text":"Then Esther the queen answered and said, If I have found favour in thy sight, O king, and if it please the king, let my life be given me at my petition, and my people at my request:","url":"https://rhemabibles.com/bible/esther/7/#v3","inLanguage":"en","citation":"Esther 7:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Esther 7:4","text":"For we are sold, I and my people, to be destroyed, to be slain, and to perish. But if we had been sold for bondmen and bondwomen, I had held my tongue, although the enemy could not countervail the king\u2019s damage.","url":"https://rhemabibles.com/bible/esther/7/#v4","inLanguage":"en","citation":"Esther 7:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Esther 7:5","text":"Then the king Ahasuerus answered and said unto Esther the queen, Who is he, and where is he, that durst presume in his heart to do so?","url":"https://rhemabibles.com/bible/esther/7/#v5","inLanguage":"en","citation":"Esther 7:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Esther 7:6","text":"And Esther said, The adversary and enemy is this wicked Haman. Then Haman was afraid before the king and the queen.","url":"https://rhemabibles.com/bible/esther/7/#v6","inLanguage":"en","citation":"Esther 7:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Esther 7:7","text":"And the king arising from the banquet of wine in his wrath went into the palace garden: and Haman stood up to make request for his life to Esther the queen; for he saw that there was evil determined against him by the king.","url":"https://rhemabibles.com/bible/esther/7/#v7","inLanguage":"en","citation":"Esther 7:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Esther 7:8","text":"Then the king returned out of the palace garden into the place of the banquet of wine; and Haman was fallen upon the bed whereon Esther was. Then said the king, Will he force the queen also before me in the house? As the word went out of the king\u2019s mouth, they covered Haman\u2019s face.","url":"https://rhemabibles.com/bible/esther/7/#v8","inLanguage":"en","citation":"Esther 7:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Esther 7:9","text":"And Harbonah, one of the chamberlains, said before the king, Behold also, the gallows fifty cubits high, which Haman had made for Mordecai, who had spoken good for the king, standeth in the house of Haman. Then the king said, Hang him thereon.","url":"https://rhemabibles.com/bible/esther/7/#v9","inLanguage":"en","citation":"Esther 7:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Esther 7:10","text":"So they hanged Haman on the gallows that he had prepared for Mordecai. Then was the king\u2019s wrath pacified.","url":"https://rhemabibles.com/bible/esther/7/#v10","inLanguage":"en","citation":"Esther 7:10 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,16 +97,16 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>So the king and Haman came to banquet with Esther the queen.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And the king said again unto Esther on the second day at the banquet of wine, What is thy petition, queen Esther? and it shall be granted thee: and what is thy request? and it shall be performed, even to the half of the kingdom.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Then Esther the queen answered and said, If I have found favour in thy sight, O king, and if it please the king, let my life be given me at my petition, and my people at my request:</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>For we are sold, I and my people, to be destroyed, to be slain, and to perish. But if we had been sold for bondmen and bondwomen, I had held my tongue, although the enemy could not countervail the king’s damage.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Then the king Ahasuerus answered and said unto Esther the queen, Who is he, and where is he, that durst presume in his heart to do so?</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>And Esther said, The adversary and enemy is this wicked Haman. Then Haman was afraid before the king and the queen.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>And the king arising from the banquet of wine in his wrath went into the palace garden: and Haman stood up to make request for his life to Esther the queen; for he saw that there was evil determined against him by the king.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Then the king returned out of the palace garden into the place of the banquet of wine; and Haman was fallen upon the bed whereon Esther was. Then said the king, Will he force the queen also before me in the house? As the word went out of the king’s mouth, they covered Haman’s face.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And Harbonah, one of the chamberlains, said before the king, Behold also, the gallows fifty cubits high, which Haman had made for Mordecai, who had spoken good for the king, standeth in the house of Haman. Then the king said, Hang him thereon.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>So they hanged Haman on the gallows that he had prepared for Mordecai. Then was the king’s wrath pacified.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>So the king and Haman came to banquet with Esther the queen.<a class="verse-open" href="https://rhemabibles.com/?book=Esther&chapter=7&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And the king said again unto Esther on the second day at the banquet of wine, What is thy petition, queen Esther? and it shall be granted thee: and what is thy request? and it shall be performed, even to the half of the kingdom.<a class="verse-open" href="https://rhemabibles.com/?book=Esther&chapter=7&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Then Esther the queen answered and said, If I have found favour in thy sight, O king, and if it please the king, let my life be given me at my petition, and my people at my request:<a class="verse-open" href="https://rhemabibles.com/?book=Esther&chapter=7&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>For we are sold, I and my people, to be destroyed, to be slain, and to perish. But if we had been sold for bondmen and bondwomen, I had held my tongue, although the enemy could not countervail the king’s damage.<a class="verse-open" href="https://rhemabibles.com/?book=Esther&chapter=7&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Then the king Ahasuerus answered and said unto Esther the queen, Who is he, and where is he, that durst presume in his heart to do so?<a class="verse-open" href="https://rhemabibles.com/?book=Esther&chapter=7&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>And Esther said, The adversary and enemy is this wicked Haman. Then Haman was afraid before the king and the queen.<a class="verse-open" href="https://rhemabibles.com/?book=Esther&chapter=7&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>And the king arising from the banquet of wine in his wrath went into the palace garden: and Haman stood up to make request for his life to Esther the queen; for he saw that there was evil determined against him by the king.<a class="verse-open" href="https://rhemabibles.com/?book=Esther&chapter=7&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Then the king returned out of the palace garden into the place of the banquet of wine; and Haman was fallen upon the bed whereon Esther was. Then said the king, Will he force the queen also before me in the house? As the word went out of the king’s mouth, they covered Haman’s face.<a class="verse-open" href="https://rhemabibles.com/?book=Esther&chapter=7&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And Harbonah, one of the chamberlains, said before the king, Behold also, the gallows fifty cubits high, which Haman had made for Mordecai, who had spoken good for the king, standeth in the house of Haman. Then the king said, Hang him thereon.<a class="verse-open" href="https://rhemabibles.com/?book=Esther&chapter=7&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>So they hanged Haman on the gallows that he had prepared for Mordecai. Then was the king’s wrath pacified.<a class="verse-open" href="https://rhemabibles.com/?book=Esther&chapter=7&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -110,6 +117,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Esther&chapter=7" rel="noopener">Open Esther 7 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Esther&chapter=7";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

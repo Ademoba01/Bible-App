@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":13,"name":"Zechariah 13","url":"https://rhemabibles.com/bible/zechariah/13/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Zechariah","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/zechariah/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Zechariah 13:1","text":"In that day there shall be a fountain opened to the house of David and to the inhabitants of Jerusalem for sin and for uncleanness.","url":"https://rhemabibles.com/bible/zechariah/13/#v1","inLanguage":"en","citation":"Zechariah 13:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Zechariah 13:2","text":"And it shall come to pass in that day, saith the LORD of hosts, that I will cut off the names of the idols out of the land, and they shall no more be remembered: and also I will cause the prophets and the unclean spirit to pass out of the land.","url":"https://rhemabibles.com/bible/zechariah/13/#v2","inLanguage":"en","citation":"Zechariah 13:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Zechariah 13:3","text":"And it shall come to pass, that when any shall yet prophesy, then his father and his mother that begat him shall say unto him, Thou shalt not live; for thou speakest lies in the name of the LORD: and his father and his mother that begat him shall thrust him through when he prophesieth.","url":"https://rhemabibles.com/bible/zechariah/13/#v3","inLanguage":"en","citation":"Zechariah 13:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Zechariah 13:4","text":"And it shall come to pass in that day, that the prophets shall be ashamed every one of his vision, when he hath prophesied; neither shall they wear a rough garment to deceive:","url":"https://rhemabibles.com/bible/zechariah/13/#v4","inLanguage":"en","citation":"Zechariah 13:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Zechariah 13:5","text":"But he shall say, I am no prophet, I am an husbandman; for man taught me to keep cattle from my youth.","url":"https://rhemabibles.com/bible/zechariah/13/#v5","inLanguage":"en","citation":"Zechariah 13:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Zechariah 13:6","text":"And one shall say unto him, What are these wounds in thine hands? Then he shall answer, Those with which I was wounded in the house of my friends.","url":"https://rhemabibles.com/bible/zechariah/13/#v6","inLanguage":"en","citation":"Zechariah 13:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Zechariah 13:7","text":"Awake, O sword, against my shepherd, and against the man that is my fellow, saith the LORD of hosts: smite the shepherd, and the sheep shall be scattered: and I will turn mine hand upon the little ones.","url":"https://rhemabibles.com/bible/zechariah/13/#v7","inLanguage":"en","citation":"Zechariah 13:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Zechariah 13:8","text":"And it shall come to pass, that in all the land, saith the LORD, two parts therein shall be cut off and die; but the third shall be left therein.","url":"https://rhemabibles.com/bible/zechariah/13/#v8","inLanguage":"en","citation":"Zechariah 13:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Zechariah 13:9","text":"And I will bring the third part through the fire, and will refine them as silver is refined, and will try them as gold is tried: they shall call on my name, and I will hear them: I will say, It is my people: and they shall say, The LORD is my God.","url":"https://rhemabibles.com/bible/zechariah/13/#v9","inLanguage":"en","citation":"Zechariah 13:9 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,15 +97,15 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>In that day there shall be a fountain opened to the house of David and to the inhabitants of Jerusalem for sin and for uncleanness.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And it shall come to pass in that day, saith the LORD of hosts, that I will cut off the names of the idols out of the land, and they shall no more be remembered: and also I will cause the prophets and the unclean spirit to pass out of the land.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>And it shall come to pass, that when any shall yet prophesy, then his father and his mother that begat him shall say unto him, Thou shalt not live; for thou speakest lies in the name of the LORD: and his father and his mother that begat him shall thrust him through when he prophesieth.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And it shall come to pass in that day, that the prophets shall be ashamed every one of his vision, when he hath prophesied; neither shall they wear a rough garment to deceive:</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>But he shall say, I am no prophet, I am an husbandman; for man taught me to keep cattle from my youth.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>And one shall say unto him, What are these wounds in thine hands? Then he shall answer, Those with which I was wounded in the house of my friends.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Awake, O sword, against my shepherd, and against the man that is my fellow, saith the LORD of hosts: smite the shepherd, and the sheep shall be scattered: and I will turn mine hand upon the little ones.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>And it shall come to pass, that in all the land, saith the LORD, two parts therein shall be cut off and die; but the third shall be left therein.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And I will bring the third part through the fire, and will refine them as silver is refined, and will try them as gold is tried: they shall call on my name, and I will hear them: I will say, It is my people: and they shall say, The LORD is my God.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>In that day there shall be a fountain opened to the house of David and to the inhabitants of Jerusalem for sin and for uncleanness.<a class="verse-open" href="https://rhemabibles.com/?book=Zechariah&chapter=13&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And it shall come to pass in that day, saith the LORD of hosts, that I will cut off the names of the idols out of the land, and they shall no more be remembered: and also I will cause the prophets and the unclean spirit to pass out of the land.<a class="verse-open" href="https://rhemabibles.com/?book=Zechariah&chapter=13&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>And it shall come to pass, that when any shall yet prophesy, then his father and his mother that begat him shall say unto him, Thou shalt not live; for thou speakest lies in the name of the LORD: and his father and his mother that begat him shall thrust him through when he prophesieth.<a class="verse-open" href="https://rhemabibles.com/?book=Zechariah&chapter=13&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And it shall come to pass in that day, that the prophets shall be ashamed every one of his vision, when he hath prophesied; neither shall they wear a rough garment to deceive:<a class="verse-open" href="https://rhemabibles.com/?book=Zechariah&chapter=13&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>But he shall say, I am no prophet, I am an husbandman; for man taught me to keep cattle from my youth.<a class="verse-open" href="https://rhemabibles.com/?book=Zechariah&chapter=13&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>And one shall say unto him, What are these wounds in thine hands? Then he shall answer, Those with which I was wounded in the house of my friends.<a class="verse-open" href="https://rhemabibles.com/?book=Zechariah&chapter=13&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Awake, O sword, against my shepherd, and against the man that is my fellow, saith the LORD of hosts: smite the shepherd, and the sheep shall be scattered: and I will turn mine hand upon the little ones.<a class="verse-open" href="https://rhemabibles.com/?book=Zechariah&chapter=13&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>And it shall come to pass, that in all the land, saith the LORD, two parts therein shall be cut off and die; but the third shall be left therein.<a class="verse-open" href="https://rhemabibles.com/?book=Zechariah&chapter=13&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And I will bring the third part through the fire, and will refine them as silver is refined, and will try them as gold is tried: they shall call on my name, and I will hear them: I will say, It is my people: and they shall say, The LORD is my God.<a class="verse-open" href="https://rhemabibles.com/?book=Zechariah&chapter=13&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -109,6 +116,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Zechariah&chapter=13" rel="noopener">Open Zechariah 13 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Zechariah&chapter=13";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":4,"name":"2 Samuel 4","url":"https://rhemabibles.com/bible/2-samuel/4/","inLanguage":"en","isPartOf":{"@type":"Book","name":"2 Samuel","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/2-samuel/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"2 Samuel 4:1","text":"And when Saul\u2019s son heard that Abner was dead in Hebron, his hands were feeble, and all the Israelites were troubled.","url":"https://rhemabibles.com/bible/2-samuel/4/#v1","inLanguage":"en","citation":"2 Samuel 4:1 (KJV)"},{"@type":"Quotation","position":2,"name":"2 Samuel 4:2","text":"And Saul\u2019s son had two men that were captains of bands: the name of the one was Baanah, and the name of the other Rechab, the sons of Rimmon a Beerothite, of the children of Benjamin: (for Beeroth also was reckoned to Benjamin.","url":"https://rhemabibles.com/bible/2-samuel/4/#v2","inLanguage":"en","citation":"2 Samuel 4:2 (KJV)"},{"@type":"Quotation","position":3,"name":"2 Samuel 4:3","text":"And the Beerothites fled to Gittaim, and were sojourners there until this day.)","url":"https://rhemabibles.com/bible/2-samuel/4/#v3","inLanguage":"en","citation":"2 Samuel 4:3 (KJV)"},{"@type":"Quotation","position":4,"name":"2 Samuel 4:4","text":"And Jonathan, Saul\u2019s son, had a son that was lame of his feet. He was five years old when the tidings came of Saul and Jonathan out of Jezreel, and his nurse took him up, and fled: and it came to pass, as she made haste to flee, that he fell, and became lame. And his name was Mephibosheth.","url":"https://rhemabibles.com/bible/2-samuel/4/#v4","inLanguage":"en","citation":"2 Samuel 4:4 (KJV)"},{"@type":"Quotation","position":5,"name":"2 Samuel 4:5","text":"And the sons of Rimmon the Beerothite, Rechab and Baanah, went, and came about the heat of the day to the house of Ishbosheth, who lay on a bed at noon.","url":"https://rhemabibles.com/bible/2-samuel/4/#v5","inLanguage":"en","citation":"2 Samuel 4:5 (KJV)"},{"@type":"Quotation","position":6,"name":"2 Samuel 4:6","text":"And they came thither into the midst of the house, as though they would have fetched wheat; and they smote him under the fifth rib: and Rechab and Baanah his brother escaped.","url":"https://rhemabibles.com/bible/2-samuel/4/#v6","inLanguage":"en","citation":"2 Samuel 4:6 (KJV)"},{"@type":"Quotation","position":7,"name":"2 Samuel 4:7","text":"For when they came into the house, he lay on his bed in his bedchamber, and they smote him, and slew him, and beheaded him, and took his head, and gat them away through the plain all night.","url":"https://rhemabibles.com/bible/2-samuel/4/#v7","inLanguage":"en","citation":"2 Samuel 4:7 (KJV)"},{"@type":"Quotation","position":8,"name":"2 Samuel 4:8","text":"And they brought the head of Ishbosheth unto David to Hebron, and said to the king, Behold the head of Ishbosheth the son of Saul thine enemy, which sought thy life; and the LORD hath avenged my lord the king this day of Saul, and of his seed.","url":"https://rhemabibles.com/bible/2-samuel/4/#v8","inLanguage":"en","citation":"2 Samuel 4:8 (KJV)"},{"@type":"Quotation","position":9,"name":"2 Samuel 4:9","text":"And David answered Rechab and Baanah his brother, the sons of Rimmon the Beerothite, and said unto them, As the LORD liveth, who hath redeemed my soul out of all adversity,","url":"https://rhemabibles.com/bible/2-samuel/4/#v9","inLanguage":"en","citation":"2 Samuel 4:9 (KJV)"},{"@type":"Quotation","position":10,"name":"2 Samuel 4:10","text":"When one told me, saying, Behold, Saul is dead, thinking to have brought good tidings, I took hold of him, and slew him in Ziklag, who thought that I would have given him a reward for his tidings:","url":"https://rhemabibles.com/bible/2-samuel/4/#v10","inLanguage":"en","citation":"2 Samuel 4:10 (KJV)"},{"@type":"Quotation","position":11,"name":"2 Samuel 4:11","text":"How much more, when wicked men have slain a righteous person in his own house upon his bed? shall I not therefore now require his blood of your hand, and take you away from the earth?","url":"https://rhemabibles.com/bible/2-samuel/4/#v11","inLanguage":"en","citation":"2 Samuel 4:11 (KJV)"},{"@type":"Quotation","position":12,"name":"2 Samuel 4:12","text":"And David commanded his young men, and they slew them, and cut off their hands and their feet, and hanged them up over the pool in Hebron. But they took the head of Ishbosheth, and buried it in the sepulchre of Abner in Hebron.","url":"https://rhemabibles.com/bible/2-samuel/4/#v12","inLanguage":"en","citation":"2 Samuel 4:12 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,18 +97,18 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>And when Saul’s son heard that Abner was dead in Hebron, his hands were feeble, and all the Israelites were troubled.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And Saul’s son had two men that were captains of bands: the name of the one was Baanah, and the name of the other Rechab, the sons of Rimmon a Beerothite, of the children of Benjamin: (for Beeroth also was reckoned to Benjamin.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>And the Beerothites fled to Gittaim, and were sojourners there until this day.)</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And Jonathan, Saul’s son, had a son that was lame of his feet. He was five years old when the tidings came of Saul and Jonathan out of Jezreel, and his nurse took him up, and fled: and it came to pass, as she made haste to flee, that he fell, and became lame. And his name was Mephibosheth.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>And the sons of Rimmon the Beerothite, Rechab and Baanah, went, and came about the heat of the day to the house of Ishbosheth, who lay on a bed at noon.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>And they came thither into the midst of the house, as though they would have fetched wheat; and they smote him under the fifth rib: and Rechab and Baanah his brother escaped.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>For when they came into the house, he lay on his bed in his bedchamber, and they smote him, and slew him, and beheaded him, and took his head, and gat them away through the plain all night.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>And they brought the head of Ishbosheth unto David to Hebron, and said to the king, Behold the head of Ishbosheth the son of Saul thine enemy, which sought thy life; and the LORD hath avenged my lord the king this day of Saul, and of his seed.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And David answered Rechab and Baanah his brother, the sons of Rimmon the Beerothite, and said unto them, As the LORD liveth, who hath redeemed my soul out of all adversity,</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>When one told me, saying, Behold, Saul is dead, thinking to have brought good tidings, I took hold of him, and slew him in Ziklag, who thought that I would have given him a reward for his tidings:</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>How much more, when wicked men have slain a righteous person in his own house upon his bed? shall I not therefore now require his blood of your hand, and take you away from the earth?</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>And David commanded his young men, and they slew them, and cut off their hands and their feet, and hanged them up over the pool in Hebron. But they took the head of Ishbosheth, and buried it in the sepulchre of Abner in Hebron.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>And when Saul’s son heard that Abner was dead in Hebron, his hands were feeble, and all the Israelites were troubled.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And Saul’s son had two men that were captains of bands: the name of the one was Baanah, and the name of the other Rechab, the sons of Rimmon a Beerothite, of the children of Benjamin: (for Beeroth also was reckoned to Benjamin.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>And the Beerothites fled to Gittaim, and were sojourners there until this day.)<a class="verse-open" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And Jonathan, Saul’s son, had a son that was lame of his feet. He was five years old when the tidings came of Saul and Jonathan out of Jezreel, and his nurse took him up, and fled: and it came to pass, as she made haste to flee, that he fell, and became lame. And his name was Mephibosheth.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>And the sons of Rimmon the Beerothite, Rechab and Baanah, went, and came about the heat of the day to the house of Ishbosheth, who lay on a bed at noon.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>And they came thither into the midst of the house, as though they would have fetched wheat; and they smote him under the fifth rib: and Rechab and Baanah his brother escaped.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>For when they came into the house, he lay on his bed in his bedchamber, and they smote him, and slew him, and beheaded him, and took his head, and gat them away through the plain all night.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>And they brought the head of Ishbosheth unto David to Hebron, and said to the king, Behold the head of Ishbosheth the son of Saul thine enemy, which sought thy life; and the LORD hath avenged my lord the king this day of Saul, and of his seed.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And David answered Rechab and Baanah his brother, the sons of Rimmon the Beerothite, and said unto them, As the LORD liveth, who hath redeemed my soul out of all adversity,<a class="verse-open" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>When one told me, saying, Behold, Saul is dead, thinking to have brought good tidings, I took hold of him, and slew him in Ziklag, who thought that I would have given him a reward for his tidings:<a class="verse-open" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>How much more, when wicked men have slain a righteous person in his own house upon his bed? shall I not therefore now require his blood of your hand, and take you away from the earth?<a class="verse-open" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>And David commanded his young men, and they slew them, and cut off their hands and their feet, and hanged them up over the pool in Hebron. But they took the head of Ishbosheth, and buried it in the sepulchre of Abner in Hebron.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -112,6 +119,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=2%20Samuel&chapter=4" rel="noopener">Open 2 Samuel 4 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=2%20Samuel&chapter=4";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

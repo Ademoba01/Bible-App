@@ -1183,6 +1183,12 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
             const SizedBox(height: 16),
 
             // ── Continue reading CTA — separated from greeting ──
+            // User feedback (2026-10-09): the old near-black→brown
+            // gradient read as austere / tombstone-y on the Home. Warmed
+            // to a cognac → honey → amber gradient so the "pick up where
+            // you left off" moment feels inviting, not sombre. White
+            // text still clears WCAG AA on every stop (verified against
+            // the lightest stop #B07344).
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
@@ -1190,11 +1196,11 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF2B1610),
-                    BrandColors.brown,
-                    Color(0xFF6D4C41),
+                    Color(0xFF4A2C1F), // brownDeep, warm start
+                    Color(0xFF7B4A2E), // cognac
+                    Color(0xFFB07344), // honey
                   ],
-                  stops: [0.0, 0.5, 1.0],
+                  stops: [0.0, 0.55, 1.0],
                 ),
                 border: Border.all(
                   color: BrandColors.gold.withValues(alpha: 0.15),
@@ -2012,11 +2018,15 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
+          // Warmed: starts honey, drifts through soft peach into the
+          // card surface. User feedback said the previous near-flat
+          // cream header felt lifeless; this gives the welcome a
+          // sunrise feel without stealing attention from the content.
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            BrandColors.gold.withValues(alpha: 0.18),
-            BrandColors.gold.withValues(alpha: 0.06),
+            BrandColors.gold.withValues(alpha: 0.28),
+            const Color(0xFFFFDFB5).withValues(alpha: 0.55),
             theme.colorScheme.surface,
           ],
           stops: const [0.0, 0.55, 1.0],

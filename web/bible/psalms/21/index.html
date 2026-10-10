@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":21,"name":"Psalms 21","url":"https://rhemabibles.com/bible/psalms/21/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Psalms","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/psalms/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Psalms 21:1","text":"The king shall joy in thy strength, O LORD; and in thy salvation how greatly shall he rejoice!","url":"https://rhemabibles.com/bible/psalms/21/#v1","inLanguage":"en","citation":"Psalms 21:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Psalms 21:2","text":"Thou hast given him his heart\u2019s desire, and hast not withholden the request of his lips. Selah.","url":"https://rhemabibles.com/bible/psalms/21/#v2","inLanguage":"en","citation":"Psalms 21:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Psalms 21:3","text":"For thou preventest him with the blessings of goodness: thou settest a crown of pure gold on his head.","url":"https://rhemabibles.com/bible/psalms/21/#v3","inLanguage":"en","citation":"Psalms 21:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Psalms 21:4","text":"He asked life of thee, and thou gavest it him, even length of days for ever and ever.","url":"https://rhemabibles.com/bible/psalms/21/#v4","inLanguage":"en","citation":"Psalms 21:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Psalms 21:5","text":"His glory is great in thy salvation: honour and majesty hast thou laid upon him.","url":"https://rhemabibles.com/bible/psalms/21/#v5","inLanguage":"en","citation":"Psalms 21:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Psalms 21:6","text":"For thou hast made him most blessed for ever: thou hast made him exceeding glad with thy countenance.","url":"https://rhemabibles.com/bible/psalms/21/#v6","inLanguage":"en","citation":"Psalms 21:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Psalms 21:7","text":"For the king trusteth in the LORD, and through the mercy of the most High he shall not be moved.","url":"https://rhemabibles.com/bible/psalms/21/#v7","inLanguage":"en","citation":"Psalms 21:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Psalms 21:8","text":"Thine hand shall find out all thine enemies: thy right hand shall find out those that hate thee.","url":"https://rhemabibles.com/bible/psalms/21/#v8","inLanguage":"en","citation":"Psalms 21:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Psalms 21:9","text":"Thou shalt make them as a fiery oven in the time of thine anger: the LORD shall swallow them up in his wrath, and the fire shall devour them.","url":"https://rhemabibles.com/bible/psalms/21/#v9","inLanguage":"en","citation":"Psalms 21:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Psalms 21:10","text":"Their fruit shalt thou destroy from the earth, and their seed from among the children of men.","url":"https://rhemabibles.com/bible/psalms/21/#v10","inLanguage":"en","citation":"Psalms 21:10 (KJV)"},{"@type":"Quotation","position":11,"name":"Psalms 21:11","text":"For they intended evil against thee: they imagined a mischievous device, which they are not able to perform.","url":"https://rhemabibles.com/bible/psalms/21/#v11","inLanguage":"en","citation":"Psalms 21:11 (KJV)"},{"@type":"Quotation","position":12,"name":"Psalms 21:12","text":"Therefore shalt thou make them turn their back, when thou shalt make ready thine arrows upon thy strings against the face of them.","url":"https://rhemabibles.com/bible/psalms/21/#v12","inLanguage":"en","citation":"Psalms 21:12 (KJV)"},{"@type":"Quotation","position":13,"name":"Psalms 21:13","text":"Be thou exalted, LORD, in thine own strength: so will we sing and praise thy power.","url":"https://rhemabibles.com/bible/psalms/21/#v13","inLanguage":"en","citation":"Psalms 21:13 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,19 +97,19 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>The king shall joy in thy strength, O LORD; and in thy salvation how greatly shall he rejoice!</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Thou hast given him his heart’s desire, and hast not withholden the request of his lips. Selah.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>For thou preventest him with the blessings of goodness: thou settest a crown of pure gold on his head.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>He asked life of thee, and thou gavest it him, even length of days for ever and ever.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>His glory is great in thy salvation: honour and majesty hast thou laid upon him.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>For thou hast made him most blessed for ever: thou hast made him exceeding glad with thy countenance.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>For the king trusteth in the LORD, and through the mercy of the most High he shall not be moved.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Thine hand shall find out all thine enemies: thy right hand shall find out those that hate thee.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>Thou shalt make them as a fiery oven in the time of thine anger: the LORD shall swallow them up in his wrath, and the fire shall devour them.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>Their fruit shalt thou destroy from the earth, and their seed from among the children of men.</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>For they intended evil against thee: they imagined a mischievous device, which they are not able to perform.</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Therefore shalt thou make them turn their back, when thou shalt make ready thine arrows upon thy strings against the face of them.</span>
-      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>Be thou exalted, LORD, in thine own strength: so will we sing and praise thy power.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>The king shall joy in thy strength, O LORD; and in thy salvation how greatly shall he rejoice!<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Thou hast given him his heart’s desire, and hast not withholden the request of his lips. Selah.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>For thou preventest him with the blessings of goodness: thou settest a crown of pure gold on his head.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>He asked life of thee, and thou gavest it him, even length of days for ever and ever.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>His glory is great in thy salvation: honour and majesty hast thou laid upon him.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>For thou hast made him most blessed for ever: thou hast made him exceeding glad with thy countenance.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>For the king trusteth in the LORD, and through the mercy of the most High he shall not be moved.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>Thine hand shall find out all thine enemies: thy right hand shall find out those that hate thee.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>Thou shalt make them as a fiery oven in the time of thine anger: the LORD shall swallow them up in his wrath, and the fire shall devour them.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>Their fruit shalt thou destroy from the earth, and their seed from among the children of men.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>For they intended evil against thee: they imagined a mischievous device, which they are not able to perform.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Therefore shalt thou make them turn their back, when thou shalt make ready thine arrows upon thy strings against the face of them.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>Be thou exalted, LORD, in thine own strength: so will we sing and praise thy power.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=21&verse=13" rel="noopener" aria-label="Open verse 13 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -113,6 +120,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Psalms&chapter=21" rel="noopener">Open Psalms 21 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Psalms&chapter=21";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

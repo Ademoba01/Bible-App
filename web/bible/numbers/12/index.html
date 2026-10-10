@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":12,"name":"Numbers 12","url":"https://rhemabibles.com/bible/numbers/12/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Numbers","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/numbers/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Numbers 12:1","text":"And Miriam and Aaron spake against Moses because of the Ethiopian woman whom he had married: for he had married an Ethiopian woman.","url":"https://rhemabibles.com/bible/numbers/12/#v1","inLanguage":"en","citation":"Numbers 12:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Numbers 12:2","text":"And they said, Hath the LORD indeed spoken only by Moses? hath he not spoken also by us? And the LORD heard it.","url":"https://rhemabibles.com/bible/numbers/12/#v2","inLanguage":"en","citation":"Numbers 12:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Numbers 12:3","text":"(Now the man Moses was very meek, above all the men which were upon the face of the earth.)","url":"https://rhemabibles.com/bible/numbers/12/#v3","inLanguage":"en","citation":"Numbers 12:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Numbers 12:4","text":"And the LORD spake suddenly unto Moses, and unto Aaron, and unto Miriam, Come out ye three unto the tabernacle of the congregation. And they three came out.","url":"https://rhemabibles.com/bible/numbers/12/#v4","inLanguage":"en","citation":"Numbers 12:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Numbers 12:5","text":"And the LORD came down in the pillar of the cloud, and stood in the door of the tabernacle, and called Aaron and Miriam: and they both came forth.","url":"https://rhemabibles.com/bible/numbers/12/#v5","inLanguage":"en","citation":"Numbers 12:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Numbers 12:6","text":"And he said, Hear now my words: If there be a prophet among you, I the LORD will make myself known unto him in a vision, and will speak unto him in a dream.","url":"https://rhemabibles.com/bible/numbers/12/#v6","inLanguage":"en","citation":"Numbers 12:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Numbers 12:7","text":"My servant Moses is not so, who is faithful in all mine house.","url":"https://rhemabibles.com/bible/numbers/12/#v7","inLanguage":"en","citation":"Numbers 12:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Numbers 12:8","text":"With him will I speak mouth to mouth, even apparently, and not in dark speeches; and the similitude of the LORD shall he behold: wherefore then were ye not afraid to speak against my servant Moses?","url":"https://rhemabibles.com/bible/numbers/12/#v8","inLanguage":"en","citation":"Numbers 12:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Numbers 12:9","text":"And the anger of the LORD was kindled against them; and he departed.","url":"https://rhemabibles.com/bible/numbers/12/#v9","inLanguage":"en","citation":"Numbers 12:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Numbers 12:10","text":"And the cloud departed from off the tabernacle; and, behold, Miriam became leprous, white as snow: and Aaron looked upon Miriam, and, behold, she was leprous.","url":"https://rhemabibles.com/bible/numbers/12/#v10","inLanguage":"en","citation":"Numbers 12:10 (KJV)"},{"@type":"Quotation","position":11,"name":"Numbers 12:11","text":"And Aaron said unto Moses, Alas, my lord, I beseech thee, lay not the sin upon us, wherein we have done foolishly, and wherein we have sinned.","url":"https://rhemabibles.com/bible/numbers/12/#v11","inLanguage":"en","citation":"Numbers 12:11 (KJV)"},{"@type":"Quotation","position":12,"name":"Numbers 12:12","text":"Let her not be as one dead, of whom the flesh is half consumed when he cometh out of his mother\u2019s womb.","url":"https://rhemabibles.com/bible/numbers/12/#v12","inLanguage":"en","citation":"Numbers 12:12 (KJV)"},{"@type":"Quotation","position":13,"name":"Numbers 12:13","text":"And Moses cried unto the LORD, saying, Heal her now, O God, I beseech thee.","url":"https://rhemabibles.com/bible/numbers/12/#v13","inLanguage":"en","citation":"Numbers 12:13 (KJV)"},{"@type":"Quotation","position":14,"name":"Numbers 12:14","text":"And the LORD said unto Moses, If her father had but spit in her face, should she not be ashamed seven days? let her be shut out from the camp seven days, and after that let her be received in again.","url":"https://rhemabibles.com/bible/numbers/12/#v14","inLanguage":"en","citation":"Numbers 12:14 (KJV)"},{"@type":"Quotation","position":15,"name":"Numbers 12:15","text":"And Miriam was shut out from the camp seven days: and the people journeyed not till Miriam was brought in again.","url":"https://rhemabibles.com/bible/numbers/12/#v15","inLanguage":"en","citation":"Numbers 12:15 (KJV)"},{"@type":"Quotation","position":16,"name":"Numbers 12:16","text":"And afterward the people removed from Hazeroth, and pitched in the wilderness of Paran.","url":"https://rhemabibles.com/bible/numbers/12/#v16","inLanguage":"en","citation":"Numbers 12:16 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,22 +97,22 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>And Miriam and Aaron spake against Moses because of the Ethiopian woman whom he had married: for he had married an Ethiopian woman.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And they said, Hath the LORD indeed spoken only by Moses? hath he not spoken also by us? And the LORD heard it.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>(Now the man Moses was very meek, above all the men which were upon the face of the earth.)</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And the LORD spake suddenly unto Moses, and unto Aaron, and unto Miriam, Come out ye three unto the tabernacle of the congregation. And they three came out.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>And the LORD came down in the pillar of the cloud, and stood in the door of the tabernacle, and called Aaron and Miriam: and they both came forth.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>And he said, Hear now my words: If there be a prophet among you, I the LORD will make myself known unto him in a vision, and will speak unto him in a dream.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>My servant Moses is not so, who is faithful in all mine house.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>With him will I speak mouth to mouth, even apparently, and not in dark speeches; and the similitude of the LORD shall he behold: wherefore then were ye not afraid to speak against my servant Moses?</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And the anger of the LORD was kindled against them; and he departed.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>And the cloud departed from off the tabernacle; and, behold, Miriam became leprous, white as snow: and Aaron looked upon Miriam, and, behold, she was leprous.</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>And Aaron said unto Moses, Alas, my lord, I beseech thee, lay not the sin upon us, wherein we have done foolishly, and wherein we have sinned.</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Let her not be as one dead, of whom the flesh is half consumed when he cometh out of his mother’s womb.</span>
-      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>And Moses cried unto the LORD, saying, Heal her now, O God, I beseech thee.</span>
-      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>And the LORD said unto Moses, If her father had but spit in her face, should she not be ashamed seven days? let her be shut out from the camp seven days, and after that let her be received in again.</span>
-      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>And Miriam was shut out from the camp seven days: and the people journeyed not till Miriam was brought in again.</span>
-      <span class="verse" id="v16"><span class="verse-num"><a href="#v16" aria-label="Verse 16">16</a></span>And afterward the people removed from Hazeroth, and pitched in the wilderness of Paran.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>And Miriam and Aaron spake against Moses because of the Ethiopian woman whom he had married: for he had married an Ethiopian woman.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>And they said, Hath the LORD indeed spoken only by Moses? hath he not spoken also by us? And the LORD heard it.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>(Now the man Moses was very meek, above all the men which were upon the face of the earth.)<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>And the LORD spake suddenly unto Moses, and unto Aaron, and unto Miriam, Come out ye three unto the tabernacle of the congregation. And they three came out.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>And the LORD came down in the pillar of the cloud, and stood in the door of the tabernacle, and called Aaron and Miriam: and they both came forth.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>And he said, Hear now my words: If there be a prophet among you, I the LORD will make myself known unto him in a vision, and will speak unto him in a dream.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>My servant Moses is not so, who is faithful in all mine house.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>With him will I speak mouth to mouth, even apparently, and not in dark speeches; and the similitude of the LORD shall he behold: wherefore then were ye not afraid to speak against my servant Moses?<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>And the anger of the LORD was kindled against them; and he departed.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>And the cloud departed from off the tabernacle; and, behold, Miriam became leprous, white as snow: and Aaron looked upon Miriam, and, behold, she was leprous.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>And Aaron said unto Moses, Alas, my lord, I beseech thee, lay not the sin upon us, wherein we have done foolishly, and wherein we have sinned.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Let her not be as one dead, of whom the flesh is half consumed when he cometh out of his mother’s womb.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>And Moses cried unto the LORD, saying, Heal her now, O God, I beseech thee.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=13" rel="noopener" aria-label="Open verse 13 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>And the LORD said unto Moses, If her father had but spit in her face, should she not be ashamed seven days? let her be shut out from the camp seven days, and after that let her be received in again.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=14" rel="noopener" aria-label="Open verse 14 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>And Miriam was shut out from the camp seven days: and the people journeyed not till Miriam was brought in again.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=15" rel="noopener" aria-label="Open verse 15 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v16"><span class="verse-num"><a href="#v16" aria-label="Verse 16">16</a></span>And afterward the people removed from Hazeroth, and pitched in the wilderness of Paran.<a class="verse-open" href="https://rhemabibles.com/?book=Numbers&chapter=12&verse=16" rel="noopener" aria-label="Open verse 16 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -116,6 +123,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Numbers&chapter=12" rel="noopener">Open Numbers 12 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Numbers&chapter=12";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

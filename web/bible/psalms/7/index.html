@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":7,"name":"Psalms 7","url":"https://rhemabibles.com/bible/psalms/7/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Psalms","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/psalms/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Psalms 7:1","text":"O LORD my God, in thee do I put my trust: save me from all them that persecute me, and deliver me:","url":"https://rhemabibles.com/bible/psalms/7/#v1","inLanguage":"en","citation":"Psalms 7:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Psalms 7:2","text":"Lest he tear my soul like a lion, rending it in pieces, while there is none to deliver.","url":"https://rhemabibles.com/bible/psalms/7/#v2","inLanguage":"en","citation":"Psalms 7:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Psalms 7:3","text":"O LORD my God, if I have done this; if there be iniquity in my hands;","url":"https://rhemabibles.com/bible/psalms/7/#v3","inLanguage":"en","citation":"Psalms 7:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Psalms 7:4","text":"If I have rewarded evil unto him that was at peace with me; (yea, I have delivered him that without cause is mine enemy:)","url":"https://rhemabibles.com/bible/psalms/7/#v4","inLanguage":"en","citation":"Psalms 7:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Psalms 7:5","text":"Let the enemy persecute my soul, and take it; yea, let him tread down my life upon the earth, and lay mine honour in the dust. Selah.","url":"https://rhemabibles.com/bible/psalms/7/#v5","inLanguage":"en","citation":"Psalms 7:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Psalms 7:6","text":"Arise, O LORD, in thine anger, lift up thyself because of the rage of mine enemies: and awake for me to the judgment that thou hast commanded.","url":"https://rhemabibles.com/bible/psalms/7/#v6","inLanguage":"en","citation":"Psalms 7:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Psalms 7:7","text":"So shall the congregation of the people compass thee about: for their sakes therefore return thou on high.","url":"https://rhemabibles.com/bible/psalms/7/#v7","inLanguage":"en","citation":"Psalms 7:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Psalms 7:8","text":"The LORD shall judge the people: judge me, O LORD, according to my righteousness, and according to mine integrity that is in me.","url":"https://rhemabibles.com/bible/psalms/7/#v8","inLanguage":"en","citation":"Psalms 7:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Psalms 7:9","text":"Oh let the wickedness of the wicked come to an end; but establish the just: for the righteous God trieth the hearts and reins.","url":"https://rhemabibles.com/bible/psalms/7/#v9","inLanguage":"en","citation":"Psalms 7:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Psalms 7:10","text":"My defence is of God, which saveth the upright in heart.","url":"https://rhemabibles.com/bible/psalms/7/#v10","inLanguage":"en","citation":"Psalms 7:10 (KJV)"},{"@type":"Quotation","position":11,"name":"Psalms 7:11","text":"God judgeth the righteous, and God is angry with the wicked every day.","url":"https://rhemabibles.com/bible/psalms/7/#v11","inLanguage":"en","citation":"Psalms 7:11 (KJV)"},{"@type":"Quotation","position":12,"name":"Psalms 7:12","text":"If he turn not, he will whet his sword; he hath bent his bow, and made it ready.","url":"https://rhemabibles.com/bible/psalms/7/#v12","inLanguage":"en","citation":"Psalms 7:12 (KJV)"},{"@type":"Quotation","position":13,"name":"Psalms 7:13","text":"He hath also prepared for him the instruments of death; he ordaineth his arrows against the persecutors.","url":"https://rhemabibles.com/bible/psalms/7/#v13","inLanguage":"en","citation":"Psalms 7:13 (KJV)"},{"@type":"Quotation","position":14,"name":"Psalms 7:14","text":"Behold, he travaileth with iniquity, and hath conceived mischief, and brought forth falsehood.","url":"https://rhemabibles.com/bible/psalms/7/#v14","inLanguage":"en","citation":"Psalms 7:14 (KJV)"},{"@type":"Quotation","position":15,"name":"Psalms 7:15","text":"He made a pit, and digged it, and is fallen into the ditch which he made.","url":"https://rhemabibles.com/bible/psalms/7/#v15","inLanguage":"en","citation":"Psalms 7:15 (KJV)"},{"@type":"Quotation","position":16,"name":"Psalms 7:16","text":"His mischief shall return upon his own head, and his violent dealing shall come down upon his own pate.","url":"https://rhemabibles.com/bible/psalms/7/#v16","inLanguage":"en","citation":"Psalms 7:16 (KJV)"},{"@type":"Quotation","position":17,"name":"Psalms 7:17","text":"I will praise the LORD according to his righteousness: and will sing praise to the name of the LORD most high.","url":"https://rhemabibles.com/bible/psalms/7/#v17","inLanguage":"en","citation":"Psalms 7:17 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,23 +97,23 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>O LORD my God, in thee do I put my trust: save me from all them that persecute me, and deliver me:</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Lest he tear my soul like a lion, rending it in pieces, while there is none to deliver.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>O LORD my God, if I have done this; if there be iniquity in my hands;</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>If I have rewarded evil unto him that was at peace with me; (yea, I have delivered him that without cause is mine enemy:)</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Let the enemy persecute my soul, and take it; yea, let him tread down my life upon the earth, and lay mine honour in the dust. Selah.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Arise, O LORD, in thine anger, lift up thyself because of the rage of mine enemies: and awake for me to the judgment that thou hast commanded.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>So shall the congregation of the people compass thee about: for their sakes therefore return thou on high.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>The LORD shall judge the people: judge me, O LORD, according to my righteousness, and according to mine integrity that is in me.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>Oh let the wickedness of the wicked come to an end; but establish the just: for the righteous God trieth the hearts and reins.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>My defence is of God, which saveth the upright in heart.</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>God judgeth the righteous, and God is angry with the wicked every day.</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>If he turn not, he will whet his sword; he hath bent his bow, and made it ready.</span>
-      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>He hath also prepared for him the instruments of death; he ordaineth his arrows against the persecutors.</span>
-      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>Behold, he travaileth with iniquity, and hath conceived mischief, and brought forth falsehood.</span>
-      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>He made a pit, and digged it, and is fallen into the ditch which he made.</span>
-      <span class="verse" id="v16"><span class="verse-num"><a href="#v16" aria-label="Verse 16">16</a></span>His mischief shall return upon his own head, and his violent dealing shall come down upon his own pate.</span>
-      <span class="verse" id="v17"><span class="verse-num"><a href="#v17" aria-label="Verse 17">17</a></span>I will praise the LORD according to his righteousness: and will sing praise to the name of the LORD most high.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>O LORD my God, in thee do I put my trust: save me from all them that persecute me, and deliver me:<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Lest he tear my soul like a lion, rending it in pieces, while there is none to deliver.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>O LORD my God, if I have done this; if there be iniquity in my hands;<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>If I have rewarded evil unto him that was at peace with me; (yea, I have delivered him that without cause is mine enemy:)<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Let the enemy persecute my soul, and take it; yea, let him tread down my life upon the earth, and lay mine honour in the dust. Selah.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>Arise, O LORD, in thine anger, lift up thyself because of the rage of mine enemies: and awake for me to the judgment that thou hast commanded.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>So shall the congregation of the people compass thee about: for their sakes therefore return thou on high.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>The LORD shall judge the people: judge me, O LORD, according to my righteousness, and according to mine integrity that is in me.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>Oh let the wickedness of the wicked come to an end; but establish the just: for the righteous God trieth the hearts and reins.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>My defence is of God, which saveth the upright in heart.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>God judgeth the righteous, and God is angry with the wicked every day.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>If he turn not, he will whet his sword; he hath bent his bow, and made it ready.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>He hath also prepared for him the instruments of death; he ordaineth his arrows against the persecutors.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=13" rel="noopener" aria-label="Open verse 13 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>Behold, he travaileth with iniquity, and hath conceived mischief, and brought forth falsehood.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=14" rel="noopener" aria-label="Open verse 14 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>He made a pit, and digged it, and is fallen into the ditch which he made.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=15" rel="noopener" aria-label="Open verse 15 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v16"><span class="verse-num"><a href="#v16" aria-label="Verse 16">16</a></span>His mischief shall return upon his own head, and his violent dealing shall come down upon his own pate.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=16" rel="noopener" aria-label="Open verse 16 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v17"><span class="verse-num"><a href="#v17" aria-label="Verse 17">17</a></span>I will praise the LORD according to his righteousness: and will sing praise to the name of the LORD most high.<a class="verse-open" href="https://rhemabibles.com/?book=Psalms&chapter=7&verse=17" rel="noopener" aria-label="Open verse 17 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -117,6 +124,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Psalms&chapter=7" rel="noopener">Open Psalms 7 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Psalms&chapter=7";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":25,"name":"Job 25","url":"https://rhemabibles.com/bible/job/25/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Job","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/job/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Job 25:1","text":"Then answered Bildad the Shuhite, and said,","url":"https://rhemabibles.com/bible/job/25/#v1","inLanguage":"en","citation":"Job 25:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Job 25:2","text":"Dominion and fear are with him, he maketh peace in his high places.","url":"https://rhemabibles.com/bible/job/25/#v2","inLanguage":"en","citation":"Job 25:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Job 25:3","text":"Is there any number of his armies? and upon whom doth not his light arise?","url":"https://rhemabibles.com/bible/job/25/#v3","inLanguage":"en","citation":"Job 25:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Job 25:4","text":"How then can man be justified with God? or how can he be clean that is born of a woman?","url":"https://rhemabibles.com/bible/job/25/#v4","inLanguage":"en","citation":"Job 25:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Job 25:5","text":"Behold even to the moon, and it shineth not; yea, the stars are not pure in his sight.","url":"https://rhemabibles.com/bible/job/25/#v5","inLanguage":"en","citation":"Job 25:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Job 25:6","text":"How much less man, that is a worm? and the son of man, which is a worm?","url":"https://rhemabibles.com/bible/job/25/#v6","inLanguage":"en","citation":"Job 25:6 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,12 +97,12 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Then answered Bildad the Shuhite, and said,</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Dominion and fear are with him, he maketh peace in his high places.</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Is there any number of his armies? and upon whom doth not his light arise?</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>How then can man be justified with God? or how can he be clean that is born of a woman?</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Behold even to the moon, and it shineth not; yea, the stars are not pure in his sight.</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>How much less man, that is a worm? and the son of man, which is a worm?</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Then answered Bildad the Shuhite, and said,<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=25&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>Dominion and fear are with him, he maketh peace in his high places.<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=25&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Is there any number of his armies? and upon whom doth not his light arise?<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=25&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>How then can man be justified with God? or how can he be clean that is born of a woman?<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=25&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Behold even to the moon, and it shineth not; yea, the stars are not pure in his sight.<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=25&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>How much less man, that is a worm? and the son of man, which is a worm?<a class="verse-open" href="https://rhemabibles.com/?book=Job&chapter=25&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -106,6 +113,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Job&chapter=25" rel="noopener">Open Job 25 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Job&chapter=25";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

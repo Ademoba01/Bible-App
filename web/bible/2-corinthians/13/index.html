@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":13,"name":"2 Corinthians 13","url":"https://rhemabibles.com/bible/2-corinthians/13/","inLanguage":"en","isPartOf":{"@type":"Book","name":"2 Corinthians","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/2-corinthians/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"2 Corinthians 13:1","text":"This is the third time I am coming to you. In the mouth of two or three witnesses shall every word be established.","url":"https://rhemabibles.com/bible/2-corinthians/13/#v1","inLanguage":"en","citation":"2 Corinthians 13:1 (KJV)"},{"@type":"Quotation","position":2,"name":"2 Corinthians 13:2","text":"I told you before, and foretell you, as if I were present, the second time; and being absent now I write to them which heretofore have sinned, and to all other, that, if I come again, I will not spare:","url":"https://rhemabibles.com/bible/2-corinthians/13/#v2","inLanguage":"en","citation":"2 Corinthians 13:2 (KJV)"},{"@type":"Quotation","position":3,"name":"2 Corinthians 13:3","text":"Since ye seek a proof of Christ speaking in me, which to you-ward is not weak, but is mighty in you.","url":"https://rhemabibles.com/bible/2-corinthians/13/#v3","inLanguage":"en","citation":"2 Corinthians 13:3 (KJV)"},{"@type":"Quotation","position":4,"name":"2 Corinthians 13:4","text":"For though he was crucified through weakness, yet he liveth by the power of God. For we also are weak in him, but we shall live with him by the power of God toward you.","url":"https://rhemabibles.com/bible/2-corinthians/13/#v4","inLanguage":"en","citation":"2 Corinthians 13:4 (KJV)"},{"@type":"Quotation","position":5,"name":"2 Corinthians 13:5","text":"Examine yourselves, whether ye be in the faith; prove your own selves. Know ye not your own selves, how that Jesus Christ is in you, except ye be reprobates?","url":"https://rhemabibles.com/bible/2-corinthians/13/#v5","inLanguage":"en","citation":"2 Corinthians 13:5 (KJV)"},{"@type":"Quotation","position":6,"name":"2 Corinthians 13:6","text":"But I trust that ye shall know that we are not reprobates.","url":"https://rhemabibles.com/bible/2-corinthians/13/#v6","inLanguage":"en","citation":"2 Corinthians 13:6 (KJV)"},{"@type":"Quotation","position":7,"name":"2 Corinthians 13:7","text":"Now I pray to God that ye do no evil; not that we should appear approved, but that ye should do that which is honest, though we be as reprobates.","url":"https://rhemabibles.com/bible/2-corinthians/13/#v7","inLanguage":"en","citation":"2 Corinthians 13:7 (KJV)"},{"@type":"Quotation","position":8,"name":"2 Corinthians 13:8","text":"For we can do nothing against the truth, but for the truth.","url":"https://rhemabibles.com/bible/2-corinthians/13/#v8","inLanguage":"en","citation":"2 Corinthians 13:8 (KJV)"},{"@type":"Quotation","position":9,"name":"2 Corinthians 13:9","text":"For we are glad, when we are weak, and ye are strong: and this also we wish, even your perfection.","url":"https://rhemabibles.com/bible/2-corinthians/13/#v9","inLanguage":"en","citation":"2 Corinthians 13:9 (KJV)"},{"@type":"Quotation","position":10,"name":"2 Corinthians 13:10","text":"Therefore I write these things being absent, lest being present I should use sharpness, according to the power which the Lord hath given me to edification, and not to destruction.","url":"https://rhemabibles.com/bible/2-corinthians/13/#v10","inLanguage":"en","citation":"2 Corinthians 13:10 (KJV)"},{"@type":"Quotation","position":11,"name":"2 Corinthians 13:11","text":"Finally, brethren, farewell. Be perfect, be of good comfort, be of one mind, live in peace; and the God of love and peace shall be with you.","url":"https://rhemabibles.com/bible/2-corinthians/13/#v11","inLanguage":"en","citation":"2 Corinthians 13:11 (KJV)"},{"@type":"Quotation","position":12,"name":"2 Corinthians 13:12","text":"Greet one another with an holy kiss.","url":"https://rhemabibles.com/bible/2-corinthians/13/#v12","inLanguage":"en","citation":"2 Corinthians 13:12 (KJV)"},{"@type":"Quotation","position":13,"name":"2 Corinthians 13:13","text":"All the saints salute you.","url":"https://rhemabibles.com/bible/2-corinthians/13/#v13","inLanguage":"en","citation":"2 Corinthians 13:13 (KJV)"},{"@type":"Quotation","position":14,"name":"2 Corinthians 13:14","text":"The grace of the Lord Jesus Christ, and the love of God, and the communion of the Holy Ghost, be with you all. Amen.","url":"https://rhemabibles.com/bible/2-corinthians/13/#v14","inLanguage":"en","citation":"2 Corinthians 13:14 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,20 +97,20 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>This is the third time I am coming to you. In the mouth of two or three witnesses shall every word be established.</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>I told you before, and foretell you, as if I were present, the second time; and being absent now I write to them which heretofore have sinned, and to all other, that, if I come again, I will not spare:</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Since ye seek a proof of Christ speaking in me, which to you-ward is not weak, but is mighty in you.</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>For though he was crucified through weakness, yet he liveth by the power of God. For we also are weak in him, but we shall live with him by the power of God toward you.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Examine yourselves, whether ye be in the faith; prove your own selves. Know ye not your own selves, how that Jesus Christ is in you, except ye be reprobates?</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>But I trust that ye shall know that we are not reprobates.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Now I pray to God that ye do no evil; not that we should appear approved, but that ye should do that which is honest, though we be as reprobates.</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>For we can do nothing against the truth, but for the truth.</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>For we are glad, when we are weak, and ye are strong: and this also we wish, even your perfection.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>Therefore I write these things being absent, lest being present I should use sharpness, according to the power which the Lord hath given me to edification, and not to destruction.</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Finally, brethren, farewell. Be perfect, be of good comfort, be of one mind, live in peace; and the God of love and peace shall be with you.</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Greet one another with an holy kiss.</span>
-      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>All the saints salute you.</span>
-      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>The grace of the Lord Jesus Christ, and the love of God, and the communion of the Holy Ghost, be with you all. Amen.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>This is the third time I am coming to you. In the mouth of two or three witnesses shall every word be established.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>I told you before, and foretell you, as if I were present, the second time; and being absent now I write to them which heretofore have sinned, and to all other, that, if I come again, I will not spare:<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>Since ye seek a proof of Christ speaking in me, which to you-ward is not weak, but is mighty in you.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>For though he was crucified through weakness, yet he liveth by the power of God. For we also are weak in him, but we shall live with him by the power of God toward you.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>Examine yourselves, whether ye be in the faith; prove your own selves. Know ye not your own selves, how that Jesus Christ is in you, except ye be reprobates?<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>But I trust that ye shall know that we are not reprobates.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>Now I pray to God that ye do no evil; not that we should appear approved, but that ye should do that which is honest, though we be as reprobates.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>For we can do nothing against the truth, but for the truth.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>For we are glad, when we are weak, and ye are strong: and this also we wish, even your perfection.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>Therefore I write these things being absent, lest being present I should use sharpness, according to the power which the Lord hath given me to edification, and not to destruction.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Finally, brethren, farewell. Be perfect, be of good comfort, be of one mind, live in peace; and the God of love and peace shall be with you.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>Greet one another with an holy kiss.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>All the saints salute you.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=13" rel="noopener" aria-label="Open verse 13 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>The grace of the Lord Jesus Christ, and the love of God, and the communion of the Holy Ghost, be with you all. Amen.<a class="verse-open" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13&verse=14" rel="noopener" aria-label="Open verse 14 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -114,6 +121,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=2%20Corinthians&chapter=13" rel="noopener">Open 2 Corinthians 13 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=2%20Corinthians&chapter=13";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>

@@ -25,10 +25,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Chapter","position":1,"name":"Titus 1","url":"https://rhemabibles.com/bible/titus/1/","inLanguage":"en","isPartOf":{"@type":"Book","name":"Titus","bookEdition":"King James Version","url":"https://rhemabibles.com/bible/titus/"},"publisher":{"@type":"Organization","name":"Rhema Study Bible"},"hasPart":[{"@type":"Quotation","position":1,"name":"Titus 1:1","text":"Paul, a servant of God, and an apostle of Jesus Christ, according to the faith of God\u2019s elect, and the acknowledging of the truth which is after godliness;","url":"https://rhemabibles.com/bible/titus/1/#v1","inLanguage":"en","citation":"Titus 1:1 (KJV)"},{"@type":"Quotation","position":2,"name":"Titus 1:2","text":"In hope of eternal life, which God, that cannot lie, promised before the world began;","url":"https://rhemabibles.com/bible/titus/1/#v2","inLanguage":"en","citation":"Titus 1:2 (KJV)"},{"@type":"Quotation","position":3,"name":"Titus 1:3","text":"But hath in due times manifested his word through preaching, which is committed unto me according to the commandment of God our Saviour;","url":"https://rhemabibles.com/bible/titus/1/#v3","inLanguage":"en","citation":"Titus 1:3 (KJV)"},{"@type":"Quotation","position":4,"name":"Titus 1:4","text":"To Titus, mine own son after the common faith: Grace, mercy, and peace, from God the Father and the Lord Jesus Christ our Saviour.","url":"https://rhemabibles.com/bible/titus/1/#v4","inLanguage":"en","citation":"Titus 1:4 (KJV)"},{"@type":"Quotation","position":5,"name":"Titus 1:5","text":"For this cause left I thee in Crete, that thou shouldest set in order the things that are wanting, and ordain elders in every city, as I had appointed thee:","url":"https://rhemabibles.com/bible/titus/1/#v5","inLanguage":"en","citation":"Titus 1:5 (KJV)"},{"@type":"Quotation","position":6,"name":"Titus 1:6","text":"If any be blameless, the husband of one wife, having faithful children not accused of riot or unruly.","url":"https://rhemabibles.com/bible/titus/1/#v6","inLanguage":"en","citation":"Titus 1:6 (KJV)"},{"@type":"Quotation","position":7,"name":"Titus 1:7","text":"For a bishop must be blameless, as the steward of God; not selfwilled, not soon angry, not given to wine, no striker, not given to filthy lucre;","url":"https://rhemabibles.com/bible/titus/1/#v7","inLanguage":"en","citation":"Titus 1:7 (KJV)"},{"@type":"Quotation","position":8,"name":"Titus 1:8","text":"But a lover of hospitality, a lover of good men, sober, just, holy, temperate;","url":"https://rhemabibles.com/bible/titus/1/#v8","inLanguage":"en","citation":"Titus 1:8 (KJV)"},{"@type":"Quotation","position":9,"name":"Titus 1:9","text":"Holding fast the faithful word as he hath been taught, that he may be able by sound doctrine both to exhort and to convince the gainsayers.","url":"https://rhemabibles.com/bible/titus/1/#v9","inLanguage":"en","citation":"Titus 1:9 (KJV)"},{"@type":"Quotation","position":10,"name":"Titus 1:10","text":"For there are many unruly and vain talkers and deceivers, specially they of the circumcision:","url":"https://rhemabibles.com/bible/titus/1/#v10","inLanguage":"en","citation":"Titus 1:10 (KJV)"},{"@type":"Quotation","position":11,"name":"Titus 1:11","text":"Whose mouths must be stopped, who subvert whole houses, teaching things which they ought not, for filthy lucre\u2019s sake.","url":"https://rhemabibles.com/bible/titus/1/#v11","inLanguage":"en","citation":"Titus 1:11 (KJV)"},{"@type":"Quotation","position":12,"name":"Titus 1:12","text":"One of themselves, even a prophet of their own, said, The Cretians are alway liars, evil beasts, slow bellies.","url":"https://rhemabibles.com/bible/titus/1/#v12","inLanguage":"en","citation":"Titus 1:12 (KJV)"},{"@type":"Quotation","position":13,"name":"Titus 1:13","text":"This witness is true. Wherefore rebuke them sharply, that they may be sound in the faith;","url":"https://rhemabibles.com/bible/titus/1/#v13","inLanguage":"en","citation":"Titus 1:13 (KJV)"},{"@type":"Quotation","position":14,"name":"Titus 1:14","text":"Not giving heed to Jewish fables, and commandments of men, that turn from the truth.","url":"https://rhemabibles.com/bible/titus/1/#v14","inLanguage":"en","citation":"Titus 1:14 (KJV)"},{"@type":"Quotation","position":15,"name":"Titus 1:15","text":"Unto the pure all things are pure: but unto them that are defiled and unbelieving is nothing pure; but even their mind and conscience is defiled.","url":"https://rhemabibles.com/bible/titus/1/#v15","inLanguage":"en","citation":"Titus 1:15 (KJV)"},{"@type":"Quotation","position":16,"name":"Titus 1:16","text":"They profess that they know God; but in works they deny him, being abominable, and disobedient, and unto every good work reprobate.","url":"https://rhemabibles.com/bible/titus/1/#v16","inLanguage":"en","citation":"Titus 1:16 (KJV)"}]}</script>
 <style>
 :root {
+  /* Palette warmed Oct 2026 to match the app's refreshed theme —
+     surfaces shift a few degrees warmer so the SEO chapter pages
+     feel like the same product as the Flutter app, not a utility
+     fallback. */
   --gold: #D4A843;
   --gold-deep: #A07B28;
-  --parchment: #FDF6EC;
-  --cream: #FFF8E1;
+  --parchment: #FBF2DF;
+  --cream: #FFF4D6;
   --brown: #5D4037;
   --brown-deep: #4A2C1F;
   --brown-mid: #8D6E63;
@@ -54,6 +58,9 @@ h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin:
 .verse-num { color: var(--gold-deep); font-weight: 700; font-size: 0.85em; vertical-align: super; margin-right: 6px; font-family: 'Lora', Georgia, serif; }
 .verse-num a { color: inherit; text-decoration: none; }
 .verse-num a:hover { color: var(--brown-deep); }
+.verse-open { display: inline-block; margin-left: 6px; padding: 0 6px; color: var(--gold-deep); text-decoration: none; font-size: 0.8em; font-weight: 700; opacity: 0; transition: opacity 0.15s; vertical-align: super; }
+.verse:hover .verse-open, .verse:target .verse-open { opacity: 1; }
+.verse-open:hover { color: var(--brown-deep); }
 .chapter-text { font-size: 17px; line-height: 1.75; letter-spacing: -0.1px; }
 .chapter-text .verse:target { background: rgba(212,168,67,0.25); border-radius: 4px; padding-left: 6px; padding-right: 6px; margin-left: -6px; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0 32px; }
@@ -90,22 +97,22 @@ footer a { color: var(--brown-mid); }
   </div>
 
   <article class="chapter-text">
-      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Paul, a servant of God, and an apostle of Jesus Christ, according to the faith of God’s elect, and the acknowledging of the truth which is after godliness;</span>
-      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>In hope of eternal life, which God, that cannot lie, promised before the world began;</span>
-      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>But hath in due times manifested his word through preaching, which is committed unto me according to the commandment of God our Saviour;</span>
-      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>To Titus, mine own son after the common faith: Grace, mercy, and peace, from God the Father and the Lord Jesus Christ our Saviour.</span>
-      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>For this cause left I thee in Crete, that thou shouldest set in order the things that are wanting, and ordain elders in every city, as I had appointed thee:</span>
-      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>If any be blameless, the husband of one wife, having faithful children not accused of riot or unruly.</span>
-      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>For a bishop must be blameless, as the steward of God; not selfwilled, not soon angry, not given to wine, no striker, not given to filthy lucre;</span>
-      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>But a lover of hospitality, a lover of good men, sober, just, holy, temperate;</span>
-      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>Holding fast the faithful word as he hath been taught, that he may be able by sound doctrine both to exhort and to convince the gainsayers.</span>
-      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>For there are many unruly and vain talkers and deceivers, specially they of the circumcision:</span>
-      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Whose mouths must be stopped, who subvert whole houses, teaching things which they ought not, for filthy lucre’s sake.</span>
-      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>One of themselves, even a prophet of their own, said, The Cretians are alway liars, evil beasts, slow bellies.</span>
-      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>This witness is true. Wherefore rebuke them sharply, that they may be sound in the faith;</span>
-      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>Not giving heed to Jewish fables, and commandments of men, that turn from the truth.</span>
-      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>Unto the pure all things are pure: but unto them that are defiled and unbelieving is nothing pure; but even their mind and conscience is defiled.</span>
-      <span class="verse" id="v16"><span class="verse-num"><a href="#v16" aria-label="Verse 16">16</a></span>They profess that they know God; but in works they deny him, being abominable, and disobedient, and unto every good work reprobate.</span>
+      <span class="verse" id="v1"><span class="verse-num"><a href="#v1" aria-label="Verse 1">1</a></span>Paul, a servant of God, and an apostle of Jesus Christ, according to the faith of God’s elect, and the acknowledging of the truth which is after godliness;<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=1" rel="noopener" aria-label="Open verse 1 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v2"><span class="verse-num"><a href="#v2" aria-label="Verse 2">2</a></span>In hope of eternal life, which God, that cannot lie, promised before the world began;<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=2" rel="noopener" aria-label="Open verse 2 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v3"><span class="verse-num"><a href="#v3" aria-label="Verse 3">3</a></span>But hath in due times manifested his word through preaching, which is committed unto me according to the commandment of God our Saviour;<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=3" rel="noopener" aria-label="Open verse 3 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v4"><span class="verse-num"><a href="#v4" aria-label="Verse 4">4</a></span>To Titus, mine own son after the common faith: Grace, mercy, and peace, from God the Father and the Lord Jesus Christ our Saviour.<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=4" rel="noopener" aria-label="Open verse 4 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v5"><span class="verse-num"><a href="#v5" aria-label="Verse 5">5</a></span>For this cause left I thee in Crete, that thou shouldest set in order the things that are wanting, and ordain elders in every city, as I had appointed thee:<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=5" rel="noopener" aria-label="Open verse 5 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v6"><span class="verse-num"><a href="#v6" aria-label="Verse 6">6</a></span>If any be blameless, the husband of one wife, having faithful children not accused of riot or unruly.<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=6" rel="noopener" aria-label="Open verse 6 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v7"><span class="verse-num"><a href="#v7" aria-label="Verse 7">7</a></span>For a bishop must be blameless, as the steward of God; not selfwilled, not soon angry, not given to wine, no striker, not given to filthy lucre;<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=7" rel="noopener" aria-label="Open verse 7 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v8"><span class="verse-num"><a href="#v8" aria-label="Verse 8">8</a></span>But a lover of hospitality, a lover of good men, sober, just, holy, temperate;<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=8" rel="noopener" aria-label="Open verse 8 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v9"><span class="verse-num"><a href="#v9" aria-label="Verse 9">9</a></span>Holding fast the faithful word as he hath been taught, that he may be able by sound doctrine both to exhort and to convince the gainsayers.<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=9" rel="noopener" aria-label="Open verse 9 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v10"><span class="verse-num"><a href="#v10" aria-label="Verse 10">10</a></span>For there are many unruly and vain talkers and deceivers, specially they of the circumcision:<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=10" rel="noopener" aria-label="Open verse 10 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v11"><span class="verse-num"><a href="#v11" aria-label="Verse 11">11</a></span>Whose mouths must be stopped, who subvert whole houses, teaching things which they ought not, for filthy lucre’s sake.<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=11" rel="noopener" aria-label="Open verse 11 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v12"><span class="verse-num"><a href="#v12" aria-label="Verse 12">12</a></span>One of themselves, even a prophet of their own, said, The Cretians are alway liars, evil beasts, slow bellies.<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=12" rel="noopener" aria-label="Open verse 12 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v13"><span class="verse-num"><a href="#v13" aria-label="Verse 13">13</a></span>This witness is true. Wherefore rebuke them sharply, that they may be sound in the faith;<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=13" rel="noopener" aria-label="Open verse 13 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v14"><span class="verse-num"><a href="#v14" aria-label="Verse 14">14</a></span>Not giving heed to Jewish fables, and commandments of men, that turn from the truth.<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=14" rel="noopener" aria-label="Open verse 14 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v15"><span class="verse-num"><a href="#v15" aria-label="Verse 15">15</a></span>Unto the pure all things are pure: but unto them that are defiled and unbelieving is nothing pure; but even their mind and conscience is defiled.<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=15" rel="noopener" aria-label="Open verse 15 in the Rhema app" title="Open in app">↗</a></span>
+      <span class="verse" id="v16"><span class="verse-num"><a href="#v16" aria-label="Verse 16">16</a></span>They profess that they know God; but in works they deny him, being abominable, and disobedient, and unto every good work reprobate.<a class="verse-open" href="https://rhemabibles.com/?book=Titus&chapter=1&verse=16" rel="noopener" aria-label="Open verse 16 in the Rhema app" title="Open in app">↗</a></span>
   </article>
 
   <div class="chapter-nav">
@@ -116,6 +123,26 @@ footer a { color: var(--brown-mid); }
 
   <a class="open-app" href="https://rhemabibles.com/?book=Titus&chapter=1" rel="noopener">Open Titus 1 in the app →</a>
 </main>
+<script>
+/* Keep the chapter-level "Open in app" buttons in sync with whichever
+   verse the reader is actually looking at. If the URL has #v23 or
+   they clicked a verse anchor, both big "Open" buttons rewrite their
+   href to include &verse=23 so the Flutter app lands exactly there
+   with highlight + auto-scroll. */
+(function() {
+  var baseUrl = "https://rhemabibles.com/?book=Titus&chapter=1";
+  function syncOpenAppLinks() {
+    var hash = window.location.hash;
+    var m = hash.match(/^#v(\d+)$/);
+    var target = m ? baseUrl + "&verse=" + m[1] : baseUrl;
+    document.querySelectorAll('a.open-app').forEach(function(a) {
+      a.href = target;
+    });
+  }
+  window.addEventListener('hashchange', syncOpenAppLinks);
+  syncOpenAppLinks();
+})();
+</script>
 <footer>
   <p>The Holy Bible, King James Version — Public Domain.<br>
   Curated by <a href="https://rhemabibles.com">Rhema Study Bible</a>. <a href="/privacy.html">Privacy</a>.</p>
