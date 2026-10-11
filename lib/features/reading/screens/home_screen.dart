@@ -12,6 +12,7 @@ import '../../../data/translations.dart';
 import '../../../services/auth_service.dart';
 import '../../../state/providers.dart';
 import '../../../theme.dart';
+import '../../../widgets/home_ornaments.dart';
 import '../../../data/book_descriptions.dart';
 import '../../auth/auth_screen.dart';
 import '../../bookmarks/bookmarks_screen.dart';
@@ -1632,7 +1633,14 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 12),
+                    // Illuminated-manuscript divider between verse body
+                    // and reference — hairline + gilt diamond + two
+                    // outer seeds. Replaces the previous bare SizedBox.
+                    // Reads as "page from a Bible" rather than "flat
+                    // yellow block."
+                    const SizedBox(height: 14),
+                    const ManuscriptDivider(maxWidth: 200),
+                    const SizedBox(height: 10),
                     // Reference + find similar
                     Row(
                       children: [
@@ -2035,19 +2043,27 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                         ? "Welcome back to $brand — we missed you"
                         : 'Welcome back, friend — let\'s pick up where we left off';
 
+    // Pick the celestial ornament for right-now. The hero ornament
+    // is painted into the top-right corner of the welcome card as a
+    // soft gilt motif — rising sun before 7am, full sun through the
+    // workday, setting sun at dusk, crescent moon after 8pm. User
+    // feedback 2026-10-10: "can we not honestly build a better
+    // graphic interface" — this starts porting the brand's parchment
+    // + gilt lineart aesthetic (previously only on Codex) to Home.
+    final phase = celestialPhaseForHour(DateTime.now().hour);
+
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 16, 12, 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
           // Warmed: starts honey, drifts through soft peach into the
-          // card surface. User feedback said the previous near-flat
-          // cream header felt lifeless; this gives the welcome a
-          // sunrise feel without stealing attention from the content.
+          // card surface — a sunrise feel without stealing attention
+          // from the content.
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            BrandColors.gold.withValues(alpha: 0.28),
+            BrandColors.gold.withValues(alpha: 0.32),
             const Color(0xFFFFDFB5).withValues(alpha: 0.55),
             theme.colorScheme.surface,
           ],
@@ -2056,16 +2072,35 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
         border: Border.all(
           color: BrandColors.gold.withValues(alpha: 0.30),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: BrandColors.goldDeep.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Stack(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${_greeting()} ✦',
+          // Celestial ornament — top-right, subtly overlapping the gold
+          // gradient so the sun rises out of the honey tone naturally.
+          Positioned(
+            top: -6,
+            right: -4,
+            child: Opacity(
+              opacity: 0.85,
+              child: HomeHeroOrnament(phase: phase, size: 68),
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_greeting()} ✦',
                   style: GoogleFonts.lora(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -2138,6 +2173,8 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
               FadeSlideRoute(page: const SettingsScreen()),
             ),
           ),
+        ],
+      ),
         ],
       ),
     );
