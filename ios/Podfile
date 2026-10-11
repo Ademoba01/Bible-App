@@ -39,9 +39,13 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
-      # Enforce minimum iOS 13.0 to silence Xcode warnings
-      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 13.0
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      # Enforce minimum iOS 15.0 to match the Runner target and
+      # satisfy Xcode 26.6+, which dropped support for anything
+      # below 15.0 (previous floor of 13.0 broke device builds with
+      # "deployment target 13.0 is outside supported range 15.0 to
+      # 27.0.x" on Oct 2026).
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
       end
       # Disable codesigning for Pod frameworks on simulator builds. The
       # simulator has no code-signing requirement, and disabling it side-
