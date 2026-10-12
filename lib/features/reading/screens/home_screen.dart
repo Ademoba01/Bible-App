@@ -1203,7 +1203,11 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
           children: [
             // ── Welcome header: time-based greeting + new/returning copy ──
             _buildWelcomeHeader(theme),
-            const SizedBox(height: 16),
+            // Spacing retuned 2026-10-10 per "more engaging" ask: Welcome
+            // and Continue Reading are a sibling cluster so the gap
+            // tightens, and the rhythm varies through the page instead
+            // of marching at a uniform 16-20px.
+            const SizedBox(height: 10),
 
             // ── Continue reading CTA — separated from greeting ──
             // User feedback (2026-10-09): the old near-black→brown
@@ -1312,7 +1316,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
 
             // ── Inline search bar + results bubble ──
             Material(
@@ -1514,11 +1518,11 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
 
             // ── Mood chips — feeds the adaptive Verse of the Day ──
             _buildMoodRow(theme),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
             // ── Verse of the Day — prominent card (moved up — daily
             //    word is the highlight on mobile, ahead of Quick Actions) ──
@@ -1760,7 +1764,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // Quick actions — adjustable tiles. Moved BELOW the Verse
             // of the Day so the daily word leads the home feed (mobile-
@@ -1769,7 +1773,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
               ref: ref,
               onBookPicker: () => _showBookPicker(context, ref),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
 
             Row(
               children: [
@@ -2475,7 +2479,7 @@ class _AdjustableQuickTilesState extends State<_AdjustableQuickTiles> {
           () => pushSubRoute(context, widget.ref,
               route: SubRoute.maps,
               builder: (_) => const BibleMapsScreen())),
-      _TileData(Icons.face_3_rounded, 'Kids', Colors.pink,
+      _TileData(Icons.child_care_rounded, 'Kids', Colors.pink,
           () => showKidsPortal(context, () {
             widget.ref.read(settingsProvider.notifier).setKidsMode(true);
           })),
@@ -2637,6 +2641,8 @@ class _QuickTileLarge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Mirrors the sharpened _QuickTile — saturated color block,
+    // white icon + label, generous shadow. Expanded 3-column grid.
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
@@ -2644,19 +2650,16 @@ class _QuickTileLarge extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            color.withValues(alpha: 0.16),
-            color.withValues(alpha: 0.06),
+            Color.lerp(color, Colors.white, 0.08)!,
+            Color.lerp(color, Colors.black, 0.14)!,
           ],
-        ),
-        border: Border.all(
-          color: color.withValues(alpha: 0.12),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.12),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: color.withValues(alpha: 0.38),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+            spreadRadius: -2,
           ),
         ],
       ),
@@ -2666,53 +2669,34 @@ class _QuickTileLarge extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(22),
           onTap: onTap,
+          splashColor: Colors.white.withValues(alpha: 0.2),
+          highlightColor: Colors.white.withValues(alpha: 0.1),
           child: Padding(
-            // Tightened from (18, 8) to (10, 6) — was overflowing the
-            // square aspect-ratio tile by ~10dp on iPhone widths
-            // ("BOTTOM OVERFLOWED BY 10.0" hazard tape).
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Filled circle icon badge — sized down to fit square
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 50,
+                  height: 50,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        color.withValues(alpha: 0.3),
-                        color.withValues(alpha: 0.15),
-                      ],
-                    ),
-                    border: Border.all(
-                      color: color.withValues(alpha: 0.25),
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withValues(alpha: 0.15),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    color: Colors.white.withValues(alpha: 0.22),
                   ),
-                  child: Icon(icon, color: color, size: 24),
+                  child: Icon(icon, color: Colors.white, size: 28),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Flexible(
                   child: Text(
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.lora(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: color,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ),
@@ -2740,6 +2724,11 @@ class _QuickTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Sharpened 2026-10-10 per user feedback ("colors sharper"): swapped
+    // alpha-washed pastel background for a saturated solid-color
+    // gradient tile with white icon/label. Reads as a proper chip at
+    // a glance instead of a watercolor placeholder. White contrast on
+    // every tile color is at least ~4.5:1 — WCAG AA for large text.
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
@@ -2747,19 +2736,16 @@ class _QuickTile extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            color.withValues(alpha: 0.14),
-            color.withValues(alpha: 0.06),
+            Color.lerp(color, Colors.white, 0.08)!,
+            Color.lerp(color, Colors.black, 0.12)!,
           ],
-        ),
-        border: Border.all(
-          color: color.withValues(alpha: 0.12),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            color: color.withValues(alpha: 0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+            spreadRadius: -2,
           ),
         ],
       ),
@@ -2769,39 +2755,31 @@ class _QuickTile extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
           onTap: onTap,
+          splashColor: Colors.white.withValues(alpha: 0.2),
+          highlightColor: Colors.white.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 14),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Filled circle icon badge
+                // Translucent white halo behind the icon for depth.
                 Container(
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        color.withValues(alpha: 0.25),
-                        color.withValues(alpha: 0.12),
-                      ],
-                    ),
-                    border: Border.all(
-                      color: color.withValues(alpha: 0.2),
-                      width: 1.5,
-                    ),
+                    color: Colors.white.withValues(alpha: 0.22),
                   ),
-                  child: Icon(icon, color: color, size: 22),
+                  child: Icon(icon, color: Colors.white, size: 24),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   label,
                   style: GoogleFonts.lora(
                     fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: color,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: 0.2,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 1,

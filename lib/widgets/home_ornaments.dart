@@ -71,7 +71,7 @@ class _HeroOrnamentPainter extends CustomPainter {
         _drawSettingSun(canvas, c, r);
         break;
       case CelestialPhase.night:
-        _drawCrescentMoon(canvas, c, r);
+        _drawNightSky(canvas, c, r);
         break;
     }
   }
@@ -176,20 +176,49 @@ class _HeroOrnamentPainter extends CustomPainter {
     }
   }
 
-  void _drawCrescentMoon(Canvas canvas, Offset c, double r) {
-    // Draw the lit crescent as the difference of two circles.
-    final moonPath = Path()
-      ..addOval(Rect.fromCircle(center: c, radius: r * 0.55));
-    final shadowPath = Path()
-      ..addOval(Rect.fromCircle(
-          center: Offset(c.dx + r * 0.2, c.dy), radius: r * 0.52));
-    final crescent =
-        Path.combine(PathOperation.difference, moonPath, shadowPath);
-    canvas.drawPath(crescent, _giltFill(alpha: 0.6));
-    canvas.drawPath(crescent, _gilt(stroke: 1.2));
-    // A pair of small stars scattered to the upper-right.
-    _drawStar(canvas, Offset(c.dx + r * 0.75, c.dy - r * 0.55), r * 0.08);
-    _drawStar(canvas, Offset(c.dx + r * 0.55, c.dy - r * 0.9), r * 0.06);
+  void _drawNightSky(Canvas canvas, Offset c, double r) {
+    // Changed from a crescent moon (2026-10-10 user feedback: reads
+    // as Islamic iconography — wrong brand signal on a Christian Bible
+    // app) to a scattered starfield. Non-sectarian, poetic, and nods
+    // to Psalm 147:4 — "He telleth the number of the stars; He
+    // calleth them all by their names."
+    //
+    // Positions chosen by hand to feel like a natural evening sky
+    // rather than a grid: one dominant 8-pointed star of Bethlehem
+    // slightly left of center, with 6 smaller 4-point stars
+    // scattered around it at varying sizes to give depth.
+    _drawRadiantStar(
+      canvas,
+      Offset(c.dx - r * 0.12, c.dy + r * 0.05),
+      r * 0.36,
+    );
+    _drawStar(canvas, Offset(c.dx + r * 0.55, c.dy - r * 0.65), r * 0.11);
+    _drawStar(canvas, Offset(c.dx + r * 0.75, c.dy + r * 0.15), r * 0.08);
+    _drawStar(canvas, Offset(c.dx - r * 0.70, c.dy - r * 0.55), r * 0.09);
+    _drawStar(canvas, Offset(c.dx + r * 0.25, c.dy + r * 0.75), r * 0.07);
+    _drawStar(canvas, Offset(c.dx - r * 0.55, c.dy + r * 0.60), r * 0.08);
+    _drawStar(canvas, Offset(c.dx + r * 0.10, c.dy - r * 0.90), r * 0.06);
+  }
+
+  /// Larger, more decorative 8-pointed star (long + short arms
+  /// alternating) with a filled center. Visually distinct from the
+  /// small 4-pointed scatter stars so one star in the field reads as
+  /// the dominant "Star of Bethlehem" anchor.
+  void _drawRadiantStar(Canvas canvas, Offset c, double outer) {
+    final inner = outer * 0.38;
+    final path = Path();
+    for (int i = 0; i < 8; i++) {
+      final angle = -math.pi / 2 + i * math.pi / 4;
+      final from = c;
+      final tip = Offset(
+        c.dx + math.cos(angle) * (i.isEven ? outer : outer * 0.55),
+        c.dy + math.sin(angle) * (i.isEven ? outer : outer * 0.55),
+      );
+      path.moveTo(from.dx, from.dy);
+      path.lineTo(tip.dx, tip.dy);
+    }
+    canvas.drawPath(path, _gilt(stroke: 1.1));
+    canvas.drawCircle(c, inner * 0.4, _giltFill(alpha: 0.75));
   }
 
   void _drawStar(Canvas canvas, Offset c, double size) {
