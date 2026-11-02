@@ -662,6 +662,21 @@ final highlightVerseProvider = StateProvider<int?>((ref) => null);
 /// search results in the Flutter app.
 final pendingSearchQueryProvider = StateProvider<String?>((ref) => null);
 
+/// Last state of the in-reader search sheet (Read tab → AppBar magnifier
+/// → bottom-sheet search). User feedback 2026-11-02: "i can't go back
+/// to my search criteria. everything disappears." Fix: when the user
+/// taps a search result, we save the query + results here; next time
+/// they open the sheet, we hydrate from this provider so the search is
+/// still there and they can tap a different result without re-typing.
+class LastReadingSearch {
+  final String query;
+  final List<({VerseRef ref, String text})> results;
+  const LastReadingSearch({required this.query, required this.results});
+}
+
+final lastReadingSearchProvider =
+    StateProvider<LastReadingSearch?>((ref) => null);
+
 /// Preserved Similar-Verses context. When the user taps "Read full
 /// chapter" from a similar-verses result, the source verse is saved
 /// here so the floating "Back to Similar Verses" chip on the Read

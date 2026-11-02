@@ -12,7 +12,6 @@ import '../../../data/translations.dart';
 import '../../../services/auth_service.dart';
 import '../../../state/providers.dart';
 import '../../../theme.dart';
-import '../../../widgets/home_ornaments.dart';
 import '../../../data/book_descriptions.dart';
 import '../../auth/auth_screen.dart';
 import '../../bookmarks/bookmarks_screen.dart';
@@ -1251,67 +1250,100 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
               child: Material(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () => ref.read(tabIndexProvider.notifier).set(1),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: BrandColors.gold.withValues(alpha: 0.2),
-                          ),
-                          child: Icon(Icons.play_arrow_rounded, size: 24, color: BrandColors.gold),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Top row — tappable "resume reading" area with
+                      // play icon + current chapter + translation chip.
+                      // Kept as InkWell so the whole band still accepts
+                      // a tap to open the current chapter.
+                      InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () =>
+                            ref.read(tabIndexProvider.notifier).set(1),
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
                             children: [
-                              Text(
-                                'Continue Reading',
-                                style: GoogleFonts.lora(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white.withValues(alpha: 0.7),
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: BrandColors.gold
+                                      .withValues(alpha: 0.2),
+                                ),
+                                child: Icon(Icons.play_arrow_rounded,
+                                    size: 24, color: BrandColors.gold),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Continue Reading',
+                                      style: GoogleFonts.lora(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white
+                                            .withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${loc.book} ${loc.chapter}',
+                                      style: GoogleFonts.lora(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${loc.book} ${loc.chapter}',
-                                style: GoogleFonts.lora(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                              GestureDetector(
+                                onTap: _showTranslationPicker,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white
+                                        .withValues(alpha: 0.12),
+                                    borderRadius:
+                                        BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    currentTranslation.name,
+                                    style: GoogleFonts.lora(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white
+                                          .withValues(alpha: 0.85),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        // Translation chip
-                        GestureDetector(
-                          onTap: _showTranslationPicker,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              currentTranslation.name,
-                              style: GoogleFonts.lora(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white.withValues(alpha: 0.85),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      // Inline jump-to-passage input. User feedback
+                      // 2026-10-11/12: they wanted a passage legend
+                      // right on Home so they could type a reference
+                      // and jump instantly without going through the
+                      // search tab or the book picker. Submit tries
+                      // VerseRef.tryParse — if the input looks like
+                      // "John 3:16" / "Psalm 23" / "Hebrews 9", jumps
+                      // straight there with highlight. Anything else
+                      // falls through to the Home search bar below.
+                      const SizedBox(height: 10),
+                      _JumpToPassageField(parentRef: ref),
+                    ],
                   ),
                 ),
               ),
@@ -1637,14 +1669,7 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                         ),
                       ),
                     ],
-                    // Illuminated-manuscript divider between verse body
-                    // and reference — hairline + gilt diamond + two
-                    // outer seeds. Replaces the previous bare SizedBox.
-                    // Reads as "page from a Bible" rather than "flat
-                    // yellow block."
-                    const SizedBox(height: 14),
-                    const ManuscriptDivider(maxWidth: 200),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     // Reference + find similar
                     Row(
                       children: [
@@ -2047,23 +2072,11 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
                         ? "Welcome back to $brand — we missed you"
                         : 'Welcome back, friend — let\'s pick up where we left off';
 
-    // Pick the celestial ornament for right-now. The hero ornament
-    // is painted into the top-right corner of the welcome card as a
-    // soft gilt motif — rising sun before 7am, full sun through the
-    // workday, setting sun at dusk, crescent moon after 8pm. User
-    // feedback 2026-10-10: "can we not honestly build a better
-    // graphic interface" — this starts porting the brand's parchment
-    // + gilt lineart aesthetic (previously only on Codex) to Home.
-    final phase = celestialPhaseForHour(DateTime.now().hour);
-
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 16, 12, 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
-          // Warmed: starts honey, drifts through soft peach into the
-          // card surface — a sunrise feel without stealing attention
-          // from the content.
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
@@ -2076,27 +2089,8 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
         border: Border.all(
           color: BrandColors.gold.withValues(alpha: 0.30),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: BrandColors.goldDeep.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
-      child: Stack(
-        children: [
-          // Celestial ornament — top-right, subtly overlapping the gold
-          // gradient so the sun rises out of the honey tone naturally.
-          Positioned(
-            top: -6,
-            right: -4,
-            child: Opacity(
-              opacity: 0.85,
-              child: HomeHeroOrnament(phase: phase, size: 68),
-            ),
-          ),
-          Row(
+      child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
@@ -2177,8 +2171,6 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
               FadeSlideRoute(page: const SettingsScreen()),
             ),
           ),
-        ],
-      ),
         ],
       ),
     );
@@ -2789,6 +2781,118 @@ class _QuickTile extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Inline "Jump to passage" field embedded inside the Continue
+/// Reading band on Home. Type a reference like "John 3:16" or
+/// "Psalm 23" and submit — parses via VerseRef.tryParse, sets the
+/// book + chapter, flags the verse via highlightVerseProvider, and
+/// switches to the Read tab. Non-ref input falls through to the
+/// Home search bar via pendingSearchQueryProvider so no keystroke
+/// is wasted.
+class _JumpToPassageField extends StatefulWidget {
+  const _JumpToPassageField({required this.parentRef});
+  final WidgetRef parentRef;
+
+  @override
+  State<_JumpToPassageField> createState() => _JumpToPassageFieldState();
+}
+
+class _JumpToPassageFieldState extends State<_JumpToPassageField> {
+  final _ctrl = TextEditingController();
+  final _focus = FocusNode();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final q = _ctrl.text.trim();
+    if (q.isEmpty) return;
+    final parsed = VerseRef.tryParse(q);
+    if (parsed != null) {
+      widget.parentRef
+          .read(readingLocationProvider.notifier)
+          .setBook(parsed.book);
+      widget.parentRef
+          .read(readingLocationProvider.notifier)
+          .setChapter(parsed.chapter);
+      widget.parentRef.read(highlightVerseProvider.notifier).state =
+          parsed.verse;
+      widget.parentRef.read(tabIndexProvider.notifier).set(1);
+      _ctrl.clear();
+      _focus.unfocus();
+      return;
+    }
+    // Not a parseable reference — fall through to the Home search bar
+    // by publishing the text to pendingSearchQueryProvider.
+    widget.parentRef.read(pendingSearchQueryProvider.notifier).state = q;
+    _focus.unfocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.18),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 12),
+          Icon(Icons.menu_book_rounded,
+              size: 18, color: Colors.white.withValues(alpha: 0.75)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _ctrl,
+              focusNode: _focus,
+              textInputAction: TextInputAction.go,
+              onSubmitted: (_) => _submit(),
+              style: GoogleFonts.lora(
+                fontSize: 14,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              cursorColor: BrandColors.gold,
+              decoration: InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 12),
+                hintText: 'Jump to John 3:16, Psalm 23…',
+                hintStyle: GoogleFonts.lora(
+                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.55),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: _submit,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 10),
+                child: Icon(Icons.arrow_forward_rounded,
+                    size: 20, color: BrandColors.gold),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

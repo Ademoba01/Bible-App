@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
@@ -100,33 +102,80 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
       _highlightAnimController.forward();
     }
 
-    // Pixel-accurate scroll using GlobalKey
+    // Pixel-accurate scroll using GlobalKey — with retry so a
+    // cross-chapter jump (search sheet, book picker, cross-ref) works
+    // even when the new chapter hasn't finished loading its ListView
+    // and populated _verseKeys yet. Previous version fired a single
+    // postFrameCallback and fell back to a zero-scroll if the key
+    // wasn't ready — user report 2026-11-02: "it opens to the bible,
+    // but not to the verse i clicked on." Now retries up to ~1.5s.
+    _scrollToVerseWithRetry(verseNumber, attemptsLeft: 15);
+  }
+
+  void _scrollToVerseWithRetry(int verseNumber,
+      {required int attemptsLeft, bool didSeedScroll = false}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final key = _verseKeys[verseNumber];
       if (key != null && key.currentContext != null) {
-        final renderBox = key.currentContext!.findRenderObject() as RenderBox?;
+        final renderBox =
+            key.currentContext!.findRenderObject() as RenderBox?;
         if (renderBox != null && _scrollController.hasClients) {
           final offset = renderBox.localToGlobal(Offset.zero,
               ancestor: context.findRenderObject());
           final scrollTarget = _scrollController.offset + offset.dy - 120;
           _scrollController.animateTo(
-            scrollTarget.clamp(0, _scrollController.position.maxScrollExtent),
-            duration: const Duration(milliseconds: 600),
+            scrollTarget.clamp(
+                0, _scrollController.position.maxScrollExtent),
+            duration: const Duration(milliseconds: 450),
             curve: Curves.easeInOut,
           );
-        }
-      } else {
-        // Fallback: approximate offset
-        final targetOffset = (verseNumber - 1) * 60.0;
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            targetOffset.clamp(0, _scrollController.position.maxScrollExtent),
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeInOut,
-          );
+          return;
         }
       }
+      // Key doesn't exist yet. ListView.builder is lazy — verse 29
+      // simply isn't in the widget tree if the viewport is at verse
+      // 1-5. No amount of retry will produce a currentContext until
+      // we scroll close enough to force the ListView to build that
+      // range. So FIRST attempt: do an approximate seed-scroll based
+      // on verse index — this triggers the ListView to build the
+      // range around our target. Subsequent retries then find the
+      // key populated and do the pixel-accurate scroll.
+      if (!didSeedScroll && _scrollController.hasClients) {
+        final seedOffset = (verseNumber - 1) * 60.0;
+        _scrollController.jumpTo(
+          seedOffset.clamp(0, _scrollController.position.maxScrollExtent),
+        );
+      }
+      if (attemptsLeft > 0) {
+        Future.delayed(const Duration(milliseconds: 80), () {
+          if (mounted) {
+            _scrollToVerseWithRetry(
+              verseNumber,
+              attemptsLeft: attemptsLeft - 1,
+              didSeedScroll: true,
+            );
+          }
+        });
+      }
     });
+  }
+
+  /// In-reader search sheet. User feedback 2026-10-11: they wanted
+  /// Scripture search available on the Read tab without going back
+  /// to Home. Modal bottom sheet with a debounced TextField + result
+  /// list. Tap a result → set book/chapter/highlightVerse via
+  /// providers, close sheet, reader auto-scrolls to that verse.
+  void _showReadingSearch(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => _ReadingSearchSheet(parentRef: ref),
+    );
   }
 
   void _revealBackChip() {
@@ -549,6 +598,18 @@ class _ReadingScreenState extends ConsumerState<ReadingScreen>
           ),
         ),
         actions: [
+          // In-reader search — user feedback (2026-10-11): "we have the
+          // search screen here [Home], can we have another here, so i
+          // don't have to go all the way out to do further searches."
+          // Opens a bottom sheet with debounced search + result list;
+          // tapping a result sets book+chapter+highlightVerse via the
+          // existing providers so the reader scrolls to that verse
+          // without leaving the Read tab.
+          IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: 'Search Scripture',
+            onPressed: () => _showReadingSearch(context),
+          ),
           IconButton(
             icon: const Icon(Icons.quiz),
             tooltip: 'Quiz me on this chapter',
@@ -1952,9 +2013,16 @@ class _VerseListState extends State<_VerseList> {
         ), // close RefreshIndicator
       ),
         // ── Floating selection action bar ──
+        // Raised above the Scaffold's default SnackBar strip + the
+        // home-indicator safe area. User report 2026-11-02: "when a
+        // verse is highlighted, to copy is covered at the end." Was
+        // sitting at bottom:16 which the Scholar-Mode toggle SnackBar
+        // (56px tall, 3s auto-dismiss) covered the moment selection
+        // engaged. Now sits 80px up + safe-area so Copy / Share /
+        // etc. are always tappable.
         if (_selectionMode && _selectedVerses.isNotEmpty)
           Positioned(
-            bottom: 16,
+            bottom: 80 + MediaQuery.of(context).padding.bottom,
             left: 16,
             right: 16,
             child: Container(
@@ -2030,6 +2098,7 @@ class _VerseListState extends State<_VerseList> {
     ); // close CallbackShortcuts
   }
 
+  /// In-reader search sheet. User feedback 2026-10-11: they wanted
   void _showVerseSheet(BuildContext context, String refId, Verse v, ThemeData theme) {
     final isMarked = widget.ref.read(bookmarksProvider).contains(refId);
     final parsedRef = VerseRef.tryParse(refId);
@@ -2680,6 +2749,229 @@ class _ChapterBar extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Bottom-sheet search for the Reading tab. Opens over the current
+/// chapter without navigating away. Debounced TextField, scrollable
+/// result list; tap a result → close sheet, set book+chapter, flag
+/// the verse via highlightVerseProvider so _handleHighlight scrolls
+/// the reader to it with the gold-fade animation.
+class _ReadingSearchSheet extends ConsumerStatefulWidget {
+  const _ReadingSearchSheet({required this.parentRef});
+  final WidgetRef parentRef;
+
+  @override
+  ConsumerState<_ReadingSearchSheet> createState() =>
+      _ReadingSearchSheetState();
+}
+
+class _ReadingSearchSheetState extends ConsumerState<_ReadingSearchSheet> {
+  final _ctrl = TextEditingController();
+  final _focus = FocusNode();
+  Timer? _debounce;
+  List<({VerseRef ref, String text})> _results = const [];
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Hydrate from the last-search provider so re-opening the sheet
+    // shows the previous query + results instantly — no re-typing
+    // when the user wants to tap a different result (2026-11-02 bug).
+    final last = widget.parentRef.read(lastReadingSearchProvider);
+    if (last != null) {
+      _ctrl.text = last.query;
+      _results = last.results;
+    }
+    // Autofocus the field so the user can type immediately on open.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _focus.requestFocus();
+      if (_ctrl.text.isNotEmpty) {
+        _ctrl.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: _ctrl.text.length,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _ctrl.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  void _onChanged(String q) {
+    _debounce?.cancel();
+    final trimmed = q.trim();
+    if (trimmed.isEmpty) {
+      setState(() {
+        _results = const [];
+        _loading = false;
+      });
+      return;
+    }
+    setState(() => _loading = true);
+    _debounce = Timer(const Duration(milliseconds: 350), _runSearch);
+  }
+
+  Future<void> _runSearch() async {
+    final q = _ctrl.text.trim();
+    if (q.isEmpty) return;
+    final repo = ref.read(bibleRepositoryProvider);
+    final translation = ref.read(settingsProvider).translation;
+    // First try a direct VerseRef parse — "John 3:16" / "Psalm 23"
+    // should jump immediately instead of searching.
+    final parsed = VerseRef.tryParse(q);
+    if (parsed != null) {
+      _jumpTo(parsed);
+      return;
+    }
+    final results = await repo.search(q, translationId: translation, limit: 80);
+    if (!mounted) return;
+    setState(() {
+      _results = results;
+      _loading = false;
+    });
+  }
+
+  void _jumpTo(VerseRef r) {
+    // Persist the query + results so re-opening the sheet from the
+    // Read AppBar restores exactly where the user was. Only save when
+    // there's an actual search to come back to — a pure VerseRef
+    // jump ("John 3:16" with no search context) clears the saved
+    // search so the sheet opens fresh next time.
+    final q = _ctrl.text.trim();
+    if (q.isNotEmpty && _results.isNotEmpty) {
+      widget.parentRef.read(lastReadingSearchProvider.notifier).state =
+          LastReadingSearch(query: q, results: _results);
+    } else {
+      widget.parentRef.read(lastReadingSearchProvider.notifier).state = null;
+    }
+    Navigator.of(context).pop();
+    widget.parentRef.read(readingLocationProvider.notifier).setBook(r.book);
+    widget.parentRef
+        .read(readingLocationProvider.notifier)
+        .setChapter(r.chapter);
+    // Null the highlight provider first so re-tapping the same verse
+    // re-fires the listener (state changes null → V, triggers
+    // _handleHighlight even on identical verses).
+    widget.parentRef.read(highlightVerseProvider.notifier).state = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.parentRef.read(highlightVerseProvider.notifier).state = r.verse;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final inset = MediaQuery.of(context).viewInsets;
+    return Padding(
+      padding: EdgeInsets.only(bottom: inset.bottom),
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.35,
+        maxChildSize: 0.92,
+        expand: false,
+        builder: (ctx, scrollCtl) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 10, bottom: 6),
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.dividerColor,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+              child: TextField(
+                controller: _ctrl,
+                focusNode: _focus,
+                textInputAction: TextInputAction.search,
+                onChanged: _onChanged,
+                onSubmitted: (_) => _runSearch(),
+                decoration: InputDecoration(
+                  hintText: 'Jump to a passage or search Scripture',
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: theme.colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.5),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: _loading
+                  ? const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : _results.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Text(
+                              _ctrl.text.trim().isEmpty
+                                  ? 'Type "John 3:16" to jump directly, or search any word or phrase.'
+                                  : 'No matches. Try a different word.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.lora(
+                                fontSize: 13,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        )
+                      : ListView.separated(
+                          controller: scrollCtl,
+                          itemCount: _results.length,
+                          separatorBuilder: (_, __) =>
+                              const Divider(height: 1),
+                          itemBuilder: (_, i) {
+                            final r = _results[i];
+                            return ListTile(
+                              dense: true,
+                              title: Text(
+                                r.ref.id,
+                                style: GoogleFonts.lora(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: BrandColors.brownDeep,
+                                ),
+                              ),
+                              subtitle: Text(
+                                r.text,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.lora(
+                                  fontSize: 13,
+                                  height: 1.4,
+                                ),
+                              ),
+                              trailing: const Icon(
+                                  Icons.arrow_forward_ios, size: 14),
+                              onTap: () => _jumpTo(r.ref),
+                            );
+                          },
+                        ),
+            ),
+          ],
+        ),
       ),
     );
   }
