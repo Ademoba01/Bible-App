@@ -823,9 +823,20 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     _debounce = Timer(const Duration(milliseconds: 400), _runSearch);
   }
 
+  /// Monotonic search epoch. Each call to _runSearch increments this
+  /// before awaiting repo.search; when the result returns, we discard
+  /// it if a newer epoch has already started. Prevents the "results
+  /// appeared then disappeared" bug — 2026-11-23 user report — where
+  /// a slow cold-translation search from 3 keystrokes ago finished
+  /// after a faster warm-cache search finished, overwriting valid
+  /// current results with stale (or empty) output.
+  int _searchEpoch = 0;
+
   Future<void> _runSearch() async {
     final q = _searchCtrl.text.trim();
     if (q.isEmpty) return;
+    final myEpoch = ++_searchEpoch;
+    final capturedQuery = q;
     final repo = ref.read(bibleRepositoryProvider);
     final currentTranslation = ref.read(settingsProvider).translation;
 
@@ -841,6 +852,11 @@ class _DashboardTabState extends ConsumerState<_DashboardTab> {
     );
 
     if (!mounted) return;
+    // Discard if a newer search has started OR the user cleared the
+    // query between then and now (so stale results can't repopulate
+    // an empty search box with yesterday's query hits).
+    if (myEpoch != _searchEpoch) return;
+    if (_searchCtrl.text.trim() != capturedQuery) return;
     setState(() {
       _searchResults = results;
       _topicSuggestions = topics;

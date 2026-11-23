@@ -286,6 +286,54 @@ class BibleRepository {
         .toList();
   }
 
+  /// Tokenize WITHOUT dropping stopwords. Used only by the phrase-
+  /// proximity ranker below so a user query like "in the beginning
+  /// it was not so" can line up word-for-word against the verse
+  /// "from the beginning it was not so" and get credit for the 6
+  /// consecutive matching tokens — the normal tokenizer would have
+  /// filtered 6 of those 7 words as stopwords, leaving just "begin"
+  /// and matching every verse that contains "beginning".
+  List<String> _tokenizeFull(String text) {
+    return text
+        .toLowerCase()
+        .split(RegExp(r"[^a-z']+"))
+        .where((w) => w.isNotEmpty)
+        .map(_stem)
+        .toList();
+  }
+
+  /// Length of the longest contiguous matching token subsequence
+  /// between query and verse. If the user searched "in the beginning
+  /// it was not so" and the verse is "but from the beginning it was
+  /// not so", both share the run "the / begin / it / wa / not / so"
+  /// (6 tokens) — that's the relevance signal stopword-filtered
+  /// token matching misses.
+  int _longestContiguousOverlap(List<String> query, List<String> verse) {
+    if (query.isEmpty || verse.isEmpty) return 0;
+    var best = 0;
+    // Dynamic-programming suffix table — O(len(query) × len(verse)).
+    // Verses are short (10-80 tokens) and queries shorter so this
+    // stays fast enough to run per-verse in the hot loop.
+    final prev = List<int>.filled(verse.length + 1, 0);
+    final curr = List<int>.filled(verse.length + 1, 0);
+    for (var i = 1; i <= query.length; i++) {
+      for (var j = 1; j <= verse.length; j++) {
+        if (query[i - 1] == verse[j - 1]) {
+          curr[j] = prev[j - 1] + 1;
+          if (curr[j] > best) best = curr[j];
+        } else {
+          curr[j] = 0;
+        }
+      }
+      // Rotate: copy curr → prev, reset curr.
+      for (var k = 0; k <= verse.length; k++) {
+        prev[k] = curr[k];
+        curr[k] = 0;
+      }
+    }
+    return best;
+  }
+
   /// Global search across all books for a given translation.
   ///
   /// Matches in priority order:
@@ -319,6 +367,14 @@ class BibleRepository {
     }
 
     final queryTokens = _tokenize(q);
+    // Full-tokenized query (stopwords preserved) for the phrase-
+    // proximity ranker. Only computed when the query is long enough
+    // for a phrase match to be meaningful (4+ words), otherwise
+    // short queries like "the" would match everything.
+    final fullQueryTokens = _tokenizeFull(q);
+    final phraseEligible = fullQueryTokens.length >= 4;
+    final minPhraseRun =
+        phraseEligible ? (fullQueryTokens.length * 0.6).ceil() : 0;
     final searchTerms = _expandQuery(q);
 
     final ranked = <({VerseRef ref, String text, int rank, double score})>[];
@@ -329,7 +385,8 @@ class BibleRepository {
     // three translations even when the user's chosen translation had
     // strong matches, ~tripling cold-search latency for no benefit.
     await _searchTranslationRanked(
-      translationId, q, queryTokens, searchTerms, ranked, seenIds, limit,
+      translationId, q, queryTokens, fullQueryTokens, minPhraseRun,
+      searchTerms, ranked, seenIds, limit,
     );
 
     if (ranked.isEmpty) {
@@ -340,7 +397,8 @@ class BibleRepository {
       for (final tid in fallbacks) {
         if (ranked.length >= limit) break;
         await _searchTranslationRanked(
-          tid, q, queryTokens, searchTerms, ranked, seenIds, limit,
+          tid, q, queryTokens, fullQueryTokens, minPhraseRun,
+          searchTerms, ranked, seenIds, limit,
         );
       }
     }
@@ -361,11 +419,14 @@ class BibleRepository {
     String translationId,
     String exactQuery,
     List<String> queryTokens,
+    List<String> fullQueryTokens,
+    int minPhraseRun,
     List<String> synonymTerms,
     List<({VerseRef ref, String text, int rank, double score})> out,
     Set<String> seenIds,
     int limit,
   ) async {
+    final phraseEligible = fullQueryTokens.length >= 4;
     for (final b in kAllBooks) {
       if (out.length >= limit) break;
       List<Chapter> chapters;
@@ -388,14 +449,40 @@ class BibleRepository {
             continue;
           }
 
-          // Tokenize the verse once
-          final verseTokens = _tokenize(v.text).toSet();
+          // Tokenize the verse once (both forms — one for the
+          // stopword-filtered AND-match ranker, one for the phrase-
+          // proximity ranker).
+          final verseTokensFiltered = _tokenize(v.text);
+          final verseTokensSet = verseTokensFiltered.toSet();
+
+          // Rank 0.5 (added 2026-11-23): near-phrase match.
+          // User report: "in the beginning it was not so" returned
+          // "No verses found" when Matthew 19:8 contains "from the
+          // beginning it was not so" — 6 of 7 tokens contiguous.
+          // When the query is long enough (>=4 full tokens) and the
+          // longest contiguous overlap with the verse covers >=60%
+          // of the query, promote to Rank 0 with a score weighted
+          // by run length. Picks the right verse for most quoted
+          // Scripture phrases regardless of small wording drift.
+          if (phraseEligible) {
+            final fullVerseTokens = _tokenizeFull(v.text);
+            final run = _longestContiguousOverlap(
+                fullQueryTokens, fullVerseTokens);
+            if (run >= minPhraseRun) {
+              seenIds.add(ref.id);
+              final score = run / fullQueryTokens.length;
+              out.add((ref: ref, text: v.text, rank: 0, score: score));
+              if (out.length >= limit) return;
+              continue;
+            }
+          }
 
           // Rank 1: all query tokens present (word-boundary AND match)
           if (queryTokens.isNotEmpty &&
-              queryTokens.every(verseTokens.contains)) {
+              queryTokens.every(verseTokensSet.contains)) {
             seenIds.add(ref.id);
-            final score = queryTokens.length / (verseTokens.length + 1);
+            final score =
+                queryTokens.length / (verseTokensFiltered.length + 1);
             out.add((ref: ref, text: v.text, rank: 1, score: score));
             if (out.length >= limit) return;
             continue;
@@ -404,10 +491,10 @@ class BibleRepository {
           // Rank 2: majority (>=60%) of query tokens present
           if (queryTokens.length >= 2) {
             final matched =
-                queryTokens.where(verseTokens.contains).length;
+                queryTokens.where(verseTokensSet.contains).length;
             if (matched / queryTokens.length >= 0.6) {
               seenIds.add(ref.id);
-              final score = matched / (verseTokens.length + 1);
+              final score = matched / (verseTokensFiltered.length + 1);
               out.add((ref: ref, text: v.text, rank: 2, score: score));
               if (out.length >= limit) return;
               continue;
